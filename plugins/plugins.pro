@@ -18,7 +18,8 @@ SUBDIRS     = \
         sample \
         picfile \
         plotequation \
-        gear
+        gear \
+        geokkp
 
 TRANSLATIONS = ./ts/plugins_ar.ts \
     ./ts/plugins_ca.ts \

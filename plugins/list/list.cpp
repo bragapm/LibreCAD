@@ -41,10 +41,13 @@ void LC_List::execComm(Document_Interface *doc,
     bool yes  = doc->getSelect(&obj);
     if (!yes || obj.isEmpty()) return;
 
+    // Store polyline coordinate arrays
+    QList<QList<QList<double>>> polylineArrays;
+
     QString text;
     for (int i = 0; i < obj.size(); ++i) {
         text.append( QString("%1 %2: ").arg(tr("n")).arg(i+1));
-        text.append( getStrData(obj.at(i)));
+        text.append( getStrData(obj.at(i), polylineArrays));
         text.append( "\n");
     }
     lc_Listdlg dlg(parent);
@@ -53,9 +56,27 @@ void LC_List::execComm(Document_Interface *doc,
 
     while (!obj.isEmpty())
         delete obj.takeFirst();
+
+    qDebug() << "Polyline Data from List Entities: " << polylineArrays;
+
+    // Convert polylineArrays to strings with square brackets
+    QStringList polylineStrings;
+    for (const auto& polyline : polylineArrays) {
+        QString polylineString = "[";
+        for (const auto& point : polyline) {
+            polylineString += "[" + QString::number(point[0]) + ", " + QString::number(point[1]) + "], ";
+        }
+        // Remove the trailing comma and add the closing square bracket
+        polylineString.chop(2); // Remove last two characters (", ")
+        polylineString += "]";
+        polylineStrings.append(polylineString);
+    }
+
+    // Debug polylineStrings
+    qDebug() << "Polyline Arrays from List Entities (Formatted): " << polylineStrings;
 }
 
-QString LC_List::getStrData(Plug_Entity *ent) {
+QString LC_List::getStrData(Plug_Entity *ent, QList<QList<QList<double>>>& polylineArrays) {
     if( NULL == ent)
         return QString("%1\n").arg(tr("Empty Entity"));
 
@@ -71,6 +92,8 @@ QString LC_List::getStrData(Plug_Entity *ent) {
     QPointF ptA, ptB, ptC;
     int intA {0};
     int intB {0};
+
+    QStringList coordinateArray;
 
     //common entity data
     ent->getData(&data);
@@ -218,14 +241,28 @@ QString LC_List::getStrData(Plug_Entity *ent) {
         QList<Plug_VertexData> vl;
         ent->getPolylineData(&vl);
         int iVertices = vl.size();
+
+        QList<QList<double>> polylineCoordinates;
+
         for (int i = 0; i < iVertices; ++i) {
+
             strData.append( strSpecificXY.arg(tr("in point")).
                             arg(d->realToStr(vl.at(i).point.x())).
                             arg(d->realToStr(vl.at(i).point.y())));
             if ( 0 != vl.at(i).bulge) {
                 strData.append( strSpecific.arg(tr("radius")).arg( d->realToStr(polylineRadius(vl.at(i), vl.at((i+1) % iVertices)))));
             }
+
+            QList<double> coordinatePair;
+            coordinatePair.append(vl.at(i).point.x());
+            coordinatePair.append(vl.at(i).point.y());
+            polylineCoordinates.append(coordinatePair);
         }
+
+        qDebug() << "Print coordinate Array to be appended: " << polylineCoordinates;
+
+        polylineArrays.append(polylineCoordinates);
+
         break; }
     case DPI::IMAGE:
         strData.prepend( strEntity.arg(tr("IMAGE")));
@@ -261,7 +298,6 @@ QString LC_List::getStrData(Plug_Entity *ent) {
         strData.prepend( strEntity.arg(tr("UNKNOWN")));
         break;
     }
-
     return strData;
 }
 
