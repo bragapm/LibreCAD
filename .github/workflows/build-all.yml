@@ -1,9 +1,8 @@
-name: Continuous build
+name: 2.2.0 bugfix builds
 on:
   push:
     branches:
-      - master
-      - ci_dev
+      - 2.2
 
 jobs:
   BuildLinux:
@@ -14,6 +13,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
+          ref: '2.2'
           fetch-depth: 0
 
       - name: Install Qt and dependencies
@@ -27,7 +27,7 @@ jobs:
         run: |
           sudo apt-get -qq install clang-15 clang-tools-15
 
-      - name: Build and analyze
+      - name: Build
         run: |
           export CC=g++
           export ANALYZE="scan-build-15 -o out --use-cc=g++ --use-analyzer=/usr/bin/clang++ "
@@ -54,6 +54,9 @@ jobs:
           branch: gh-pages
           force: true
           directory: out
+          export CC=gcc
+          qmake -r librecad.pro CONFIG+=debug_and_release PREFIX=/usr BOOST_DIR=${{ github.workspace }}/boost/boost
+          make release -j$(nproc)
 
       - name: Create AppImage
         run: |
@@ -300,7 +303,8 @@ jobs:
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
+          automatic_release_tag: "2.2.0-latest"
+          prerelease: true
           title: "Continuous Build"
           files: |
             assets/LibreCAD*.*
