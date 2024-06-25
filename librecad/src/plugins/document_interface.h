@@ -499,6 +499,8 @@ public:
     virtual bool getReal(qreal *num, const QString& message = "", const QString& title = "") = 0;
     virtual bool getString(QString *txt, const QString& message = "", const QString& title = "") = 0;
 
+    virtual bool selectEntity(const qlonglong &eid) = 0;
+
     //! Convert real to string.
     /*! Convert a real number to string using indicated units format & precision. If omitted
     * are the current drawing units & precision are used.
