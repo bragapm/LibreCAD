@@ -124,6 +124,8 @@ public:
     bool getString(QString *txt, const QString& message, const QString& title) override;
     QString realToStr(const qreal num, const int units = 0, const int prec = 0) override;
 
+    bool selectEntity(const qlonglong &id) override;
+
     //method to handle undo in Plugin_Entity 
     bool addToUndo(RS_Entity* current, RS_Entity* modified, DPI::Disposition how);
 private:

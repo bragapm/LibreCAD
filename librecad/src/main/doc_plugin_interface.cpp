@@ -1384,3 +1384,14 @@ QString Doc_plugin_interface::realToStr(const qreal num, const int units, const 
     QString msg = RS_Units::formatLinear(num,RS2::None,lf,pr);
     return msg;
 }
+
+bool Doc_plugin_interface::selectEntity(const qlonglong &id) {
+    bool status = false;
+
+    for(auto e: *doc){
+        if(id == e->getId())
+            e->setSelected(true);
+    }
+    status = true;
+    return status;
+}
