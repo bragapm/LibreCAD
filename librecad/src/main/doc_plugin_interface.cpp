@@ -51,6 +51,7 @@
 #include "intern/qc_actiongetpoint.h"
 #include "intern/qc_actiongetselect.h"
 #include "intern/qc_actiongetent.h"
+#include "intern/qc_selectwindow.h"
 #include "rs_math.h"
 #include "rs_debug.h"
 #include "rs_units.h"
@@ -1207,6 +1208,7 @@ bool Doc_plugin_interface::getPoint(QPointF *point, const QString& message,
 
 Plug_Entity *Doc_plugin_interface::getEnt(const QString& message){
     QC_ActionGetEnt* a = new QC_ActionGetEnt(*doc, *gView);
+    Plug_Entity *e = nullptr;
     if (a) {
         if (!(message.isEmpty()) )
             a->setMessage(message);
@@ -1220,8 +1222,11 @@ Plug_Entity *Doc_plugin_interface::getEnt(const QString& message){
                 break;
         }
     }
-    Plug_Entity *e = reinterpret_cast<Plug_Entity*>(a->getSelected(this));
-    a->finish();
+    RS_EventHandler* eh = gView->getEventHandler();
+    if (eh && eh->isValid(a) ) {
+        e = reinterpret_cast<Plug_Entity*>(a->getSelected(this));
+        a->finish();
+    }
     gView->killAllActions();
     return e;
 }
@@ -1385,7 +1390,7 @@ QString Doc_plugin_interface::realToStr(const qreal num, const int units, const 
     return msg;
 }
 
-bool Doc_plugin_interface::selectEntity(const qlonglong &id) {
+bool Doc_plugin_interface::selectEntity(const qulonglong &id) {
     bool status = false;
 
     for(auto e: *doc){
@@ -1395,3 +1400,64 @@ bool Doc_plugin_interface::selectEntity(const qlonglong &id) {
     status = true;
     return status;
 }
+
+void Doc_plugin_interface::selectEntities(const QList<qulonglong>* idList) {
+    for (auto id: *idList){
+        this->selectEntity(id);
+    }
+}
+
+
+void Doc_plugin_interface::deselectEntity(const qulonglong &id) {
+    for(auto e: *doc){
+        if(id == e->getId())
+            e->setSelected(false);
+    }
+    return;
+}
+
+void Doc_plugin_interface::deselectEntities(const QList<qulonglong>* idList) {
+    for (auto id: *idList){
+        this->deselectEntity(id);
+        // for(auto e: *doc){
+        //     if(id == e->getId())
+        //         e->setSelected(false);
+        // }
+    }
+}
+
+bool Doc_plugin_interface::selectByWindow(QList<Plug_Entity *> *sel, const QString& message) {
+    bool status = true;
+    QC_SelectWindow* a = new QC_SelectWindow(*doc, *gView, status);
+    if (a) {
+        if (!(message.isEmpty()) )
+            // a->setMessage(message);
+        gView->killAllActions();
+        gView->setCurrentAction(a);
+        QEventLoop ev;
+        while (!a->isCompleted()) {
+            ev.processEvents ();
+            if (!gView->getEventHandler()->hasAction())
+                break;
+        }
+        // qDebug() << "getSelect: passed event loop";
+    }
+    //    check if a are cancelled by the user issue #349
+    RS_EventHandler* eh = gView->getEventHandler();
+    if (eh && eh->isValid(a) ) {
+        for (auto e : *doc)
+        {
+            if (e->isSelected()) {
+                Plugin_Entity *pe = new Plugin_Entity(e, this);
+                sel->append(reinterpret_cast<Plug_Entity*>(pe));
+            }
+        }
+        status = true;
+    }
+
+    gView->killAllActions();
+    // delete wrapper;
+    return status;
+
+}
+
