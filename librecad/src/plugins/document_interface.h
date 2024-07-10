@@ -500,6 +500,7 @@ public:
     virtual bool getString(QString *txt, const QString& message = "", const QString& title = "") = 0;
 
     virtual bool selectEntity(const qlonglong &eid) = 0;
+    virtual QVariantList getExtent();
 
     //! Convert real to string.
     /*! Convert a real number to string using indicated units format & precision. If omitted

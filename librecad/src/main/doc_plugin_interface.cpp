@@ -1395,3 +1395,16 @@ bool Doc_plugin_interface::selectEntity(const qlonglong &id) {
     status = true;
     return status;
 }
+
+QVariantList Doc_plugin_interface::getExtent(){
+
+    LC_Rect viewportRect = gView->getViewRect();
+    QPointF upperLeftCorner = QPointF(viewportRect.minP().x, viewportRect.maxP().y);
+    QPointF lowerRightCorner = QPointF(viewportRect.maxP().x, viewportRect.minP().y);
+
+    QVariantList extent;
+    extent.append(upperLeftCorner);
+    extent.append(lowerRightCorner);
+
+    return extent;
+}
