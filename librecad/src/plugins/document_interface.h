@@ -499,7 +499,11 @@ public:
     virtual bool getReal(qreal *num, const QString& message = "", const QString& title = "") = 0;
     virtual bool getString(QString *txt, const QString& message = "", const QString& title = "") = 0;
 
-    virtual bool selectEntity(const qlonglong &eid) = 0;
+    virtual bool selectEntity(const qulonglong &eid) = 0;
+    virtual bool selectByWindow(QList<Plug_Entity *> *sel, const QString& message) = 0;
+    virtual void selectEntities(const QList<qulonglong>* idList) = 0;
+    virtual void deselectEntity(const qulonglong &eid) = 0;
+    virtual void deselectEntities(const QList<qulonglong>* idList) = 0;
     virtual QVariantList getExtent();
 
     //! Convert real to string.

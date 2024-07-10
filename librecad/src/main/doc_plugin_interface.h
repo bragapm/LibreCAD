@@ -124,11 +124,18 @@ public:
     bool getString(QString *txt, const QString& message, const QString& title) override;
     QString realToStr(const qreal num, const int units = 0, const int prec = 0) override;
 
-    bool selectEntity(const qlonglong &id) override;
     QVariantList getExtent() override;
 
-    //method to handle undo in Plugin_Entity 
+    //method to handle undo in Plugin_Entity
     bool addToUndo(RS_Entity* current, RS_Entity* modified, DPI::Disposition how);
+
+    /*~~[GeoKKP]~~*/
+    bool selectEntity(const qulonglong &id) override;
+    bool selectByWindow(QList<Plug_Entity *> *sel, const QString& message) override;
+    void selectEntities(const QList<qulonglong>* idList) override;
+    void deselectEntity(const qulonglong &id) override;
+    void deselectEntities(const QList<qulonglong>* idList) override;
+
 private:
     RS_Document *doc;
     RS_Graphic *docGr;
