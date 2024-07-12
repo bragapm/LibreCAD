@@ -504,7 +504,7 @@ public:
     virtual void selectEntities(const QList<qulonglong>* idList) = 0;
     virtual void deselectEntity(const qulonglong &eid) = 0;
     virtual void deselectEntities(const QList<qulonglong>* idList) = 0;
-    virtual QVariantList getExtent();
+    virtual QVariantList getExtent() = 0;
 
     //! Convert real to string.
     /*! Convert a real number to string using indicated units format & precision. If omitted
