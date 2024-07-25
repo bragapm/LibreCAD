@@ -759,6 +759,11 @@ QString Plugin_Entity::intColor2str(int color){
     return Converter.intColor2str(color);
 }
 
+bool Plugin_Entity::isSelected()
+{
+    return this->entity->isSelected();
+}
+
 Doc_plugin_interface::Doc_plugin_interface(RS_Document *d, RS_GraphicView* gv, QWidget* parent):
 doc(d)
 ,docGr(doc->getGraphic())
@@ -1472,5 +1477,19 @@ bool Doc_plugin_interface::selectByWindow(QList<Plug_Entity *> *sel, const QStri
     // delete wrapper;
     return status;
 
+}
+
+bool Doc_plugin_interface::getSelectedEntities(QList<Plug_Entity *> *sel, bool visible){
+    bool status = false;
+
+    for(auto e: *doc){
+
+        if ((e->isVisible() || !visible) && e->isSelected()) {
+            Plugin_Entity *pe = new Plugin_Entity(e, this);
+            sel->append(reinterpret_cast<Plug_Entity*>(pe));
+        }
+    }
+    status = true;
+    return status;
 }
 

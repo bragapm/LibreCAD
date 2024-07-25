@@ -281,6 +281,8 @@ public:
     *  \param color color as integer to convert as string.
     */
     virtual QString intColor2str(int color) = 0;
+
+    virtual bool isSelected() = 0;
 };
 
 //! Interface for communicate plugins.
@@ -505,6 +507,7 @@ public:
     virtual void deselectEntity(const qulonglong &eid) = 0;
     virtual void deselectEntities(const QList<qulonglong>* idList) = 0;
     virtual QVariantList getExtent() = 0;
+    virtual bool getSelectedEntities(QList<Plug_Entity *> *sel, bool visible = false) = 0;
 
     //! Convert real to string.
     /*! Convert a real number to string using indicated units format & precision. If omitted
