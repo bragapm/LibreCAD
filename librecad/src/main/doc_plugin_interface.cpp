@@ -326,6 +326,24 @@ void Plugin_Entity::getData(QHash<int, QVariant> *data){
         data->insert(DPI::STARTANGLE, d.angle );
         data->insert(DPI::HEIGHT, d.height );
         data->insert(DPI::TEXTCONTENT, d.text );
+
+        if (d.halign == RS_MTextData::HALeft) {
+            data->insert(DPI::TXTALIGNH, DPI::HAlign::HAlignLeft);
+        } else if (d.halign == RS_MTextData::HACenter) {
+            data->insert(DPI::TXTALIGNH, DPI::HAlign::HAlignCenter);
+        } else if (d.halign == RS_MTextData::HARight) {
+            data->insert(DPI::TXTALIGNH, DPI::HAlign::HAlignRight);
+        }
+
+        if (d.valign == RS_MTextData::VATop) {
+            data->insert(DPI::TXTALIGNV, DPI::VAlign::VAlignTop);
+        } else if (d.valign == RS_MTextData::VAMiddle) {
+            data->insert(DPI::TXTALIGNV, DPI::VAlign::VAlignMiddle);
+        } else if (d.valign == RS_MTextData::VABottom) {
+            data->insert(DPI::TXTALIGNV, DPI::VAlign::VAlignBottom);
+        }
+
+        data->insert(DPI::TXTSTYLE, d.style);
         break;}
     case RS2::EntityText: {
         data->insert(DPI::ETYPE, DPI::TEXT);
@@ -335,6 +353,24 @@ void Plugin_Entity::getData(QHash<int, QVariant> *data){
         data->insert(DPI::STARTANGLE, d.angle );
         data->insert(DPI::HEIGHT, d.height );
         data->insert(DPI::TEXTCONTENT, d.text );
+        
+        if (d.halign == RS_TextData::HALeft) {
+            data->insert(DPI::TXTALIGNH, DPI::HAlign::HAlignLeft);
+        } else if (d.halign == RS_TextData::HACenter) {
+            data->insert(DPI::TXTALIGNH, DPI::HAlign::HAlignCenter);
+        } else if (d.halign == RS_TextData::HARight) {
+            data->insert(DPI::TXTALIGNH, DPI::HAlign::HAlignRight);
+        }
+
+        if (d.valign == RS_TextData::VATop) {
+            data->insert(DPI::TXTALIGNV, DPI::VAlign::VAlignTop);
+        } else if (d.valign == RS_TextData::VAMiddle) {
+            data->insert(DPI::TXTALIGNV, DPI::VAlign::VAlignMiddle);
+        } else if (d.valign == RS_TextData::VABottom) {
+            data->insert(DPI::TXTALIGNV, DPI::VAlign::VAlignBottom);
+        }
+
+        data->insert(DPI::TXTSTYLE, d.style);
         break;}
     case RS2::EntityHatch:
         data->insert(DPI::ETYPE, DPI::HATCH);
