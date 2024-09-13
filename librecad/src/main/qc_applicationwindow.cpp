@@ -401,7 +401,7 @@ std::unique_ptr<QC_ApplicationWindow>& QC_ApplicationWindow::getAppWindow()
   * returns 0 when no menu was found
   */
 QMenu *QC_ApplicationWindow::findMenu(const QString &searchMenu, const QObjectList thisMenuList, const QString& currentEntry) {
-    qDebug() << "Searching for menu:" << searchMenu << "Current entry:" << currentEntry;
+    // qDebug() << "Searching for menu:" << searchMenu << "Current entry:" << currentEntry;
 
     // if (searchMenu==currentEntry)
     //     return ( QMenu *)thisMenuList.at(0)->parent();
@@ -736,12 +736,12 @@ void QC_ApplicationWindow::loadPlugins() {
 
                         if (currentMenu) {
                             currentMenu->addAction(actpl);
-                            qDebug() << "Adding action to existing menu:" << currentMenu->title();
-                            qDebug() << "Added action to new menu:" << parentMenu->title();
+                            // qDebug() << "Adding action to existing menu:" << currentMenu->title();
+                            // qDebug() << "Added action to new menu:" << parentMenu->title();
                         }
                     }
 
-//                     PluginCapabilities pluginCapabilities=pluginInterface->getCapabilities();
+/* //                     PluginCapabilities pluginCapabilities=pluginInterface->getCapabilities();
 //                     for(const PluginMenuLocation& loc: pluginCapabilities.menuEntryPoints) {
 //                         QAction *actpl = new QAction(loc.menuEntryActionName, plugin);
 //                         actpl->setData(loc.menuEntryActionName);
@@ -777,7 +777,7 @@ void QC_ApplicationWindow::loadPlugins() {
 //                             if (parentMenu) parentMenu->addAction(actpl);
 //                             qDebug() << "Added action to new menu:" << parentMenu->title();
 //                         }
-//                     }
+//                     } // */
                 }
             } else {
                 QMessageBox::information(this, "Info", pluginLoader.errorString());
