@@ -319,6 +319,19 @@ public:
     */
     virtual void addLine(QPointF *start, QPointF *end) = 0;
 
+    //! Add MText entity to current document.
+    /*! Add MText entity to current document with current attributes.
+    *  \param txt a QString with text content
+    *  \param sty a QString with text style name
+    *  \param start insertion point coordinate
+    *  \param height height of text
+    *  \param angle rotation angle of text
+    *  \param ha horizontal alignment of text
+    *  \param va vertical alignment of text
+    */
+    virtual void addMText(QString txt, QString sty, QPointF *start, double height,
+                double angle, DPI::HAlign ha,  DPI::VAlign va) = 0;
+
     //! Add text entity to current document.
     /*! Add text entity to current document with current attributes
     *  \param txt a QString with text content
