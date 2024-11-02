@@ -28,6 +28,8 @@
 
 #include <QObject>
 
+#include <optional>
+
 #include "document_interface.h"
 #include "rs_graphic.h"
 
@@ -78,17 +80,25 @@ public:
     Doc_plugin_interface(RS_Document *d, RS_GraphicView* gv, QWidget* parent);
     void updateView() override;
     void addPoint(QPointF *start) override;
+    std::optional<qulonglong> addPointReturn(QPointF *start) override;
     void addLine(QPointF *start, QPointF *end) override;
+    std::optional<qulonglong> addLineReturn(QPointF *start, QPointF *end) override;
     void addMText(QString txt, QString sty, QPointF *start,
             double height, double angle, DPI::HAlign ha,  DPI::VAlign va);
+    std::optional<qulonglong> addMTextReturn(QString txt, QString sty, QPointF *start,
+            double height, double angle, DPI::HAlign ha,  DPI::VAlign va);
     void addText(QString txt, QString sty, QPointF *start,
+            double height, double angle, DPI::HAlign ha,  DPI::VAlign va) override;
+    std::optional<qulonglong> addTextReturn(QString txt, QString sty, QPointF *start,
             double height, double angle, DPI::HAlign ha,  DPI::VAlign va) override;
 
     void addCircle(QPointF *start, qreal radius) override;
     void addArc(QPointF *start, qreal radius, qreal a1, qreal a2) override;
     void addEllipse(QPointF *start, QPointF *end, qreal ratio, qreal a1, qreal a2) override;
     virtual void addLines(std::vector<QPointF> const& points, bool closed=false) override;
+    virtual std::vector<qulonglong> addLinesReturn(std::vector<QPointF> const& points, bool closed=false) override;
     virtual void addPolyline(std::vector<Plug_VertexData> const& points, bool closed=false) override;
+    virtual std::optional<qulonglong> addPolylineReturn(std::vector<Plug_VertexData> const& points, bool closed=false) override;
     virtual void addSplinePoints(std::vector<QPointF> const& points, bool closed=false) override;
     void addImage(int handle, QPointF *start, QPointF *uvr, QPointF *vvr,
                   int w, int h, QString name, int br, int con, int fade) override;

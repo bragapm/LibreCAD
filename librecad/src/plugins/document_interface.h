@@ -311,6 +311,7 @@ public:
     *  \param start point coordinate.
     */
     virtual void addPoint(QPointF *start) = 0;
+    virtual std::optional<qulonglong> addPointReturn(QPointF *start) = 0;
 
     //! Add line entity to current document.
     /*! Add line entity to current document with current attributes.
@@ -318,6 +319,7 @@ public:
     *  \param end end point coordinate.
     */
     virtual void addLine(QPointF *start, QPointF *end) = 0;
+    virtual std::optional<qulonglong> addLineReturn(QPointF *start, QPointF *end) = 0;
 
     //! Add MText entity to current document.
     /*! Add MText entity to current document with current attributes.
@@ -331,6 +333,8 @@ public:
     */
     virtual void addMText(QString txt, QString sty, QPointF *start, double height,
                 double angle, DPI::HAlign ha,  DPI::VAlign va) = 0;
+    virtual std::optional<qulonglong> addMTextReturn(QString txt, QString sty, QPointF *start, double height,
+                double angle, DPI::HAlign ha,  DPI::VAlign va) = 0;
 
     //! Add text entity to current document.
     /*! Add text entity to current document with current attributes
@@ -343,6 +347,8 @@ public:
     *  \param va vertical alignment of text
     */
     virtual void addText(QString txt, QString sty, QPointF *start, double height,
+                double angle, DPI::HAlign ha,  DPI::VAlign va) = 0;
+    virtual std::optional<qulonglong> addTextReturn(QString txt, QString sty, QPointF *start, double height,
                 double angle, DPI::HAlign ha,  DPI::VAlign va) = 0;
 
     //! Add circle entity to current document.
@@ -372,6 +378,7 @@ public:
     *  \param closed whether line is closed
     */
     virtual void addLines(std::vector<QPointF> const& points, bool closed=false) = 0;
+    virtual std::vector<qulonglong> addLinesReturn(std::vector<QPointF> const& points, bool closed=false) = 0;
 
     //! Add polyline entity to current document.
     /*! Add polyline entity to current document with current attributes.
@@ -379,6 +386,8 @@ public:
     *  \param closed whether polyline is closed
     */
     virtual void addPolyline(std::vector<Plug_VertexData> const& points, bool closed=false) = 0;
+    virtual std::optional<qulonglong> addPolylineReturn(std::vector<Plug_VertexData> const& points, bool closed=false) = 0;
+
     //! Add LC_SplinePoints entity to current document.
     /*! Add splinepoints entity to current document with current attributes.
     *  \param points interpolation points
