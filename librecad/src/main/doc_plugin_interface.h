@@ -147,6 +147,7 @@ public:
     void deselectEntity(const qulonglong &id) override;
     void deselectEntities(const QList<qulonglong>* idList) override;    
     bool getSelectedEntities(QList<Plug_Entity *> *sel, bool visible = false) override;
+    Plug_Entity * getEntity(const qulonglong eid) override;
 
 private:
     RS_Document *doc;

@@ -1599,3 +1599,12 @@ bool Doc_plugin_interface::getSelectedEntities(QList<Plug_Entity *> *sel, bool v
     return status;
 }
 
+Plug_Entity *Doc_plugin_interface::getEntity(const qulonglong id){
+    for(auto e: *doc){
+        if(id == e->getId()){
+            Plugin_Entity *pe = new Plugin_Entity(e, this);
+            return reinterpret_cast<Plug_Entity*>(pe);
+        }
+    }
+    return nullptr;
+}

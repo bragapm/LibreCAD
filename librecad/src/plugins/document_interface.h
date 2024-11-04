@@ -531,6 +531,13 @@ public:
     virtual QVariantList getExtent() = 0;
     virtual bool getSelectedEntities(QList<Plug_Entity *> *sel, bool visible = false) = 0;
 
+    //! Get a entity by id.
+    /*! You must delete the Plug_Entity when no more needed.
+    * \param eid a qulonglong with the entity id.
+    * \return a Plug_Entity handle to the entity or nullptr.
+    */
+    virtual Plug_Entity * getEntity(const qulonglong eid) = 0;
+
     //! Convert real to string.
     /*! Convert a real number to string using indicated units format & precision. If omitted
     * are the current drawing units & precision are used.

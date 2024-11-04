@@ -1444,6 +1444,7 @@ void LC_ActionFactory::commonActions(QMap<QString, QAction*>& a_map, LC_ActionGr
     action->setCheckable(true);
     connect(action, SIGNAL(triggered(bool)), main_window, SLOT(slotFilePrintPreview(bool)));
     connect(main_window, SIGNAL(printPreviewChanged(bool)), action, SLOT(setChecked(bool)));
+    connect(main_window, SIGNAL(printPreviewChanged(bool)), action, SLOT([action](bool value) {emit action->toggled(value);}));
     action->setObjectName("FilePrintPreview");
     a_map["FilePrintPreview"] = action;
 
