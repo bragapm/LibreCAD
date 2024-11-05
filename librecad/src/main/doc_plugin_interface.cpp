@@ -833,6 +833,9 @@ void Doc_plugin_interface::updateView(){
 }
 
 void Doc_plugin_interface::addPoint(QPointF *start){
+    addPointReturn(start);
+}
+std::optional<qulonglong> Doc_plugin_interface::addPointReturn(QPointF *start){
 
     RS_Vector v1(start->x(), start->y());
     if (doc) {
@@ -840,11 +843,18 @@ void Doc_plugin_interface::addPoint(QPointF *start){
         doc->addEntity(entity);
         LC_UndoSection undo(doc);
         undo.addUndoable(entity);
-    } else
+
+        return entity->getId();
+    } else {
 		RS_DEBUG->print("Doc_plugin_interface::addPoint: currentContainer is nullptr");
+        return std::nullopt;
+    }
 }
 
 void Doc_plugin_interface::addLine(QPointF *start, QPointF *end){
+    addLineReturn(start, end);
+}
+std::optional<qulonglong> Doc_plugin_interface::addLineReturn(QPointF *start, QPointF *end){
 
     RS_Vector v1(start->x(), start->y());
     RS_Vector v2(end->x(), end->y());
@@ -853,11 +863,19 @@ void Doc_plugin_interface::addLine(QPointF *start, QPointF *end){
         doc->addEntity(entity);
         LC_UndoSection undo(doc);
         undo.addUndoable(entity);
-    } else
+
+        return entity->getId();
+    } else {
 		RS_DEBUG->print("Doc_plugin_interface::addLine: currentContainer is nullptr");
+        return std::nullopt;
+    }
 }
 
 void Doc_plugin_interface::addMText(QString txt, QString sty, QPointF *start,
+            double height, double angle, DPI::HAlign ha,  DPI::VAlign va){
+    addMTextReturn(txt, sty, start, height, angle, ha, va);
+}
+std::optional<qulonglong> Doc_plugin_interface::addMTextReturn(QString txt, QString sty, QPointF *start,
             double height, double angle, DPI::HAlign ha,  DPI::VAlign va){
 
     RS_Vector v1(start->x(), start->y());
@@ -874,11 +892,19 @@ void Doc_plugin_interface::addMText(QString txt, QString sty, QPointF *start,
         doc->addEntity(entity);
         LC_UndoSection undo(doc);
         undo.addUndoable(entity);
-    } else
+
+        return entity->getId();
+    } else {
 		RS_DEBUG->print("Doc_plugin_interface::addMtext: currentContainer is nullptr");
+        return std::nullopt;
+    }
 }
 
 void Doc_plugin_interface::addText(QString txt, QString sty, QPointF *start,
+            double height, double angle, DPI::HAlign ha,  DPI::VAlign va){
+    addTextReturn(txt, sty, start, height, angle, ha, va);
+}
+std::optional<qulonglong> Doc_plugin_interface::addTextReturn(QString txt, QString sty, QPointF *start,
             double height, double angle, DPI::HAlign ha,  DPI::VAlign va){
 
     RS_Vector v1(start->x(), start->y());
@@ -894,8 +920,12 @@ void Doc_plugin_interface::addText(QString txt, QString sty, QPointF *start,
         doc->addEntity(entity);
         LC_UndoSection undo(doc);
         undo.addUndoable(entity);
-    } else
+
+        return entity->getId();
+    } else {
 		RS_DEBUG->print("Doc_plugin_interface::addText: currentContainer is nullptr");
+        return std::nullopt;
+    }
 }
 
 void Doc_plugin_interface::addCircle(QPointF *start, qreal radius){
@@ -966,8 +996,44 @@ void Doc_plugin_interface::addLines(std::vector<QPointF> const& points, bool clo
     } else
 		RS_DEBUG->print("%s: currentContainer is nullptr", __func__);
 }
+std::vector<qulonglong> Doc_plugin_interface::addLinesReturn(std::vector<QPointF> const& points, bool closed)
+{
+    if (doc) {
+        RS_LineData data;
+
+        LC_UndoSection undo(doc);
+        data.endpoint=RS_Vector(points.front().x(), points.front().y());
+
+        std::vector<qulonglong> eids;
+        for(size_t i=1; i<points.size(); ++i){
+            data.startpoint=data.endpoint;
+            data.endpoint=RS_Vector(points[i].x(), points[i].y());
+            RS_Line* line=new RS_Line(doc, data);
+            doc->addEntity(line);
+            undo.addUndoable(line);
+            eids.push_back(line->getId());
+        }
+        if(closed){
+            data.startpoint=data.endpoint;
+            data.endpoint=RS_Vector(points.front().x(), points.front().y());
+            RS_Line* line=new RS_Line(doc, data);
+            doc->addEntity(line);
+            undo.addUndoable(line);
+            eids.push_back(line->getId());
+        }
+
+        return eids;
+    } else {
+		RS_DEBUG->print("%s: currentContainer is nullptr", __func__);
+        return {};
+    }
+}
 
 void Doc_plugin_interface::addPolyline(std::vector<Plug_VertexData> const& points, bool closed)
+{
+    addPolylineReturn(points, closed);
+}
+std::optional<qulonglong> Doc_plugin_interface::addPolylineReturn(std::vector<Plug_VertexData> const& points, bool closed)
 {
     if (doc) {
         RS_PolylineData data;
@@ -982,8 +1048,12 @@ void Doc_plugin_interface::addPolyline(std::vector<Plug_VertexData> const& point
         doc->addEntity(entity);
         LC_UndoSection undo(doc);
         undo.addUndoable(entity);
-    } else
+
+        return entity->getId();
+    } else {
 		RS_DEBUG->print("%s: currentContainer is nullptr", __func__);
+        return std::nullopt;
+    }
 }
 
 void Doc_plugin_interface::addSplinePoints(std::vector<QPointF> const& points, bool closed)
@@ -1529,3 +1599,12 @@ bool Doc_plugin_interface::getSelectedEntities(QList<Plug_Entity *> *sel, bool v
     return status;
 }
 
+Plug_Entity *Doc_plugin_interface::getEntity(const qulonglong id){
+    for(auto e: *doc){
+        if(id == e->getId()){
+            Plugin_Entity *pe = new Plugin_Entity(e, this);
+            return reinterpret_cast<Plug_Entity*>(pe);
+        }
+    }
+    return nullptr;
+}
