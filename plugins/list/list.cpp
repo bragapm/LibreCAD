@@ -93,8 +93,6 @@ QString LC_List::getStrData(Plug_Entity *ent, QList<QList<QList<double>>>& polyl
     int intA {0};
     int intB {0};
 
-    QStringList coordinateArray;
-
     //common entity data
     ent->getData(&data);
     strData  = strCommon.arg(tr("Layer")).arg(data.value(DPI::LAYER).toString());

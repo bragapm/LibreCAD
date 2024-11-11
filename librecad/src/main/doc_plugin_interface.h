@@ -148,6 +148,13 @@ public:
     void deselectEntities(const QList<qulonglong>* idList) override;    
     bool getSelectedEntities(QList<Plug_Entity *> *sel, bool visible = false) override;
     Plug_Entity * getEntity(const qulonglong eid) override;
+    void toggleLayer(QString name) override;
+    void lockLayer(QString name) override;
+    void printLayer(QString name) override;
+    void lockAllLayer() override;
+    void unlockAllLayer() override;
+    void freezeAllLayer() override;
+    void unfreezeAllLayer() override;
 
 private:
     RS_Document *doc;

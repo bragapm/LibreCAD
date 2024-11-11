@@ -1608,3 +1608,53 @@ Plug_Entity *Doc_plugin_interface::getEntity(const qulonglong id){
     }
     return nullptr;
 }
+
+void Doc_plugin_interface::toggleLayer(QString name){
+    RS_LayerList* listLay = doc->getLayerList();
+    RS_Layer *lay = listLay->find(name);
+    if (!lay) {
+        lay = new RS_Layer(name);
+        docGr->addLayer(lay);
+    }
+    listLay->toggle(lay);
+}
+
+void Doc_plugin_interface::lockLayer(QString name){
+    RS_LayerList* listLay = doc->getLayerList();
+    RS_Layer *lay = listLay->find(name);
+    if (!lay) {
+        lay = new RS_Layer(name);
+        docGr->addLayer(lay);
+    }
+    listLay->toggleLock(lay);
+}
+
+void Doc_plugin_interface::printLayer(QString name){
+    RS_LayerList* listLay = doc->getLayerList();
+    RS_Layer *lay = listLay->find(name);
+    if (!lay) {
+        lay = new RS_Layer(name);
+        docGr->addLayer(lay);
+    }
+    listLay->togglePrint(lay);
+}
+
+void Doc_plugin_interface::lockAllLayer(){
+    RS_LayerList* listLay = doc->getLayerList();
+    listLay->lockAll(true);
+}
+
+void Doc_plugin_interface::unlockAllLayer(){
+    RS_LayerList* listLay = doc->getLayerList();
+    listLay->lockAll(false);
+}
+
+void Doc_plugin_interface::freezeAllLayer(){
+    RS_LayerList* listLay = doc->getLayerList();
+    listLay->freezeAll(true);
+}
+
+void Doc_plugin_interface::unfreezeAllLayer(){
+    RS_LayerList* listLay = doc->getLayerList();
+    listLay->freezeAll(false);
+}

@@ -549,6 +549,14 @@ public:
     * \return a string with the converted number.
     */
     virtual QString realToStr(const qreal num, const int units = 0, const int prec = 0) = 0;
+
+    virtual void toggleLayer(QString name) = 0;
+    virtual void lockLayer(QString name) = 0;
+    virtual void printLayer(QString name) = 0;
+    virtual void lockAllLayer() = 0;
+    virtual void unlockAllLayer() = 0;
+    virtual void freezeAllLayer() = 0;
+    virtual void unfreezeAllLayer() = 0;
 };
 
 
