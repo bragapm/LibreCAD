@@ -37,13 +37,15 @@ class Document_Interface;
 class PluginMenuLocation
 {
     public:
-        PluginMenuLocation(QString menuEntryPoint, QString menuEntryActionName) {
+        PluginMenuLocation(QString menuEntryPoint, QString menuEntryActionName, QString menuIcon = "") {
             this->menuEntryActionName=menuEntryActionName;
             this->menuEntryPoint=menuEntryPoint;
+            this->menuIcon=menuIcon;
         }
 
     QString menuEntryPoint;
     QString menuEntryActionName;
+    QString menuIcon;
 };
 
 class PluginCapabilities {

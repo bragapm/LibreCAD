@@ -704,7 +704,13 @@ void QC_ApplicationWindow::loadPlugins() {
                     loadedPluginFileNames.push_back(fileName);
                     PluginCapabilities pluginCapabilities = pluginInterface->getCapabilities();
                     for (const PluginMenuLocation& loc : pluginCapabilities.menuEntryPoints) {
-                        QAction* actpl = new QAction(loc.menuEntryActionName, plugin);
+                        QString iconLoc = loc.menuIcon;
+                        QAction* actpl;
+                        if (!iconLoc.isEmpty()) {
+                            actpl = new QAction(QIcon(loc.menuIcon), loc.menuEntryActionName, plugin);
+                        } else {
+                            actpl = new QAction(loc.menuEntryActionName, plugin);
+                        }
                         actpl->setData(loc.menuEntryActionName);
                         connect(actpl, &QAction::triggered, this, &QC_ApplicationWindow::execPlug);
                         connect(this, &QC_ApplicationWindow::windowsChanged, actpl, &QAction::setEnabled);
@@ -725,7 +731,7 @@ void QC_ApplicationWindow::loadPlugins() {
                             if (!currentMenu) {
                                 if (!parentMenu) {
                                     currentMenu = menuBar()->addMenu(menuName);
-                                    qDebug() << "Menu not found, creating new menus for path:" << loc.menuEntryPoint;
+                                    // qDebug() << "Menu not found, creating new menus for path:" << loc.menuEntryPoint;
                                 } else {
                                     currentMenu = parentMenu->addMenu(menuName);
                                 }
