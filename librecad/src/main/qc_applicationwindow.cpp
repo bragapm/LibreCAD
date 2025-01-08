@@ -704,6 +704,15 @@ void QC_ApplicationWindow::loadPlugins() {
                     loadedPluginFileNames.push_back(fileName);
                     PluginCapabilities pluginCapabilities = pluginInterface->getCapabilities();
                     for (const PluginMenuLocation& loc : pluginCapabilities.menuEntryPoints) {
+
+                        if (loc.menuEntryActionName.isEmpty()) {
+                            QMenu* menu = findMenu(loc.menuEntryPoint, menuBar()->children(), "");
+                            if (menu) {
+                                menu->addSeparator();
+                            }
+                            continue;
+                        }
+
                         QString iconLoc = loc.menuIcon;
                         QAction* actpl;
                         if (!iconLoc.isEmpty()) {
