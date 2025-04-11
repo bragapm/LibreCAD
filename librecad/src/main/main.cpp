@@ -88,7 +88,9 @@ int main(int argc, char** argv)
 
     LC_Application app(argc, argv);
     QCoreApplication::setOrganizationName("LibreCAD");
-    QCoreApplication::setApplicationName("LibreCAD");
+    //QCoreApplication::setApplicationName("LibreCAD");
+    //Mengubah application name
+    QCoreApplication::setApplicationName("Tataletak - LibreCAD");
     QCoreApplication::setApplicationVersion(XSTR(LC_VERSION));
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 7, 0))
