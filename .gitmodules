@@ -1,6 +1,6 @@
 [submodule "plugins/libregeokkp"]
 	path = plugins/libregeokkp
 	url = git@github.com:bragapm/librecad_geokkp.git
-[submodule "plugins/geokkp"]
-	path = plugins/geokkp
-	url = git@github.com:bragapm/librecad_geokkp.git
+[submodule "plugins/plugins/geokkp"]
+	path = plugins/plugins/geokkp
+	url = https://github.com/bragapm/librecad_geokkp.git
