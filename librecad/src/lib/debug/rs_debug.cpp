@@ -31,6 +31,8 @@
 #include <QDateTime>
 #include <QString>
 
+#include <iso646.h>
+
 #include "rs_debug.h"
 
 void debugHeader(char const* file, char const* func, int line)

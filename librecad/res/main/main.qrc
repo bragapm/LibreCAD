@@ -11,6 +11,7 @@
         <file>manual.png</file>
         <file>splash_librecad.png</file>
         <file>donate.png</file>
-        <file>tl.png</file>
+        <file>tataletak.png</file>
+        <file>splash_tataletak.png</file>
     </qresource>
 </RCC>

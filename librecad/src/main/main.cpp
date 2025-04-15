@@ -250,7 +250,8 @@ int main(int argc, char** argv)
 
     if (show_splash)
     {
-        QPixmap pixmap(":/main/splash_librecad.png");
+        //QPixmap pixmap(":/main/splash_librecad.png");
+        QPixmap pixmap(":/main/splash_tataletak.png");
         splash->setPixmap(pixmap);
         splash->setAttribute(Qt::WA_DeleteOnClose);
         splash->show();

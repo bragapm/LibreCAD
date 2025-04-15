@@ -30,6 +30,8 @@
 #include <QHash>
 #include <QVariant>
 #include<vector>
+#include <optional>
+
 //#include <QColor>
 class QString;
 
