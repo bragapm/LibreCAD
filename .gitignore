@@ -105,3 +105,4 @@ core.*
 *.vcxproj
 *.vcxproj.filters
 *.sln
+/build

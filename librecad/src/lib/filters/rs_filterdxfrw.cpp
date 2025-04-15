@@ -57,6 +57,8 @@
 #include "dxf_format.h"
 #include "lc_defaults.h"
 
+#include <iso646.h>
+
 #ifdef DWGSUPPORT
 #include "libdwgr.h"
 #include "rs_debug.h"

@@ -105,7 +105,7 @@
 #ifndef QC_APP_ICON
 //# define QC_APP_ICON ":/main/librecad.png"
 //Mengubah logo LibreCAD menjadi logo Tataletak
-# define QC_APP_ICON ":/main/tl.png"
+# define QC_APP_ICON ":/main/tataletak.png"
 #endif
 #ifndef QC_ABOUT_ICON
 # define QC_ABOUT_ICON ":/main/intro_librecad.png"
