@@ -88,7 +88,9 @@ int main(int argc, char** argv)
 
     LC_Application app(argc, argv);
     QCoreApplication::setOrganizationName("LibreCAD");
-    QCoreApplication::setApplicationName("LibreCAD");
+    //QCoreApplication::setApplicationName("LibreCAD");
+    //Mengubah application name
+    QCoreApplication::setApplicationName("Tataletak - LibreCAD");
     QCoreApplication::setApplicationVersion(XSTR(LC_VERSION));
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 7, 0))
@@ -248,7 +250,8 @@ int main(int argc, char** argv)
 
     if (show_splash)
     {
-        QPixmap pixmap(":/main/splash_librecad.png");
+        //QPixmap pixmap(":/main/splash_librecad.png");
+        QPixmap pixmap(":/main/splash_tataletak.png");
         splash->setPixmap(pixmap);
         splash->setAttribute(Qt::WA_DeleteOnClose);
         splash->show();

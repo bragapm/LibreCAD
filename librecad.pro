@@ -1,7 +1,8 @@
 TEMPLATE = subdirs
 TARGET = librecad
-CONFIG += ordered \
-          rtti
+CONFIG += ordered
+CONFIG += c++17
+CONFIG += rtti
 SUBDIRS     = \
     libraries \
     librecad \
