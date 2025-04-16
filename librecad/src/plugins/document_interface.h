@@ -30,6 +30,7 @@
 #include <QHash>
 #include <QVariant>
 #include<vector>
+#include <optional>
 //#include <QColor>
 class QString;
 
@@ -403,6 +404,10 @@ public:
     virtual void addImage(int handle, QPointF *start, QPointF *uvr, QPointF *vvr,
                   int w, int h, QString name, int br, int con, int fade) = 0;
 
+    virtual void addDimAligned(QPointF defPt, QPointF textPt, QString text, QString textStyle, double textAngle,
+                               QPointF d1, QPointF d2) = 0;
+    virtual void addDimAngular(QPointF defPt, QPointF textPt, QString text, QString textStyle, double textAngle,
+                               QPointF d1, QPointF d2, QPointF d3, QPointF d4) = 0;
     //! Add insert entity to current document.
     /*! Add a block insert entity to current document with current attributes.
     *  \param name name of block to insert.
