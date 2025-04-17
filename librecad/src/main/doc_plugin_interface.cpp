@@ -46,6 +46,8 @@
 #include "rs_polyline.h"
 #include "rs_ellipse.h"
 #include "rs_polyline.h"
+#include "rs_dimangular.h"
+#include "rs_dimaligned.h"
 #include "lc_splinepoints.h"
 #include "lc_undosection.h"
 #include "intern/qc_actiongetpoint.h"
@@ -201,10 +203,10 @@ Plugin_Entity::Plugin_Entity(RS_EntityContainer* parent, enum DPI::ETYPE type){
         break;
     case DPI::DIMLEADER:
         entity = new RS_Leader();
-        break;
+        break;*/
     case DPI::DIMALIGNED:
-        entity = new RS_DimAligned();
-        break;
+        entity = new RS_DimAligned(parent, RS_DimensionData{} ,RS_DimAlignedData{});
+        break;/*
     case DPI::DIMLINEAR:
         entity = new RS_DimLinear();
         break;
@@ -213,10 +215,10 @@ Plugin_Entity::Plugin_Entity(RS_EntityContainer* parent, enum DPI::ETYPE type){
         break;
     case DPI::DIMDIAMETRIC:
         entity = new RS_DimDiametric();
-        break;
-    case DPI::DIMANGULAR:
-        entity = new RS_DimAngular();
         break;*/
+    case DPI::DIMANGULAR:
+        entity = new RS_DimAngular(parent, RS_DimensionData{}, RS_DimAngularData{});
+        break;
     default:
         break;
     }
@@ -388,9 +390,20 @@ void Plugin_Entity::getData(QHash<int, QVariant> *data){
     case RS2::EntityVertex:
         data->insert(DPI::ETYPE, DPI::UNKNOWN);
         break;
-    case RS2::EntityDimAligned:
+    case RS2::EntityDimAligned:{
         data->insert(DPI::ETYPE, DPI::DIMALIGNED);
-        break;
+        RS_DimensionData d = static_cast<RS_Dimension*>(entity)->getData();
+        data->insert(DPI::STARTX, d.definitionPoint.x); data->insert(DPI::STARTY, d.definitionPoint.y);
+        data->insert(DPI::ENDX, d.middleOfText.x); data->insert(DPI::ENDY, d.middleOfText.y);
+        data->insert(DPI::TEXTCONTENT, d.text);
+        data->insert(DPI::TXTSTYLE, d.style);
+        data->insert(DPI::STARTANGLE, d.angle);
+
+        auto e = static_cast<RS_DimAligned*>(entity);
+        RS_DimAlignedData ed = e->getEData();
+        data->insert(DPI::VVECTORX, ed.extensionPoint1.x); data->insert(DPI::VVECTORY, ed.extensionPoint1.y);
+        data->insert(DPI::SIZEU, ed.extensionPoint2.x); data->insert(DPI::SIZEV, ed.extensionPoint2.y);
+        break;}
     case RS2::EntityDimLinear:
         data->insert(DPI::ETYPE, DPI::DIMLINEAR);
         break;
@@ -400,9 +413,26 @@ void Plugin_Entity::getData(QHash<int, QVariant> *data){
     case RS2::EntityDimDiametric:
         data->insert(DPI::ETYPE, DPI::DIMDIAMETRIC);
         break;
-    case RS2::EntityDimAngular:
+    case RS2::EntityDimAngular:{
         data->insert(DPI::ETYPE, DPI::DIMANGULAR);
-        break;
+        RS_DimensionData d = static_cast<RS_Dimension*>(entity)->getData();
+        data->insert(DPI::STARTX, d.definitionPoint.x); data->insert(DPI::STARTY, d.definitionPoint.y);
+        data->insert(DPI::ENDX, d.middleOfText.x); data->insert(DPI::ENDY, d.middleOfText.y);
+        data->insert(DPI::TEXTCONTENT, d.text);
+        data->insert(DPI::TXTSTYLE, d.style);
+        data->insert(DPI::STARTANGLE, d.angle);
+
+        auto e = static_cast<RS_DimAngular*>(entity);
+        RS_DimAngularData ed = e->getEData();
+        data->insert(DPI::VVECTORX, ed.definitionPoint1.x); data->insert(DPI::VVECTORY, ed.definitionPoint1.y);
+        data->insert(DPI::SIZEU, ed.definitionPoint2.x); data->insert(DPI::SIZEV, ed.definitionPoint2.y);
+        data->insert(DPI::XSCALE, ed.definitionPoint3.x); data->insert(DPI::YSCALE, ed.definitionPoint3.y);
+        data->insert(DPI::COLSPACE, ed.definitionPoint4.x); data->insert(DPI::ROWSPACE, ed.definitionPoint4.y);
+
+        //data->insert(DPI::TEXTCONTENT, e->getMeasuredLabel());
+        //data->insert(DPI::ENDX, e->getCenter().x); data->insert(DPI::ENDY, e->getCenter().y);
+
+        break;}
     case RS2::EntityDimLeader:
         data->insert(DPI::ETYPE, DPI::DIMLEADER);
         break;
@@ -1097,6 +1127,64 @@ void Doc_plugin_interface::addImage(int handle, QPointF *start, QPointF *uvr, QP
         undo.addUndoable(image);
     } else
 		RS_DEBUG->print("Doc_plugin_interface::addImage: currentContainer is nullptr");
+}
+
+void Doc_plugin_interface::addDimAligned(   QPointF defPt, QPointF textPt, QString text, QString textStyle, double textAngle,
+                                            QPointF d1, QPointF d2){
+    if(doc){
+        RS_Vector ed1(d1.x(), d1.y());
+        RS_Vector ed2(d2.x(), d2.y());
+        RS_DimAlignedData ed{ed1, ed2};
+
+        RS_DimensionData d;
+        d.definitionPoint = RS_Vector(defPt.x(), defPt.y());
+        d.middleOfText = RS_Vector(textPt.x(), textPt.y());
+        d.text = text;
+        d.style = textStyle;
+        d.angle = textAngle;
+        d.lineSpacingFactor = 1;
+        d.lineSpacingStyle = RS_MTextData::Exact;
+        d.halign = RS_MTextData::HACenter;
+        d.valign = RS_MTextData::VAMiddle;
+
+        RS_DimAligned* dimAligned = new RS_DimAligned(doc, d, ed);
+        dimAligned->update();
+
+        doc->addEntity(dimAligned);
+        LC_UndoSection undo(doc);
+        undo.addUndoable(dimAligned);
+    } else
+        RS_DEBUG->print("Doc_plugin_interface::addDimAligned: currentContainer is nullptr");
+}
+
+void Doc_plugin_interface::addDimAngular(   QPointF defPt, QPointF textPt, QString text, QString textStyle, double textAngle,
+                                            QPointF d1, QPointF d2, QPointF d3, QPointF d4){
+    if(doc){
+        RS_Vector ed1(d1.x(), d1.y());
+        RS_Vector ed2(d2.x(), d2.y());
+        RS_Vector ed3(d3.x(), d3.y());
+        RS_Vector ed4(d4.x(), d4.y());
+        RS_DimAngularData ed{ed1, ed2, ed3, ed4};
+
+        RS_DimensionData d;
+        d.definitionPoint = RS_Vector(defPt.x(), defPt.y());
+        d.middleOfText = RS_Vector(textPt.x(), textPt.y());
+        d.text = text;
+        d.style = textStyle;
+        d.angle = textAngle;
+        d.lineSpacingFactor = 1;
+        d.lineSpacingStyle = RS_MTextData::Exact;
+        d.halign = RS_MTextData::HACenter;
+        d.valign = RS_MTextData::VAMiddle;
+
+        RS_DimAngular* dimAngular = new RS_DimAngular(doc, d, ed);
+        dimAngular->update();
+
+        doc->addEntity(dimAngular);
+        LC_UndoSection undo(doc);
+        undo.addUndoable(dimAngular);
+    } else
+        RS_DEBUG->print("Doc_plugin_interface::addDimAngular: currentContainer is nullptr");
 }
 
 void Doc_plugin_interface::addInsert(QString name, QPointF ins, QPointF scale, qreal rot){
