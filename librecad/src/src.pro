@@ -77,6 +77,7 @@ win32 {
     }
 
     RC_FILE = ../res/main/librecad.rc
+    LIBS += $$PWD/../res/main/librecad_res.o
     contains(DISABLE_POSTSCRIPT, false) {
         QMAKE_POST_LINK = "$$_PRO_FILE_PWD_/../../scripts/postprocess-win.bat" $$LC_VERSION
     }
