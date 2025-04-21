@@ -102,6 +102,10 @@ public:
     virtual void addSplinePoints(std::vector<QPointF> const& points, bool closed=false) override;
     void addImage(int handle, QPointF *start, QPointF *uvr, QPointF *vvr,
                   int w, int h, QString name, int br, int con, int fade) override;
+    void addDimAligned(QPointF defPt, QPointF textPt, QString text, QString textStyle, double textAngle,
+                       QPointF d1, QPointF d2) override;
+    void addDimAngular(QPointF defPt, QPointF textPt, QString text, QString textStyle, double textAngle,
+                       QPointF d1, QPointF d2, QPointF d3, QPointF d4) override;
     void addInsert(QString name, QPointF ins, QPointF scale, qreal rot) override;
     QString addBlockfromFromdisk(QString fullName) override;
     void addEntity(Plug_Entity *handle) override;

@@ -106,3 +106,7 @@ core.*
 *.vcxproj.filters
 *.sln
 /build
+
+!librecad/res/main/librecad.rc
+!librecad/res/main/tataletak.ico
+!librecad/res/main/librecad_res.o

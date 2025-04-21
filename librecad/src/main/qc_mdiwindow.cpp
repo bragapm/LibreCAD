@@ -132,7 +132,7 @@ QG_GraphicView* QC_MDIWindow::getGraphicView() const
 
 /** @return Pointer to document */
 RS_Document* QC_MDIWindow::getDocument() const{
-	return document;
+        return document;
 }
 
 unsigned QC_MDIWindow::getId() const{
