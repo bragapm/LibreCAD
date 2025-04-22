@@ -76,8 +76,9 @@ win32 {
         LC_VERSION = $$system( \"$$MSYSGIT_DIR/git.exe\" describe || echo "$${LC_VERSION}")
     }
 
-    RC_FILE = ../res/main/librecad.rc
-    LIBS += $$PWD/../res/main/librecad_res.o
+    #RC_FILE = ../res/main/librecad.rc
+    RC_FILE = $$PWD/../res/main/librecad.rc
+    #LIBS += $$PWD/../res/main/librecad_res.o
     contains(DISABLE_POSTSCRIPT, false) {
         QMAKE_POST_LINK = "$$_PRO_FILE_PWD_/../../scripts/postprocess-win.bat" $$LC_VERSION
     }
