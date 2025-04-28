@@ -288,7 +288,6 @@ int main(int argc, char** argv)
     appWin.setWindowTitle(app.applicationName());
     // appWin.setWindowTitle(app.applicationName() + " - v" + app.applicationVersion());
 
-
     RS_DEBUG->print("main: show main window");
 
     settings.beginGroup("Defaults");
