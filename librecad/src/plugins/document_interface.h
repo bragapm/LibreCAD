@@ -31,6 +31,7 @@
 #include <QVariant>
 #include<vector>
 #include <optional>
+#include <QImage>
 //#include <QColor>
 class QString;
 
@@ -554,6 +555,8 @@ public:
     * \return a string with the converted number.
     */
     virtual QString realToStr(const qreal num, const int units = 0, const int prec = 0) = 0;
+
+    virtual QImage getRaster(const QPointF bottomLeft, const QPointF topRight, int imageX, int imageY, int borderX=0, int borderY=0, bool bgWhite = true, bool monochrome = true) = 0;
 
     virtual void toggleLayer(QString name) = 0;
     virtual void lockLayer(QString name) = 0;

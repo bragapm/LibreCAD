@@ -152,6 +152,7 @@ public:
     void deselectEntities(const QList<qulonglong>* idList) override;    
     bool getSelectedEntities(QList<Plug_Entity *> *sel, bool visible = false) override;
     Plug_Entity * getEntity(const qulonglong eid) override;
+    QImage getRaster(const QPointF bottomLeft, const QPointF topRight, int imageX, int imageY, int borderX=0, int borderY=0, bool bgWhite = true, bool monochrome = true) override;
     void toggleLayer(QString name) override;
     void lockLayer(QString name) override;
     void printLayer(QString name) override;

@@ -48,6 +48,8 @@
 #include "rs_polyline.h"
 #include "rs_dimangular.h"
 #include "rs_dimaligned.h"
+#include "rs_painterqt.h"
+#include "rs_staticgraphicview.h"
 #include "lc_splinepoints.h"
 #include "lc_undosection.h"
 #include "intern/qc_actiongetpoint.h"
@@ -1695,6 +1697,42 @@ Plug_Entity *Doc_plugin_interface::getEntity(const qulonglong id){
         }
     }
     return nullptr;
+}
+
+QImage Doc_plugin_interface::getRaster(const QPointF bottomLeft, const QPointF topRight, int imageX, int imageY, int borderX, int borderY, bool bgWhite, bool monochrome)
+{
+    QImage img{};
+    //if (main_window==nullptr) return img;
+    //if (docGr==nullptr) return img;
+    QPixmap* picture = new QPixmap(imageX, imageY);
+    QPaintDevice* buffer = picture;
+
+    // set painter with buffer
+    RS_PainterQt painter(buffer);
+
+    if (bgWhite) painter.setBackground(Qt::white);
+    else painter.setBackground(Qt::black);
+    if (monochrome) painter.setDrawingMode(RS2::ModeWB);
+
+    painter.eraseRect(0,0, imageX, imageY);
+
+    QSize borders(borderX, borderY);
+    RS_StaticGraphicView gv(imageX, imageY, &painter, &borders);
+    if (bgWhite) gv.setBackground(Qt::white);
+    else gv.setBackground(Qt::black);
+
+    gv.setContainer(docGr);
+    gv.zoomWindow(RS_Vector(bottomLeft.x(), bottomLeft.y(), 0.), RS_Vector(topRight.x(), topRight.y(), 0.));
+    gv.drawEntity(&painter, gv.getContainer());
+
+    img = picture->toImage();
+
+    // GraphicView deletes painter
+    painter.end();
+    // delete vars
+    delete picture;
+
+    return img;
 }
 
 void Doc_plugin_interface::toggleLayer(QString name){
