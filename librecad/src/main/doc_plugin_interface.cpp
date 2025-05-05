@@ -1746,3 +1746,16 @@ void Doc_plugin_interface::unfreezeAllLayer(){
     RS_LayerList* listLay = doc->getLayerList();
     listLay->freezeAll(false);
 }
+
+void Doc_plugin_interface::zoomToEntity(double centerX, double centerY, double width, double height) {
+    if (!gView) {
+        RS_DEBUG->print("GraphicView tidak tersedia!");
+        return;
+    }
+
+    RS_Vector p1(centerX - width / 2.0, centerY - height / 2.0);
+    RS_Vector p2(centerX + width / 2.0, centerY + height / 2.0);
+
+    gView->zoomWindow(p1, p2, true);
+    gView->redraw();
+}

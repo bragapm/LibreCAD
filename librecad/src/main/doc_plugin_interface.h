@@ -159,6 +159,7 @@ public:
     void unlockAllLayer() override;
     void freezeAllLayer() override;
     void unfreezeAllLayer() override;
+    void zoomToEntity(double centerX, double centerY, double width = 5.0, double height = 2.0) override;
 
 private:
     RS_Document *doc;
