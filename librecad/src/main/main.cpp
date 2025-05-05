@@ -286,6 +286,7 @@ int main(int argc, char** argv)
 #endif
     RS_DEBUG->print("main: setting caption");
     appWin.setWindowTitle(app.applicationName());
+    // appWin.setWindowTitle(app.applicationName() + " - v" + app.applicationVersion());
 
     RS_DEBUG->print("main: show main window");
 
