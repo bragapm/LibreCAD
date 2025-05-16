@@ -36,6 +36,7 @@
 class QGridLayout;
 class QLabel;
 class QMenu;
+class QC_PluginInterface;
 
 class QG_ScrollBar;
 
@@ -103,6 +104,10 @@ public:
     void destroyMenu(const QString& activator);
     void setMenu(const QString& activator, QMenu* menu);
 
+    void setLoadedPlugins(QList<QC_PluginInterface*> loadedPlugins){
+        plugins = loadedPlugins;
+    }
+
 protected:
 	void mousePressEvent(QMouseEvent* e) override;
 	void mouseDoubleClickEvent(QMouseEvent* e) override;
@@ -165,6 +170,7 @@ private:
     bool scrollbars{false};
     bool cursor_hiding{false};
 
+    QList<QC_PluginInterface*> plugins;
 
     // For auto panning by the cursor close to the view border
     void startAutoPanTimer(QMouseEvent *e);

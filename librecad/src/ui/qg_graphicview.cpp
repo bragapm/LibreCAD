@@ -34,8 +34,10 @@
 #include <QNativeGestureEvent>
 #include <QPoint>
 #include <QTimer>
+#include <QImage>
 
 #include "qg_graphicview.h"
+#include "qc_plugininterface.h"
 
 #include "qg_dialogfactory.h"
 #include "qg_scrollbar.h"
@@ -1085,16 +1087,31 @@ void QG_GraphicView::paintEvent(QPaintEvent *)
                             toGraph(getWidth(), getHeight()));
         // DRaw layer 2
         PixmapLayer2->fill(Qt::transparent);
+
         RS_PainterQt painter2(PixmapLayer2.get());
         if (antialiasing)
         {
             painter2.setRenderHint(QPainter::Antialiasing);
         }
+
+        QPointF bl{view_rect.lowerLeftCorner().x, view_rect.lowerLeftCorner().y};
+        QPointF tr{view_rect.upperRightCorner().x, view_rect.upperRightCorner().y};
+        for(auto plug : plugins){
+            QImage* bgImg = plug->render(bl.y(), bl.x(), tr.y(), tr.x(), getWidth(), getHeight(), 0);
+            if(bgImg) painter2.drawImage(0, 0, *bgImg);
+        }
+
         painter2.setDrawingMode(drawingMode);
         painter2.setDrawSelectedOnly(false);
         drawLayer2((RS_Painter*)&painter2);
         painter2.setDrawSelectedOnly(true);
         drawLayer2((RS_Painter*)&painter2);
+
+        for(auto plug : plugins){
+            QImage* bgImg = plug->render(bl.y(), bl.x(), tr.y(), tr.x(), getWidth(), getHeight(), 1);
+            if(bgImg) painter2.drawImage(0, 0, *bgImg);
+        }
+
         painter2.end();
     }
 

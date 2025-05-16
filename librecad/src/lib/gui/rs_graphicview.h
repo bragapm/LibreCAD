@@ -378,8 +378,6 @@ public:
     bool getLineWidthScaling() const {
         return scaleLineWidth;
     }
-
-
 protected:
 
     RS_EntityContainer* container = nullptr; // Holds a pointer to all the enties
@@ -410,7 +408,6 @@ protected:
 	bool deleteMode=false;
 
     LC_Rect view_rect;
-
 private:
 
 	bool zoomFrozen=false;

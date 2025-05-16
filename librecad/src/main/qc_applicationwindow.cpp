@@ -1567,6 +1567,7 @@ QC_MDIWindow* QC_ApplicationWindow::slotFileNew(RS_Document* doc) {
 
     QG_GraphicView* view = w->getGraphicView();
 
+    view->setLoadedPlugins(loadedPlugins);
     view->setAntialiasing(aa);
     view->setCursorHiding(cursor_hiding);
     view->device = settings.value("Hardware/Device", "Mouse").toString();
