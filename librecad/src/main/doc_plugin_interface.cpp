@@ -917,7 +917,7 @@ std::optional<qulonglong> Doc_plugin_interface::addMTextReturn(QString txt, QStr
         RS_MTextData::VAlign valign = static_cast <RS_MTextData::VAlign>(va);
         RS_MTextData::HAlign halign = static_cast <RS_MTextData::HAlign>(ha);
         RS_MTextData d(v1, height, width, valign, halign,
-                  RS_MTextData::ByStyle, RS_MTextData::Exact, 0.0,
+                  RS_MTextData::ByStyle, RS_MTextData::Exact, 1.0,
                   txt, sty, angle, RS2::Update);
         RS_MText* entity = new RS_MText(doc, d);
 
