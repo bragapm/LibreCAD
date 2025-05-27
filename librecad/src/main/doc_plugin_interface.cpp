@@ -1311,11 +1311,13 @@ QString Doc_plugin_interface::getCurrentLayer(){
     return docGr->getActiveLayer()->getName();
 }
 
-QStringList Doc_plugin_interface::getAllLayer(){
+QStringList Doc_plugin_interface::getAllLayer(bool visible){
     QStringList listName;
     RS_LayerList* listLay = doc->getLayerList();
     for (unsigned int i = 0; i < listLay->count(); ++i) {
-         listName << listLay->at(i)->getName();
+        auto lay = listLay->at(i);
+        if(visible && lay->isFrozen()) continue;
+        listName << lay->getName();
      }
     return listName;
 }

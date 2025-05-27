@@ -814,7 +814,7 @@ void QC_ApplicationWindow::execPlug() {
     QC_MDIWindow* w = getMDIWindow();
     RS_Document* currdoc = w->getDocument();
 //create document interface instance
-    Doc_plugin_interface* pligundoc = new Doc_plugin_interface(currdoc, w->getGraphicView(), this); //std::move
+    Doc_plugin_interface* pligundoc =  new Doc_plugin_interface(currdoc, w->getGraphicView(), this); //std::move
 //execute plugin
     LC_UndoSection undo(currdoc);
     plugin->execComm(pligundoc, this, action->data().toString());

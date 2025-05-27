@@ -115,7 +115,7 @@ public:
 
     void setLayer(QString name) override;
     QString getCurrentLayer() override;
-    QStringList getAllLayer() override;
+    QStringList getAllLayer(bool visible = false) override;
     QStringList getAllBlocks() override;
     bool deleteLayer(QString name) override;
 

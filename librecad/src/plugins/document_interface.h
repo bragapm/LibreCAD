@@ -462,7 +462,7 @@ public:
     /*! Gets the list of names of all layers in current document.
     *  \return A list with the name of all layers in document.
     */
-    virtual QStringList getAllLayer() = 0;
+    virtual QStringList getAllLayer(bool visible = false) = 0;
 
     //! Gets the blocks list in current document.
     /*! Gets the list of names of all blocks in current document.
