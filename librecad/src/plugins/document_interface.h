@@ -32,6 +32,7 @@
 #include<vector>
 #include <optional>
 #include <QImage>
+#include <tuple>
 //#include <QColor>
 class QString;
 
@@ -519,6 +520,7 @@ public:
     * \return false if fail, i.e. user cancel.
     */
     virtual bool getAllEntities(QList<Plug_Entity *> *sel, bool visible = false) = 0;
+    virtual bool getRendererEntitiesData(QList<std::tuple<Plug_Entity*, bool, QString, double, double, double, int>>* sel) = 0;
 
     virtual bool getVariableInt(const QString& key, int *num) = 0;
     virtual bool getVariableDouble(const QString& key, double *num) = 0;

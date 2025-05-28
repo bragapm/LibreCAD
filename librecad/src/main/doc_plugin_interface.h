@@ -128,7 +128,7 @@ public:
     Plug_Entity *getEnt(const QString& message) override;
     bool getSelect(QList<Plug_Entity *> *sel, const QString& message) override;
     bool getAllEntities(QList<Plug_Entity *> *sel, bool visible = false) override;
-
+    bool getRendererEntitiesData(QList<std::tuple<Plug_Entity*, bool, QString, double, double, double, int>>* sel) override;
     bool getVariableInt(const QString& key, int *num) override;
     bool getVariableDouble(const QString& key, double *num) override;
     bool addVariable(const QString& key, int value, int code=70) override;

@@ -1476,6 +1476,35 @@ bool Doc_plugin_interface::getAllEntities(QList<Plug_Entity *> *sel, bool visibl
     return status;
 }
 
+bool Doc_plugin_interface::getRendererEntitiesData(QList<std::tuple<Plug_Entity *, bool, QString, double, double, double, int> > *sel)
+{
+    for(RS_Entity* e : *doc){
+        if(e->rtti() != RS2::EntityText) continue;
+        bool layerVisible = !e->getLayer()->isFrozen(); //
+        bool isVisible = e->getFlag(RS2::FlagVisible);
+        bool isUndone = e->isUndone();
+        bool deleted = (!e->isVisible() && layerVisible) || isUndone;
+        if(deleted) continue;
+        QString layer = e->getLayer()->getName(); //
+
+        RS_TextData d = static_cast<RS_Text*>(e)->getData();
+        double x = d.insertionPoint.x; //
+        double y = d.insertionPoint.y; //
+        double a = d.angle; //
+        int id = d.text.toInt(); //
+        Plugin_Entity *pe = new Plugin_Entity(e, this); //
+        sel->append(std::make_tuple(
+            reinterpret_cast<Plug_Entity*>(pe),
+            layerVisible,
+            layer,
+            x,
+            y,
+            a,
+            id));
+    }
+    return true;
+}
+
 bool Doc_plugin_interface::getVariableInt(const QString& key, int *num){
     if( (*num = docGr->getVariableInt(key, 0)) )
         return true;
