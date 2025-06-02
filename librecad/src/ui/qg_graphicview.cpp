@@ -1096,12 +1096,13 @@ void QG_GraphicView::paintEvent(QPaintEvent *)
         }
 
         RS_Document* doc = dynamic_cast<RS_Document*>(container);
-        Doc_plugin_interface pluginDoc = Doc_plugin_interface(doc, this, this);
+        Doc_plugin_interface* pluginDoc = nullptr;
+        if(doc) pluginDoc = new Doc_plugin_interface(doc, this, this);
         QPointF bl{view_rect.lowerLeftCorner().x, view_rect.lowerLeftCorner().y};
         QPointF tr{view_rect.upperRightCorner().x, view_rect.upperRightCorner().y};
-        if(doc){ //background
+        if(pluginDoc){ //background
             for(auto plug : plugins){
-                QImage* bgImg = plug->render(&pluginDoc, bl.y(), bl.x(), tr.y(), tr.x(), getWidth(), getHeight(), 0);
+                QImage* bgImg = plug->render(pluginDoc, bl.y(), bl.x(), tr.y(), tr.x(), getWidth(), getHeight(), 0);
                 if(bgImg) painter2.drawImage(0, 0, *bgImg);
             }
         }
@@ -1112,12 +1113,13 @@ void QG_GraphicView::paintEvent(QPaintEvent *)
         painter2.setDrawSelectedOnly(true);
         drawLayer2((RS_Painter*)&painter2);
 
-        if(doc){ //foreground
+        if(pluginDoc){ //foreground
             for(auto plug : plugins){
-                QImage* bgImg = plug->render(&pluginDoc, bl.y(), bl.x(), tr.y(), tr.x(), getWidth(), getHeight(), 1);
+                QImage* bgImg = plug->render(pluginDoc, bl.y(), bl.x(), tr.y(), tr.x(), getWidth(), getHeight(), 1);
                 if(bgImg) painter2.drawImage(0, 0, *bgImg);
             }
         }
+        delete(pluginDoc);
 
 
         painter2.end();
