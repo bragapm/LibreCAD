@@ -29,6 +29,9 @@
 #include <QPointF>
 #include <QVariant>
 #include<vector>
+#include <optional>
+#include <QImage>
+#include <tuple>
 //#include <QColor>
 class QString;
 
@@ -284,6 +287,8 @@ public:
     *  \param color color as integer to convert as string.
     */
     virtual QString intColor2str(int color) = 0;
+
+    virtual bool isSelected() = 0;
 };
 
 //! Interface for communicate plugins.
@@ -312,6 +317,7 @@ public:
     *  \param start point coordinate.
     */
     virtual void addPoint(QPointF *start) = 0;
+    virtual std::optional<qulonglong> addPointReturn(QPointF *start) = 0;
 
     //! Add line entity to current document.
     /*! Add line entity to current document with current attributes.
@@ -319,6 +325,22 @@ public:
     *  \param end end point coordinate.
     */
     virtual void addLine(QPointF *start, QPointF *end) = 0;
+    virtual std::optional<qulonglong> addLineReturn(QPointF *start, QPointF *end) = 0;
+
+    //! Add MText entity to current document.
+    /*! Add MText entity to current document with current attributes.
+    *  \param txt a QString with text content
+    *  \param sty a QString with text style name
+    *  \param start insertion point coordinate
+    *  \param height height of text
+    *  \param angle rotation angle of text
+    *  \param ha horizontal alignment of text
+    *  \param va vertical alignment of text
+    */
+    virtual void addMText(QString txt, QString sty, QPointF *start, double height,
+                double angle, DPI::HAlign ha,  DPI::VAlign va) = 0;
+    virtual std::optional<qulonglong> addMTextReturn(QString txt, QString sty, QPointF *start, double height,
+                double angle, DPI::HAlign ha,  DPI::VAlign va) = 0;
 
     //! Add text entity to current document.
     /*! Add text entity to current document with current attributes
@@ -331,6 +353,8 @@ public:
     *  \param va vertical alignment of text
     */
     virtual void addText(QString txt, QString sty, QPointF *start, double height,
+                double angle, DPI::HAlign ha,  DPI::VAlign va) = 0;
+    virtual std::optional<qulonglong> addTextReturn(QString txt, QString sty, QPointF *start, double height,
                 double angle, DPI::HAlign ha,  DPI::VAlign va) = 0;
 
     //! Add circle entity to current document.
@@ -360,6 +384,7 @@ public:
     *  \param closed whether line is closed
     */
     virtual void addLines(std::vector<QPointF> const& points, bool closed=false) = 0;
+    virtual std::vector<qulonglong> addLinesReturn(std::vector<QPointF> const& points, bool closed=false) = 0;
 
     //! Add polyline entity to current document.
     /*! Add polyline entity to current document with current attributes.
@@ -367,6 +392,8 @@ public:
     *  \param closed whether polyline is closed
     */
     virtual void addPolyline(std::vector<Plug_VertexData> const& points, bool closed=false) = 0;
+    virtual std::optional<qulonglong> addPolylineReturn(std::vector<Plug_VertexData> const& points, bool closed=false) = 0;
+
     //! Add LC_SplinePoints entity to current document.
     /*! Add splinepoints entity to current document with current attributes.
     *  \param points interpolation points
@@ -382,6 +409,10 @@ public:
     virtual void addImage(int handle, QPointF *start, QPointF *uvr, QPointF *vvr,
                   int w, int h, QString name, int br, int con, int fade) = 0;
 
+    virtual void addDimAligned(QPointF defPt, QPointF textPt, QString text, QString textStyle, double textAngle,
+                               QPointF d1, QPointF d2) = 0;
+    virtual void addDimAngular(QPointF defPt, QPointF textPt, QString text, QString textStyle, double textAngle,
+                               QPointF d1, QPointF d2, QPointF d3, QPointF d4) = 0;
     //! Add insert entity to current document.
     /*! Add a block insert entity to current document with current attributes.
     *  \param name name of block to insert.
@@ -435,7 +466,7 @@ public:
     /*! Gets the list of names of all layers in current document.
     *  \return A list with the name of all layers in document.
     */
-    virtual QStringList getAllLayer() = 0;
+    virtual QStringList getAllLayer(bool visible = false) = 0;
 
     //! Gets the blocks list in current document.
     /*! Gets the list of names of all blocks in current document.
@@ -503,6 +534,7 @@ public:
     * \return false if fail, i.e. user cancel.
     */
     virtual bool getAllEntities(QList<Plug_Entity *> *sel, bool visible = false) = 0;
+    virtual bool getRendererEntitiesData(QList<std::tuple<Plug_Entity*, bool, QString, double, double, double, int>>* sel) = 0;
 
     virtual void unselectEntities() = 0;
 
@@ -515,6 +547,21 @@ public:
     virtual bool getReal(qreal *num, const QString& message = "", const QString& title = "") = 0;
     virtual bool getString(QString *txt, const QString& message = "", const QString& title = "") = 0;
 
+    virtual bool selectEntity(const qulonglong &eid) = 0;
+    virtual bool selectByWindow(QList<Plug_Entity *> *sel, const QString& message) = 0;
+    virtual void selectEntities(const QList<qulonglong>* idList) = 0;
+    virtual void deselectEntity(const qulonglong &eid) = 0;
+    virtual void deselectEntities(const QList<qulonglong>* idList) = 0;
+    virtual QVariantList getExtent() = 0;
+    virtual bool getSelectedEntities(QList<Plug_Entity *> *sel, bool visible = false) = 0;
+
+    //! Get a entity by id.
+    /*! You must delete the Plug_Entity when no more needed.
+    * \param eid a qulonglong with the entity id.
+    * \return a Plug_Entity handle to the entity or nullptr.
+    */
+    virtual Plug_Entity * getEntity(const qulonglong eid) = 0;
+
     //! Convert real to string.
     /*! Convert a real number to string using indicated units format & precision. If omitted
     * are the current drawing units & precision are used.
@@ -526,6 +573,18 @@ public:
     * \return a string with the converted number.
     */
     virtual QString realToStr(const qreal num, const int units = 0, const int prec = 0) = 0;
+
+    virtual QImage getRaster(const QPointF bottomLeft, const QPointF topRight, int imageX, int imageY, int borderX=0, int borderY=0, bool bgWhite = true, bool monochrome = true) = 0;
+
+    virtual void toggleLayer(QString name) = 0;
+    virtual void lockLayer(QString name) = 0;
+    virtual void printLayer(QString name) = 0;
+    virtual void lockAllLayer() = 0;
+    virtual void unlockAllLayer() = 0;
+    virtual void freezeAllLayer() = 0;
+    virtual void unfreezeAllLayer() = 0;
+
+    virtual void zoomToEntity(double centerX, double centerY, double width = 5.0, double height = 2.0) {}
 };
 
 

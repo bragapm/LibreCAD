@@ -21,7 +21,7 @@
   !define MUI_ICON "..\..\librecad\res\images\librecad.ico"
   !define MUI_UNICON "..\..\desktop\res_old\main\uninstall.ico"
 
-  !define UNINSTKEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}"
+  !define UNINSTKEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\LibreCAD"
 
   ; GPL is not an EULA, no need to agree to it.
   !define MUI_LICENSEPAGE_BUTTON $(^NextBtn)
@@ -31,14 +31,19 @@
 ;General
 
   ;Name and file
+<<<<<<< HEAD
   Name "${APPNAME}"
   OutFile "../../${InstallerName}.exe"
+=======
+  Name "LibreCAD"
+  OutFile "../../generated/LibreCAD-Installer.exe"
+>>>>>>> origin/LibreCAD_2.2.0.2_Modified
 
   ;Default installation folder
-  InstallDir "${ProgramsFolder}\LibreCAD"
+  InstallDir "$PROGRAMFILES\LibreCAD"
 
   ;Get installation folder from registry if available
-  InstallDirRegKey HKCU "Software\${AppKeyName}" ""
+  InstallDirRegKey HKCU "Software\LibreCAD" ""
 
   ;Request application privileges for Windows Vista
   RequestExecutionLevel admin
@@ -143,7 +148,7 @@ Section "Install Section" SecInstall
   createShortCut "$SMPROGRAMS\LibreCAD\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
 
   ; create add/remove software entries
-  WriteRegStr HKLM "${UNINSTKEY}" "DisplayName" "${APPNAME}"
+  WriteRegStr HKLM "${UNINSTKEY}" "DisplayName" "LibreCAD"
   WriteRegStr HKLM "${UNINSTKEY}" "DisplayIcon" "$INSTDIR\LibreCAD.exe"
   WriteRegStr HKLM "${UNINSTKEY}" "DisplayVersion" "${SCMREVISION}"
   WriteRegStr HKLM "${UNINSTKEY}" "Publisher" "LibreCAD Team"
@@ -184,7 +189,7 @@ Section "Uninstall"
 
   RMDir "$INSTDIR"
 
-  DeleteRegKey /ifempty HKCU "Software\${AppKeyName}"
+  DeleteRegKey /ifempty HKCU "Software\LibreCAD"
   DeleteRegKey HKLM "${UNINSTKEY}"
 
 SectionEnd

@@ -1,0 +1,9 @@
+# filenames, anywhere
+Makefile.in
+Makefile
+.deps
+.libs
+geokkp/*
+clean
+custom.*
+Unnamed

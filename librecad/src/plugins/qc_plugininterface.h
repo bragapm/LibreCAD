@@ -30,20 +30,22 @@
 #include <QtPlugin>
 
 class Document_Interface;
-
+class QImage;
 /**
   * Menu locations for Plugins
   */
 class PluginMenuLocation
 {
     public:
-        PluginMenuLocation(QString menuEntryPoint, QString menuEntryActionName) {
+        PluginMenuLocation(QString menuEntryPoint, QString menuEntryActionName, QString menuIcon = "") {
             this->menuEntryActionName=menuEntryActionName;
             this->menuEntryPoint=menuEntryPoint;
+            this->menuIcon=menuIcon;
         }
 
     QString menuEntryPoint;
     QString menuEntryActionName;
+    QString menuIcon;
 };
 
 class PluginCapabilities {
@@ -67,6 +69,7 @@ public:
     virtual QString name() const = 0;
     virtual PluginCapabilities getCapabilities() const = 0;
     virtual void execComm(Document_Interface *doc, QWidget *parent, QString cmd) = 0;
+    virtual QImage* render(Document_Interface* doc, double b, double l, double t, double r, int x, int y, int flag) { return nullptr; }
 //    virtual void paintEvent(Document_Interface *doc) = 0;
 
 };

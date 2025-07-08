@@ -34,7 +34,7 @@ class LC_List : public QObject, QC_PluginInterface
                           QWidget *parent, QString cmd) Q_DECL_OVERRIDE;
 
 private:
-    QString getStrData(Plug_Entity *ent);
+    QString getStrData(Plug_Entity *ent, QList<QList<QList<double>>>& polylineArrays);
     double polylineRadius( const Plug_VertexData& ptA, const Plug_VertexData& ptB);
     Document_Interface *d;
 };

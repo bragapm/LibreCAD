@@ -95,7 +95,7 @@
 #include "twostackedlabels.h"
 
 #ifndef QC_APP_ICON
-# define QC_APP_ICON ":/images/librecad.png"
+# define QC_APP_ICON ":/images/tataletak.png"
 #endif
 #ifndef QC_ABOUT_ICON
 # define QC_ABOUT_ICON ":/images/intro_librecad.png"

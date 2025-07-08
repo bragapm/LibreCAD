@@ -11,8 +11,6 @@ DEFINES += DWGSUPPORT
 DEFINES -= JWW_WRITE_SUPPORT
 
 LC_VERSION="2.2.2.6-alpha"
-LC_PRERELEASE = "true";
-
 VERSION=$${LC_VERSION}
 
 # Store intermedia stuff somewhere else
@@ -85,8 +83,9 @@ win32 {
         LC_VERSION = $$system( \"$$MSYSGIT_DIR/git.exe\" describe || echo "$${LC_VERSION}")
     }
 
-    RC_FILE = ../res/images/librecad.rc
-    RC_ICONS = ../res/images/librecad.ico
+    #RC_FILE = ../res/main/librecad.rc
+    RC_FILE = $$PWD/../res/main/librecad.rc
+    #LIBS += $$PWD/../res/main/librecad_res.o
     contains(DISABLE_POSTSCRIPT, false) {
         QMAKE_POST_LINK = "$$_PRO_FILE_PWD_/../../scripts/postprocess-win.bat" $$LC_VERSION
     }
@@ -514,6 +513,7 @@ HEADERS += \
     lib/math/rs_math.h \
     lib/math/lc_quadratic.h \
     main/console_dxf2png.h \
+    plugins/intern/qc_selectwindow.h \
     test/lc_simpletests.h \
     lib/generators/makercamsvg/lc_makercamsvg.h \
     lib/generators/makercamsvg/lc_xmlwriterinterface.h \
@@ -755,6 +755,7 @@ SOURCES += \
     lib/engine/rs_color.cpp \
     lib/engine/rs_pen.cpp \
     main/console_dxf2png.cpp \
+    plugins/intern/qc_selectwindow.cpp \
     test/lc_simpletests.cpp \
     lib/generators/makercamsvg/lc_xmlwriterqxmlstreamwriter.cpp \
     lib/generators/makercamsvg/lc_makercamsvg.cpp \

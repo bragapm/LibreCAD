@@ -41,6 +41,7 @@ unix/
 *.AppImage
 
 # Win/MSVC generated files and binaries
+build/
 windows/
 release/
 debug/
@@ -107,8 +108,16 @@ core.*
 *.vcxproj
 *.vcxproj.filters
 *.sln
+<<<<<<< HEAD
 /cmake-build-debug/
 
 # pixi environments
 .pixi
 *.egg-info
+=======
+/build
+
+!librecad/res/main/librecad.rc
+!librecad/res/main/tataletak.ico
+!librecad/res/main/librecad_res.o
+>>>>>>> origin/LibreCAD_2.2.0.2_Modified

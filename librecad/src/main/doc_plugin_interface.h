@@ -28,6 +28,8 @@
 
 #include <QObject>
 
+#include <optional>
+
 #include "document_interface.h"
 #include "rs_graphic.h"
 
@@ -67,6 +69,7 @@ public:
     virtual void rotate(QPointF center, double angle, DPI::Disposition disp = DPI::DELETE_ORIGINAL);
     virtual void scale(QPointF center, QPointF factor, DPI::Disposition disp = DPI::DELETE_ORIGINAL);
     virtual QString intColor2str(int color);
+    virtual bool isSelected();
 private:
     RS_Entity* entity = nullptr;
     bool hasContainer = false;
@@ -79,20 +82,35 @@ public:
     Doc_plugin_interface(LC_ActionContext* actionContext, QWidget* parent);
     void updateView() override;
     void addPoint(QPointF *start) override;
+    std::optional<qulonglong> addPointReturn(QPointF *start) override;
     void addLine(QPointF *start, QPointF *end) override;
+    std::optional<qulonglong> addLineReturn(QPointF *start, QPointF *end) override;
     void addMText(QString txt, QString sty, QPointF *start,
             double height, double angle, DPI::HAlign ha,  DPI::VAlign va);
+    std::optional<qulonglong> addMTextReturn(QString txt, QString sty, QPointF *start,
+            double height, double angle, DPI::HAlign ha,  DPI::VAlign va);
     void addText(QString txt, QString sty, QPointF *start,
+            double height, double angle, DPI::HAlign ha,  DPI::VAlign va) override;
+    std::optional<qulonglong> addTextReturn(QString txt, QString sty, QPointF *start,
             double height, double angle, DPI::HAlign ha,  DPI::VAlign va) override;
 
     void addCircle(QPointF *start, qreal radius) override;
     void addArc(QPointF *start, qreal radius, qreal a1, qreal a2) override;
     void addEllipse(QPointF *start, QPointF *end, qreal ratio, qreal a1, qreal a2) override;
-     void addLines(std::vector<QPointF> const& points, bool closed=false) override;
-     void addPolyline(std::vector<Plug_VertexData> const& points, bool closed=false) override;
-     void addSplinePoints(std::vector<QPointF> const& points, bool closed=false) override;
+    void addLines(std::vector<QPointF> const& points, bool closed=false) override;
+    void addPolyline(std::vector<Plug_VertexData> const& points, bool closed=false) override;
+    void addSplinePoints(std::vector<QPointF> const& points, bool closed=false) override;
+
+
+    virtual std::vector<qulonglong> addLinesReturn(std::vector<QPointF> const& points, bool closed=false) override;
+    virtual std::optional<qulonglong> addPolylineReturn(std::vector<Plug_VertexData> const& points, bool closed=false) override;
+
     void addImage(int handle, QPointF *start, QPointF *uvr, QPointF *vvr,
                   int w, int h, QString name, int br, int con, int fade) override;
+    void addDimAligned(QPointF defPt, QPointF textPt, QString text, QString textStyle, double textAngle,
+                       QPointF d1, QPointF d2) override;
+    void addDimAngular(QPointF defPt, QPointF textPt, QString text, QString textStyle, double textAngle,
+                       QPointF d1, QPointF d2, QPointF d3, QPointF d4) override;
     void addInsert(QString name, QPointF ins, QPointF scale, qreal rot) override;
     QString addBlockfromFromdisk(QString fullName) override;
     void addEntity(Plug_Entity *handle) override;
@@ -102,7 +120,7 @@ public:
 
     void setLayer(QString name) override;
     QString getCurrentLayer() override;
-    QStringList getAllLayer() override;
+    QStringList getAllLayer(bool visible = false) override;
     QStringList getAllBlocks() override;
     bool deleteLayer(QString name) override;
 
@@ -116,9 +134,9 @@ public:
     bool getSelect(QList<Plug_Entity *> *sel, const QString& message) override;
     bool getSelectByType(QList<Plug_Entity *> *sel, enum DPI::ETYPE type, const QString& message) override;
     bool getAllEntities(QList<Plug_Entity *> *sel, bool visible = false) override;
-
     void unselectEntities() override;
 
+    bool getRendererEntitiesData(QList<std::tuple<Plug_Entity*, bool, QString, double, double, double, int>>* sel) override;
     bool getVariableInt(const QString& key, int *num) override;
     bool getVariableDouble(const QString& key, double *num) override;
     bool addVariable(const QString& key, int value, int code=70) override;
@@ -129,8 +147,29 @@ public:
     bool getString(QString *txt, const QString& message, const QString& title) override;
     QString realToStr(const qreal num, const int units = 0, const int prec = 0) override;
 
-    //method to handle undo in Plugin_Entity 
+    QVariantList getExtent() override;
+
+    //method to handle undo in Plugin_Entity
     bool addToUndo(RS_Entity* current, RS_Entity* modified, DPI::Disposition how);
+
+    /*~~[GeoKKP]~~*/
+    bool selectEntity(const qulonglong &id) override;
+    bool selectByWindow(QList<Plug_Entity *> *sel, const QString& message) override;
+    void selectEntities(const QList<qulonglong>* idList) override;
+    void deselectEntity(const qulonglong &id) override;
+    void deselectEntities(const QList<qulonglong>* idList) override;    
+    bool getSelectedEntities(QList<Plug_Entity *> *sel, bool visible = false) override;
+    Plug_Entity * getEntity(const qulonglong eid) override;
+    void toggleLayer(QString name) override;
+    void lockLayer(QString name) override;
+    void printLayer(QString name) override;
+    void lockAllLayer() override;
+    void unlockAllLayer() override;
+    void freezeAllLayer() override;
+    void unfreezeAllLayer() override;
+    void zoomToEntity(double centerX, double centerY, double width = 5.0, double height = 2.0) override;
+
+    QImage getRaster(const QPointF bottomLeft, const QPointF topRight, int imageX, int imageY, int borderX=0, int borderY=0, bool bgWhite = true, bool monochrome = true) override;
 private:
     RS_Document *doc;
     RS_Graphic *docGr;

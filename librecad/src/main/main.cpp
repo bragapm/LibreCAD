@@ -258,7 +258,9 @@ int main(int argc, char** argv) {
 
     LC_Application app(argc, argv);
     QCoreApplication::setOrganizationName("LibreCAD");
-    QCoreApplication::setApplicationName("LibreCAD");
+    //QCoreApplication::setApplicationName("LibreCAD");
+    //Mengubah application name
+    QCoreApplication::setApplicationName("Tataletak - LibreCAD");
     QCoreApplication::setApplicationVersion(XSTR(LC_VERSION));
 
     RS_Settings::init(app.organizationName(), app.applicationName());
@@ -328,9 +330,16 @@ int main(int argc, char** argv) {
     std::unique_ptr<QSplashScreen> splash;
     bool show_splash = LC_GET_ONE_BOOL("Startup","ShowSplash", true);
 
-    if (show_splash){
+    if (show_splash)
+    {
+        //QPixmap pixmap(":/main/splash_librecad.png");
         splash = std::make_unique<QSplashScreen>();
-        updateSplash(splash);
+        QPixmap pixmap(":/images/splash_tataletak.png");
+        splash->setPixmap(pixmap);
+        splash->setAttribute(Qt::WA_DeleteOnClose);
+        splash->show();
+        splash->showMessage(QObject::tr("Loading.."),
+                            Qt::AlignRight|Qt::AlignBottom, Qt::black);
         app.processEvents();
         RS_DEBUG->print("main: splashscreen: OK");
     }
@@ -350,6 +359,7 @@ int main(int argc, char** argv) {
 #endif
     RS_DEBUG->print("main: setting caption");
     appWin.setWindowTitle(app.applicationName());
+    // appWin.setWindowTitle(app.applicationName() + " - v" + app.applicationVersion());
 
     RS_DEBUG->print("main: show main window");
 

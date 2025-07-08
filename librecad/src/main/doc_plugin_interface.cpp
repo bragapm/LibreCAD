@@ -42,6 +42,37 @@
 #include "rs_arc.h"
 #include "rs_block.h"
 #include "rs_circle.h"
+
+#include "rs_graphicview.h"
+#include "rs_actioninterface.h"
+#include "rs_eventhandler.h"
+#include "rs_arc.h"
+#include "rs_circle.h"
+#include "rs_line.h"
+#include "rs_point.h"
+#include "rs_mtext.h"
+#include "rs_text.h"
+#include "rs_layer.h"
+#include "rs_image.h"
+#include "rs_block.h"
+#include "rs_insert.h"
+#include "rs_polyline.h"
+#include "rs_ellipse.h"
+#include "rs_polyline.h"
+#include "rs_dimangular.h"
+#include "rs_dimaligned.h"
+//#include "rs_painterqt.h"
+//#include "rs_staticgraphicview.h"
+#include "lc_splinepoints.h"
+#include "lc_undosection.h"
+#include "intern/qc_actiongetpoint.h"
+#include "intern/qc_actiongetselect.h"
+#include "intern/qc_actiongetent.h"
+#include "intern/qc_selectwindow.h"
+#include "rs_math.h"
+#include "rs_actionselectwindow.h"
+#include "lc_graphicviewport.h"
+
 #include "rs_debug.h"
 #include "rs_ellipse.h"
 #include "rs_eventhandler.h"
@@ -202,10 +233,10 @@ Plugin_Entity::Plugin_Entity(RS_EntityContainer* parent, enum DPI::ETYPE type){
         break;
     case DPI::DIMLEADER:
         entity = new RS_Leader();
-        break;
+        break;*/
     case DPI::DIMALIGNED:
-        entity = new RS_DimAligned();
-        break;
+        entity = new RS_DimAligned(parent, RS_DimensionData{} ,RS_DimAlignedData{});
+        break;/*
     case DPI::DIMLINEAR:
         entity = new RS_DimLinear();
         break;
@@ -214,10 +245,10 @@ Plugin_Entity::Plugin_Entity(RS_EntityContainer* parent, enum DPI::ETYPE type){
         break;
     case DPI::DIMDIAMETRIC:
         entity = new RS_DimDiametric();
-        break;
-    case DPI::DIMANGULAR:
-        entity = new RS_DimAngular();
         break;*/
+    case DPI::DIMANGULAR:
+        entity = new RS_DimAngular(parent, RS_DimensionData{}, RS_DimAngularData{});
+        break;
     default:
         break;
     }
@@ -331,6 +362,24 @@ void Plugin_Entity::getData(QHash<int, QVariant> *data){
         data->insert(DPI::STARTANGLE, d.angle );
         data->insert(DPI::HEIGHT, d.height );
         data->insert(DPI::TEXTCONTENT, d.text );
+
+        if (d.halign == RS_MTextData::HALeft) {
+            data->insert(DPI::TXTALIGNH, DPI::HAlign::HAlignLeft);
+        } else if (d.halign == RS_MTextData::HACenter) {
+            data->insert(DPI::TXTALIGNH, DPI::HAlign::HAlignCenter);
+        } else if (d.halign == RS_MTextData::HARight) {
+            data->insert(DPI::TXTALIGNH, DPI::HAlign::HAlignRight);
+        }
+
+        if (d.valign == RS_MTextData::VATop) {
+            data->insert(DPI::TXTALIGNV, DPI::VAlign::VAlignTop);
+        } else if (d.valign == RS_MTextData::VAMiddle) {
+            data->insert(DPI::TXTALIGNV, DPI::VAlign::VAlignMiddle);
+        } else if (d.valign == RS_MTextData::VABottom) {
+            data->insert(DPI::TXTALIGNV, DPI::VAlign::VAlignBottom);
+        }
+
+        data->insert(DPI::TXTSTYLE, d.style);
         break;}
     case RS2::EntityText: {
         data->insert(DPI::ETYPE, DPI::TEXT);
@@ -340,6 +389,24 @@ void Plugin_Entity::getData(QHash<int, QVariant> *data){
         data->insert(DPI::STARTANGLE, d.angle );
         data->insert(DPI::HEIGHT, d.height );
         data->insert(DPI::TEXTCONTENT, d.text );
+        
+        if (d.halign == RS_TextData::HALeft) {
+            data->insert(DPI::TXTALIGNH, DPI::HAlign::HAlignLeft);
+        } else if (d.halign == RS_TextData::HACenter) {
+            data->insert(DPI::TXTALIGNH, DPI::HAlign::HAlignCenter);
+        } else if (d.halign == RS_TextData::HARight) {
+            data->insert(DPI::TXTALIGNH, DPI::HAlign::HAlignRight);
+        }
+
+        if (d.valign == RS_TextData::VATop) {
+            data->insert(DPI::TXTALIGNV, DPI::VAlign::VAlignTop);
+        } else if (d.valign == RS_TextData::VAMiddle) {
+            data->insert(DPI::TXTALIGNV, DPI::VAlign::VAlignMiddle);
+        } else if (d.valign == RS_TextData::VABottom) {
+            data->insert(DPI::TXTALIGNV, DPI::VAlign::VAlignBottom);
+        }
+
+        data->insert(DPI::TXTSTYLE, d.style);
         break;}
     case RS2::EntityHatch:
         data->insert(DPI::ETYPE, DPI::HATCH);
@@ -357,9 +424,20 @@ void Plugin_Entity::getData(QHash<int, QVariant> *data){
     case RS2::EntityVertex:
         data->insert(DPI::ETYPE, DPI::UNKNOWN);
         break;
-    case RS2::EntityDimAligned:
+    case RS2::EntityDimAligned:{
         data->insert(DPI::ETYPE, DPI::DIMALIGNED);
-        break;
+        RS_DimensionData d = static_cast<RS_Dimension*>(entity)->getData();
+        data->insert(DPI::STARTX, d.definitionPoint.x); data->insert(DPI::STARTY, d.definitionPoint.y);
+        data->insert(DPI::ENDX, d.middleOfText.x); data->insert(DPI::ENDY, d.middleOfText.y);
+        data->insert(DPI::TEXTCONTENT, d.text);
+        data->insert(DPI::TXTSTYLE, d.style);
+        data->insert(DPI::STARTANGLE, d.angle);
+
+        auto e = static_cast<RS_DimAligned*>(entity);
+        RS_DimAlignedData ed = e->getEData();
+        data->insert(DPI::VVECTORX, ed.extensionPoint1.x); data->insert(DPI::VVECTORY, ed.extensionPoint1.y);
+        data->insert(DPI::SIZEU, ed.extensionPoint2.x); data->insert(DPI::SIZEV, ed.extensionPoint2.y);
+        break;}
     case RS2::EntityDimLinear:
         data->insert(DPI::ETYPE, DPI::DIMLINEAR);
         break;
@@ -375,9 +453,26 @@ void Plugin_Entity::getData(QHash<int, QVariant> *data){
     case RS2::EntityDimDiametric:
         data->insert(DPI::ETYPE, DPI::DIMDIAMETRIC);
         break;
-    case RS2::EntityDimAngular:
+    case RS2::EntityDimAngular:{
         data->insert(DPI::ETYPE, DPI::DIMANGULAR);
-        break;
+        RS_DimensionData d = static_cast<RS_Dimension*>(entity)->getData();
+        data->insert(DPI::STARTX, d.definitionPoint.x); data->insert(DPI::STARTY, d.definitionPoint.y);
+        data->insert(DPI::ENDX, d.middleOfText.x); data->insert(DPI::ENDY, d.middleOfText.y);
+        data->insert(DPI::TEXTCONTENT, d.text);
+        data->insert(DPI::TXTSTYLE, d.style);
+        data->insert(DPI::STARTANGLE, d.angle);
+
+        auto e = static_cast<RS_DimAngular*>(entity);
+        RS_DimAngularData ed = e->getEData();
+        data->insert(DPI::VVECTORX, ed.definitionPoint1.x); data->insert(DPI::VVECTORY, ed.definitionPoint1.y);
+        data->insert(DPI::SIZEU, ed.definitionPoint2.x); data->insert(DPI::SIZEV, ed.definitionPoint2.y);
+        data->insert(DPI::XSCALE, ed.definitionPoint3.x); data->insert(DPI::YSCALE, ed.definitionPoint3.y);
+        data->insert(DPI::COLSPACE, ed.definitionPoint4.x); data->insert(DPI::ROWSPACE, ed.definitionPoint4.y);
+
+        //data->insert(DPI::TEXTCONTENT, e->getMeasuredLabel());
+        //data->insert(DPI::ENDX, e->getCenter().x); data->insert(DPI::ENDY, e->getCenter().y);
+
+        break;}
     case RS2::EntityDimLeader:
         data->insert(DPI::ETYPE, DPI::DIMLEADER);
         break;
@@ -776,6 +871,11 @@ QString Plugin_Entity::intColor2str(int color){
     return Converter.intColor2str(color);
 }
 
+bool Plugin_Entity::isSelected()
+{
+    return this->entity->isSelected();
+}
+
 Doc_plugin_interface::Doc_plugin_interface(LC_ActionContext* actionContext, QWidget* parent):
     doc(actionContext->getEntityContainer()->getDocument())
     ,docGr(doc->getGraphic())
@@ -810,6 +910,9 @@ void Doc_plugin_interface::updateView(){
 }
 
 void Doc_plugin_interface::addPoint(QPointF *start){
+    addPointReturn(start);
+}
+std::optional<qulonglong> Doc_plugin_interface::addPointReturn(QPointF *start){
 
     RS_Vector v1(start->x(), start->y());
     if (doc) {
@@ -817,11 +920,18 @@ void Doc_plugin_interface::addPoint(QPointF *start){
         doc->addEntity(entity);
         LC_UndoSection undo(doc, gView->getViewPort());
         undo.addUndoable(entity);
-    } else
+
+        return entity->getId();
+    } else {
 		RS_DEBUG->print("Doc_plugin_interface::addPoint: currentContainer is nullptr");
+        return std::nullopt;
+    }
 }
 
 void Doc_plugin_interface::addLine(QPointF *start, QPointF *end){
+    addLineReturn(start, end);
+}
+std::optional<qulonglong> Doc_plugin_interface::addLineReturn(QPointF *start, QPointF *end){
 
     RS_Vector v1(start->x(), start->y());
     RS_Vector v2(end->x(), end->y());
@@ -830,11 +940,19 @@ void Doc_plugin_interface::addLine(QPointF *start, QPointF *end){
         doc->addEntity(entity);
         LC_UndoSection undo(doc, gView->getViewPort());
         undo.addUndoable(entity);
-    } else
+
+        return entity->getId();
+    } else {
 		RS_DEBUG->print("Doc_plugin_interface::addLine: currentContainer is nullptr");
+        return std::nullopt;
+    }
 }
 
 void Doc_plugin_interface::addMText(QString txt, QString sty, QPointF *start,
+            double height, double angle, DPI::HAlign ha,  DPI::VAlign va){
+    addMTextReturn(txt, sty, start, height, angle, ha, va);
+}
+std::optional<qulonglong> Doc_plugin_interface::addMTextReturn(QString txt, QString sty, QPointF *start,
             double height, double angle, DPI::HAlign ha,  DPI::VAlign va){
 
     RS_Vector v1(start->x(), start->y());
@@ -844,18 +962,26 @@ void Doc_plugin_interface::addMText(QString txt, QString sty, QPointF *start,
         RS_MTextData::VAlign valign = static_cast <RS_MTextData::VAlign>(va);
         RS_MTextData::HAlign halign = static_cast <RS_MTextData::HAlign>(ha);
         RS_MTextData d(v1, height, width, valign, halign,
-                  RS_MTextData::ByStyle, RS_MTextData::Exact, 0.0,
+                  RS_MTextData::ByStyle, RS_MTextData::Exact, 1.0,
                   txt, sty, angle, RS2::Update);
         RS_MText* entity = new RS_MText(doc, d);
 
         doc->addEntity(entity);
         LC_UndoSection undo(doc, gView->getViewPort());
         undo.addUndoable(entity);
-    } else
+
+        return entity->getId();
+    } else {
 		RS_DEBUG->print("Doc_plugin_interface::addMtext: currentContainer is nullptr");
+        return std::nullopt;
+    }
 }
 
 void Doc_plugin_interface::addText(QString txt, QString sty, QPointF *start,
+            double height, double angle, DPI::HAlign ha,  DPI::VAlign va){
+    addTextReturn(txt, sty, start, height, angle, ha, va);
+}
+std::optional<qulonglong> Doc_plugin_interface::addTextReturn(QString txt, QString sty, QPointF *start,
             double height, double angle, DPI::HAlign ha,  DPI::VAlign va){
 
     RS_Vector v1(start->x(), start->y());
@@ -871,8 +997,12 @@ void Doc_plugin_interface::addText(QString txt, QString sty, QPointF *start,
         doc->addEntity(entity);
         LC_UndoSection undo(doc, gView->getViewPort());
         undo.addUndoable(entity);
-    } else
+
+        return entity->getId();
+    } else {
 		RS_DEBUG->print("Doc_plugin_interface::addText: currentContainer is nullptr");
+        return std::nullopt;
+    }
 }
 
 void Doc_plugin_interface::addCircle(QPointF *start, qreal radius){
@@ -943,8 +1073,44 @@ void Doc_plugin_interface::addLines(std::vector<QPointF> const& points, bool clo
     } else
 		RS_DEBUG->print("%s: currentContainer is nullptr", __func__);
 }
+std::vector<qulonglong> Doc_plugin_interface::addLinesReturn(std::vector<QPointF> const& points, bool closed)
+{
+    if (doc) {
+        RS_LineData data;
+
+        LC_UndoSection undo(doc, gView->getViewPort());
+        data.endpoint=RS_Vector(points.front().x(), points.front().y());
+
+        std::vector<qulonglong> eids;
+        for(size_t i=1; i<points.size(); ++i){
+            data.startpoint=data.endpoint;
+            data.endpoint=RS_Vector(points[i].x(), points[i].y());
+            RS_Line* line=new RS_Line(doc, data);
+            doc->addEntity(line);
+            undo.addUndoable(line);
+            eids.push_back(line->getId());
+        }
+        if(closed){
+            data.startpoint=data.endpoint;
+            data.endpoint=RS_Vector(points.front().x(), points.front().y());
+            RS_Line* line=new RS_Line(doc, data);
+            doc->addEntity(line);
+            undo.addUndoable(line);
+            eids.push_back(line->getId());
+        }
+
+        return eids;
+    } else {
+		RS_DEBUG->print("%s: currentContainer is nullptr", __func__);
+        return {};
+    }
+}
 
 void Doc_plugin_interface::addPolyline(std::vector<Plug_VertexData> const& points, bool closed)
+{
+    addPolylineReturn(points, closed);
+}
+std::optional<qulonglong> Doc_plugin_interface::addPolylineReturn(std::vector<Plug_VertexData> const& points, bool closed)
 {
     if (doc) {
         RS_PolylineData data;
@@ -959,8 +1125,12 @@ void Doc_plugin_interface::addPolyline(std::vector<Plug_VertexData> const& point
         doc->addEntity(entity);
         LC_UndoSection undo(doc, gView->getViewPort());
         undo.addUndoable(entity);
-    } else
+
+        return entity->getId();
+    } else {
 		RS_DEBUG->print("%s: currentContainer is nullptr", __func__);
+        return std::nullopt;
+    }
 }
 
 void Doc_plugin_interface::addSplinePoints(std::vector<QPointF> const& points, bool closed)
@@ -1004,6 +1174,64 @@ void Doc_plugin_interface::addImage(int handle, QPointF *start, QPointF *uvr, QP
         undo.addUndoable(image);
     } else
 		RS_DEBUG->print("Doc_plugin_interface::addImage: currentContainer is nullptr");
+}
+
+void Doc_plugin_interface::addDimAligned(   QPointF defPt, QPointF textPt, QString text, QString textStyle, double textAngle,
+                                            QPointF d1, QPointF d2){
+    if(doc){
+        RS_Vector ed1(d1.x(), d1.y());
+        RS_Vector ed2(d2.x(), d2.y());
+        RS_DimAlignedData ed{ed1, ed2};
+
+        RS_DimensionData d;
+        d.definitionPoint = RS_Vector(defPt.x(), defPt.y());
+        d.middleOfText = RS_Vector(textPt.x(), textPt.y());
+        d.text = text;
+        d.style = textStyle;
+        d.angle = textAngle;
+        d.lineSpacingFactor = 1;
+        d.lineSpacingStyle = RS_MTextData::Exact;
+        d.halign = RS_MTextData::HACenter;
+        d.valign = RS_MTextData::VAMiddle;
+
+        RS_DimAligned* dimAligned = new RS_DimAligned(doc, d, ed);
+        dimAligned->update();
+
+        doc->addEntity(dimAligned);
+        LC_UndoSection undo(doc, gView->getViewPort());
+        undo.addUndoable(dimAligned);
+    } else
+        RS_DEBUG->print("Doc_plugin_interface::addDimAligned: currentContainer is nullptr");
+}
+
+void Doc_plugin_interface::addDimAngular(   QPointF defPt, QPointF textPt, QString text, QString textStyle, double textAngle,
+                                            QPointF d1, QPointF d2, QPointF d3, QPointF d4){
+    if(doc){
+        RS_Vector ed1(d1.x(), d1.y());
+        RS_Vector ed2(d2.x(), d2.y());
+        RS_Vector ed3(d3.x(), d3.y());
+        RS_Vector ed4(d4.x(), d4.y());
+        RS_DimAngularData ed{ed1, ed2, ed3, ed4};
+
+        RS_DimensionData d;
+        d.definitionPoint = RS_Vector(defPt.x(), defPt.y());
+        d.middleOfText = RS_Vector(textPt.x(), textPt.y());
+        d.text = text;
+        d.style = textStyle;
+        d.angle = textAngle;
+        d.lineSpacingFactor = 1;
+        d.lineSpacingStyle = RS_MTextData::Exact;
+        d.halign = RS_MTextData::HACenter;
+        d.valign = RS_MTextData::VAMiddle;
+
+        RS_DimAngular* dimAngular = new RS_DimAngular(doc, d, ed);
+        dimAngular->update();
+
+        doc->addEntity(dimAngular);
+        LC_UndoSection undo(doc, gView->getViewPort());
+        undo.addUndoable(dimAngular);
+    } else
+        RS_DEBUG->print("Doc_plugin_interface::addDimAngular: currentContainer is nullptr");
 }
 
 void Doc_plugin_interface::addInsert(QString name, QPointF ins, QPointF scale, qreal rot){
@@ -1130,11 +1358,13 @@ QString Doc_plugin_interface::getCurrentLayer(){
     return docGr->getActiveLayer()->getName();
 }
 
-QStringList Doc_plugin_interface::getAllLayer(){
+QStringList Doc_plugin_interface::getAllLayer(bool visible){
     QStringList listName;
     RS_LayerList* listLay = doc->getLayerList();
     for (unsigned int i = 0; i < listLay->count(); ++i) {
-         listName << listLay->at(i)->getName();
+        auto lay = listLay->at(i);
+        if(visible && lay->isFrozen()) continue;
+        listName << lay->getName();
      }
     return listName;
 }
@@ -1229,6 +1459,10 @@ bool Doc_plugin_interface::getPoint(QPointF *point, const QString& message,
 
 Plug_Entity *Doc_plugin_interface::getEnt(const QString& message){
     auto a = std::make_shared<QC_ActionGetEnt>(m_actionContext);
+// =======
+//     QC_ActionGetEnt* a = new QC_ActionGetEnt(*doc, *gView);
+//     Plug_Entity *e = nullptr;
+// >>>>>>> origin/LibreCAD_2.2.0.2_Modified
     if (a) {
         if (!(message.isEmpty()) )
             a->setMessage(message);
@@ -1243,6 +1477,13 @@ Plug_Entity *Doc_plugin_interface::getEnt(const QString& message){
         }
     }
     auto *e = reinterpret_cast<Plug_Entity*>(a->getSelected(this));
+// =======
+//     RS_EventHandler* eh = gView->getEventHandler();
+//     if (eh && eh->isValid(a) ) {
+//         e = reinterpret_cast<Plug_Entity*>(a->getSelected(this));
+//         a->finish();
+//     }
+// >>>>>>> origin/LibreCAD_2.2.0.2_Modified
     gView->killAllActions();
     return e;
 }
@@ -1272,7 +1513,6 @@ bool Doc_plugin_interface::getSelect(QList<Plug_Entity *> *sel, const QString& m
     }
     gView->killAllActions();
     return status;
-
 }
 
 bool Doc_plugin_interface::getSelectByType(QList<Plug_Entity *> *sel, enum DPI::ETYPE type, const QString& message){
@@ -1334,6 +1574,35 @@ bool Doc_plugin_interface::getAllEntities(QList<Plug_Entity *> *sel, bool visibl
 void Doc_plugin_interface::unselectEntities() {
     auto a = new QC_ActionGetSelect(m_actionContext);
     a->unselectEntities();
+}
+
+bool Doc_plugin_interface::getRendererEntitiesData(QList<std::tuple<Plug_Entity *, bool, QString, double, double, double, int> > *sel)
+{
+    for(RS_Entity* e : *doc){
+        if(e->rtti() != RS2::EntityText) continue;
+        bool layerVisible = !e->getLayer()->isFrozen(); //
+        bool isVisible = e->getFlag(RS2::FlagVisible);
+        bool isUndone = e->isUndone();
+        bool deleted = (!e->isVisible() && layerVisible) || isUndone;
+        if(deleted) continue;
+        QString layer = e->getLayer()->getName(); //
+
+        RS_TextData d = static_cast<RS_Text*>(e)->getData();
+        double x = d.insertionPoint.x; //
+        double y = d.insertionPoint.y; //
+        double a = d.angle; //
+        int id = d.text.toInt(); //
+        Plugin_Entity *pe = new Plugin_Entity(e, this); //
+        sel->append(std::make_tuple(
+            reinterpret_cast<Plug_Entity*>(pe),
+            layerVisible,
+            layer,
+            x,
+            y,
+            a,
+            id));
+    }
+    return true;
 }
 
 bool Doc_plugin_interface::getVariableInt(const QString& key, int *num){
@@ -1451,4 +1720,201 @@ QString Doc_plugin_interface::realToStr(const qreal num, const int units, const 
 
     QString msg = RS_Units::formatLinear(num,RS2::None,lf,pr);
     return msg;
+}
+
+bool Doc_plugin_interface::selectEntity(const qulonglong &id) {
+    bool status = false;
+
+    for(auto e: *doc){
+        if(id == e->getId())
+            e->setSelected(true);
+    }
+    status = true;
+    return status;
+}
+
+QVariantList Doc_plugin_interface::getExtent(){
+    auto lb = gView->getViewPort()->getUCSViewLeftBottom();
+    auto rt = gView->getViewPort()->getUCSViewRightTop();
+    QPointF upperLeftCorner = QPointF(lb.x, rt.y);
+    QPointF lowerRightCorner = QPointF(rt.x, lb.y);
+
+    QVariantList extent;
+    extent.append(upperLeftCorner);
+    extent.append(lowerRightCorner);
+
+    return extent;
+}
+
+void Doc_plugin_interface::selectEntities(const QList<qulonglong>* idList) {
+    for (auto id: *idList){
+        this->selectEntity(id);
+    }
+}
+
+
+void Doc_plugin_interface::deselectEntity(const qulonglong &id) {
+    for(auto e: *doc){
+        if(id == e->getId())
+            e->setSelected(false);
+    }
+    return;
+}
+
+void Doc_plugin_interface::deselectEntities(const QList<qulonglong>* idList) {
+    for (auto id: *idList){
+        this->deselectEntity(id);
+        // for(auto e: *doc){
+        //     if(id == e->getId())
+        //         e->setSelected(false);
+        // }
+    }
+}
+
+bool Doc_plugin_interface::selectByWindow(QList<Plug_Entity *> *sel, const QString& message) {
+    bool status = false;
+    auto a = std::make_shared<RS_ActionSelectWindow>(m_actionContext, true);
+    if (a) {
+        gView->killAllActions();
+        gView->setCurrentAction(a);
+        QEventLoop ev;
+        while (!a->isFinished())
+        {
+            ev.processEvents ();
+            if (!gView->getEventHandler()->hasAction())
+                break;
+        }
+        // qDebug() << "getSelect: passed event loop";
+    }
+    //    check if a are cancelled by the user issue #349
+    RS_EventHandler* eh = gView->getEventHandler();
+    if (eh && eh->isValid(a.get()) ) {
+        getSelectedEntities(sel, true);
+        status = true;
+    }
+    gView->killAllActions();
+    return status;
+}
+
+bool Doc_plugin_interface::getSelectedEntities(QList<Plug_Entity *> *sel, bool visible){
+    bool status = false;
+
+    for(auto e: *doc){
+
+        if ((e->isVisible() || !visible) && e->isSelected()) {
+            Plugin_Entity *pe = new Plugin_Entity(e, this);
+            sel->append(reinterpret_cast<Plug_Entity*>(pe));
+        }
+    }
+    status = true;
+    return status;
+}
+
+Plug_Entity *Doc_plugin_interface::getEntity(const qulonglong id){
+    for(auto e: *doc){
+        if(id == e->getId()){
+            Plugin_Entity *pe = new Plugin_Entity(e, this);
+            return reinterpret_cast<Plug_Entity*>(pe);
+        }
+    }
+    return nullptr;
+}
+
+QImage Doc_plugin_interface::getRaster(const QPointF bottomLeft, const QPointF topRight, int imageX, int imageY, int borderX, int borderY, bool bgWhite, bool monochrome)
+{
+    QImage img{};/*
+    //if (main_window==nullptr) return img;
+    //if (docGr==nullptr) return img;
+    QPixmap* picture = new QPixmap(imageX, imageY);
+    QPaintDevice* buffer = picture;
+
+    // set painter with buffer
+    RS_PainterQt painter(buffer);
+
+    if (bgWhite) painter.setBackground(Qt::white);
+    else painter.setBackground(Qt::black);
+    if (monochrome) painter.setDrawingMode(RS2::ModeWB);
+
+    painter.eraseRect(0,0, imageX, imageY);
+
+    QSize borders(borderX, borderY);
+    RS_StaticGraphicView gv(imageX, imageY, &painter, &borders);
+    if (bgWhite) gv.setBackground(Qt::white);
+    else gv.setBackground(Qt::black);
+
+    gv.setContainer(docGr);
+    gv.zoomWindow(RS_Vector(bottomLeft.x(), bottomLeft.y(), 0.), RS_Vector(topRight.x(), topRight.y(), 0.));
+    gv.drawEntity(&painter, gv.getContainer());
+
+    img = picture->toImage();
+
+    // GraphicView deletes painter
+    painter.end();
+    // delete vars
+    delete picture;*/
+
+    return img;
+}
+
+void Doc_plugin_interface::toggleLayer(QString name){
+    RS_LayerList* listLay = doc->getLayerList();
+    RS_Layer *lay = listLay->find(name);
+    if (!lay) {
+        lay = new RS_Layer(name);
+        docGr->addLayer(lay);
+    }
+    listLay->toggle(lay);
+}
+
+void Doc_plugin_interface::lockLayer(QString name){
+    RS_LayerList* listLay = doc->getLayerList();
+    RS_Layer *lay = listLay->find(name);
+    if (!lay) {
+        lay = new RS_Layer(name);
+        docGr->addLayer(lay);
+    }
+    listLay->toggleLock(lay);
+}
+
+void Doc_plugin_interface::printLayer(QString name){
+    RS_LayerList* listLay = doc->getLayerList();
+    RS_Layer *lay = listLay->find(name);
+    if (!lay) {
+        lay = new RS_Layer(name);
+        docGr->addLayer(lay);
+    }
+    listLay->togglePrint(lay);
+}
+
+void Doc_plugin_interface::lockAllLayer(){
+    RS_LayerList* listLay = doc->getLayerList();
+    listLay->lockAll(true);
+}
+
+void Doc_plugin_interface::unlockAllLayer(){
+    RS_LayerList* listLay = doc->getLayerList();
+    listLay->lockAll(false);
+}
+
+void Doc_plugin_interface::freezeAllLayer(){
+    RS_LayerList* listLay = doc->getLayerList();
+    listLay->freezeAll(true);
+}
+
+void Doc_plugin_interface::unfreezeAllLayer(){
+    RS_LayerList* listLay = doc->getLayerList();
+    listLay->freezeAll(false);
+}
+
+void Doc_plugin_interface::zoomToEntity(double centerX, double centerY, double width, double height) {
+    if (!gView) {
+        RS_DEBUG->print("GraphicView tidak tersedia!");
+        return;
+    }
+
+    RS_Vector p1(centerX - width / 2.0, centerY - height / 2.0);
+    RS_Vector p2(centerX + width / 2.0, centerY + height / 2.0);
+
+    gView->getViewPort()->zoomWindow(p1, p2, true);
+    gView->redraw();
 }

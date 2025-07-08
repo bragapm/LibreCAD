@@ -66,6 +66,8 @@
 #include "lc_dimstyle.h"
 #include "lc_tolerance.h"
 
+#include <iso646.h>
+
 #ifdef DWGSUPPORT
 #include "libdwgr.h"
 #include "rs_debug.h"

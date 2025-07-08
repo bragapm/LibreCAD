@@ -9,5 +9,7 @@
         <file>splash_librecad.png</file>
         <file>splash_librecad_alpha.png</file>
         <file>splash_librecad_beta.png</file>
+        <file>tataletak.png</file>
+        <file>splash_tataletak.png</file>
     </qresource>
 </RCC>

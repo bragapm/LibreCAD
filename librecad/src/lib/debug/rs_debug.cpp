@@ -32,6 +32,8 @@
 
 #include "rs_vector.h"
 
+#include <iso646.h>
+
 namespace {
 FILE *s_logStream = nullptr;
 }

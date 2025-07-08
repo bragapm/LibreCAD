@@ -6,6 +6,15 @@
 - shortcut "0" to specify coordinates "0,0" on command line
 - shortcut "." or "," to specify the current point coordinates on command line
 
+## [2.2.0.2] - 2023-07-29
+
+### Fixed
+- backport fix for equation solver from master (#1653)
+- LFF fonts issues
+- fixed segfault when opening malformed LFF files
+
+## [2.2.0.1] - 2023-07-08
+
 ### Removed
 - importshp plugin, see issue #1481
 
@@ -14,6 +23,8 @@
 ### Fixed
 - various issues in LFF font files
 - segfault with malformed LFF font files
+
+### Fixed
 - CVE-2023-30259, OOB reads in importshp plugin (#1481)
 
 ## [2.2.0] - 2022-12-17

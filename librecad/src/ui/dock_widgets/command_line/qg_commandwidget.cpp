@@ -190,7 +190,7 @@ void QG_CommandWidget::handleCommand(QString cmd){
     }
 
     if (!isAction && !(cmd.contains(',') || cmd.at(0)=='@')) {
-       appendHistory(tr("Unknown command: %1").arg(cmd));
+       //appendHistory(tr("Unknown command: %1").arg(cmd));
     }
 
     leCommand->setText("");
