@@ -36,6 +36,8 @@
 #include "rs_debug.h"
 #include "rs_system.h"
 
+#include "rs_painter.h"
+
 LC_PluginInvoker::LC_PluginInvoker(QC_ApplicationWindow *appWindow, LC_ActionContext* ctx):
     m_appWindow(appWindow),
     m_actionContext(ctx) {
@@ -73,36 +75,51 @@ void LC_PluginInvoker::loadPlugins(){
                 if (pluginInterface) {
                     m_loadedPluginList.push_back(pluginInterface);
                     loadedPluginFileNames.push_back(fileName);
+
                     PluginCapabilities pluginCapabilities = pluginInterface->getCapabilities();
-                    for (const PluginMenuLocation &loc: pluginCapabilities.menuEntryPoints) {
-                        auto *actpl = new QAction(loc.menuEntryActionName, plugin);
+                    for (const PluginMenuLocation& loc : pluginCapabilities.menuEntryPoints) {
+                        auto menuBar = m_appWindow->menuBar();
+                        if (loc.menuEntryActionName.isEmpty()) {
+                            QMenu* menu = m_appWindow->findMenu(loc.menuEntryPoint, menuBar->children(), "");
+                            if (menu) {
+                                menu->addSeparator();
+                            }
+                            continue;
+                        }
+
+                        QString iconLoc = loc.menuIcon;
+                        QAction* actpl = nullptr;
+                        if (!iconLoc.isEmpty()) {
+                            actpl = new QAction(QIcon(loc.menuIcon), loc.menuEntryActionName, plugin);
+                        } else {
+                            actpl = new QAction(loc.menuEntryActionName, plugin);
+                        }
+                        actpl->setVisible(loc.menuEntryVisible);
                         actpl->setData(loc.menuEntryActionName);
                         connect(actpl, &QAction::triggered, this, &LC_PluginInvoker::execPlug);
-                        connect(m_appWindow, &QC_ApplicationWindow::windowsChanged, actpl, &QAction::setEnabled);
-                        auto menuBar = m_appWindow -> menuBar();
-                        QMenu *atMenu = m_appWindow->findMenu("/" + loc.menuEntryPoint, menuBar->children(), "");
-                        if (atMenu) {
-                            atMenu->addAction(actpl);
-                        } else {
-                            QStringList treemenu = loc.menuEntryPoint.split('/', Qt::SkipEmptyParts);
-                            QString currentLevel = "";
-                            QMenu *parentMenu = 0;
-                            do {
-                                QString menuName = treemenu.at(0);
-                                treemenu.removeFirst();
-                                currentLevel = currentLevel + "/" + menuName;
-                                atMenu = m_appWindow->findMenu(currentLevel, menuBar->children(), "");
-                                if (atMenu == 0) {
-                                    if (parentMenu == 0) {
-                                        parentMenu = menuBar->addMenu(menuName);
-                                    } else {
-                                        parentMenu = parentMenu->addMenu(menuName);
-                                    }
-                                    parentMenu->setObjectName(menuName);
+                        actpl->setEnabled(true);
+
+                        pluginInterface->actionCreated(actpl);
+                        //connect(m_appWindow, &QC_ApplicationWindow::windowsChanged, actpl, &QAction::setEnabled);
+
+                        QStringList treemenu = loc.menuEntryPoint.split('/', Qt::SkipEmptyParts);
+                        QMenu* parentMenu = nullptr;
+                        QMenu* currentMenu = nullptr;
+                        QString currentLevel;
+                        for (const QString& menuName : treemenu) {
+                            currentLevel = currentLevel.isEmpty() ? menuName : currentLevel + "/" + menuName;
+                            currentMenu = m_appWindow->findMenu(currentLevel, menuBar->children(), "");
+                            if (!currentMenu) {
+                                if (!parentMenu) {
+                                    currentMenu = menuBar->addMenu(menuName);
+                                } else {
+                                    currentMenu = parentMenu->addMenu(menuName);
                                 }
-                            } while (treemenu.size() > 0);
-                            if (parentMenu) parentMenu->addAction(actpl);
+                                currentMenu->setObjectName(menuName);
+                            }
+                            parentMenu = currentMenu;
                         }
+                        if (currentMenu) currentMenu->addAction(actpl);
                     }
                 }
             } else {
@@ -124,10 +141,29 @@ void LC_PluginInvoker::execPlug(){
     RS_Document *currdoc = w->getDocument();
     //create document interface instance
     QG_GraphicView *graphicView = w->getGraphicView();
-    Doc_plugin_interface pligundoc(m_actionContext, m_appWindow);
+    Doc_plugin_interface* pligundoc = new Doc_plugin_interface(m_actionContext, m_appWindow);
     //execute plugin
     LC_UndoSection undo(currdoc, graphicView->getViewPort());
-    plugin->execComm(&pligundoc, m_appWindow, action->data().toString());
+    plugin->execComm(pligundoc, m_appWindow, action->data().toString());
     //TODO call update view
     graphicView->redraw();
+}
+
+void LC_PluginInvoker::drawPlugs(RS_Painter* painter, int flags){
+    const LC_Rect& boundingBox = painter->getWcsBoundingRect();
+    const int width = painter->getWidth();
+    const int height = painter->getHeight();
+    const double b = boundingBox.lowerLeftCorner().y;
+    const double l = boundingBox.lowerLeftCorner().x;
+    const double t = boundingBox.upperRightCorner().y;
+    const double r = boundingBox.upperRightCorner().x;
+
+    Doc_plugin_interface pligundoc(m_actionContext, m_appWindow);
+
+    for(auto plug : m_loadedPluginList){
+        if(plug){
+            QImage* img = plug->render(&pligundoc, b, l, t, r, width, height, flags);
+            if(img) painter->drawImage(0, 0, *img);
+        }
+    }
 }

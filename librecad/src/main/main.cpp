@@ -416,7 +416,7 @@ int main(int argc, char** argv) {
     {
         // fixme - sand - files - add support of command line flag to suppress version check (may be useful for automation)!
         bool checkForNewVersion = LC_GET_BOOL("CheckForNewVersions", true);
-        if (checkForNewVersion) {
+        if (false) {
             appWin.checkForNewVersion();
         }
 

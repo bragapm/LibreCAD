@@ -29,6 +29,9 @@
 #include "rs_painter.h"
 #include "rs_settings.h"
 
+#include "qc_applicationwindow.h"
+#include "lc_plugininvoker.h"
+
 LC_WidgetViewPortRenderer::LC_WidgetViewPortRenderer(LC_GraphicViewport *viewport, QPaintDevice* paintDevice):
     LC_GraphicViewportRenderer(viewport, paintDevice)
     , pixmapLayerBackground{ std::make_unique<QPixmap>() }
@@ -36,6 +39,7 @@ LC_WidgetViewPortRenderer::LC_WidgetViewPortRenderer(LC_GraphicViewport *viewpor
     , pixmapLayerOverlays{ std::make_unique<QPixmap>() }
     , m_pixmapLayer1{ std::make_unique<QPixmap>(1,1) }
 {
+    m_pluginInvoker = QC_ApplicationWindow::getAppWindow()->getPluginInvoker();
 }
 
 LC_WidgetViewPortRenderer::~LC_WidgetViewPortRenderer() = default;
@@ -147,8 +151,10 @@ void LC_WidgetViewPortRenderer::paintSequental(QPaintDevice* pd) {
         RS_Painter painterLayerDrawing(pixmapLayerDrawing.get());
         setupPainter(&painterLayerDrawing);
 
+        m_pluginInvoker->drawPlugs(&painterLayerDrawing, 0);
         drawLayerEntities(&painterLayerDrawing);
         drawLayerEntitiesOver(&painterLayerDrawing);
+        m_pluginInvoker->drawPlugs(&painterLayerDrawing, 1);
         painterLayerDrawing.end();
         redrawMethod=(RS2::RedrawMethod ) (redrawMethod | RS2::RedrawOverlay);
     }
@@ -192,8 +198,11 @@ void LC_WidgetViewPortRenderer::paintClassicalBuffered(QPaintDevice* pd) {
         m_pixmapLayer2->fill(Qt::transparent);
         RS_Painter painterLayerDrawing(m_pixmapLayer2.get());
         setupPainter(&painterLayerDrawing);
+
+        m_pluginInvoker->drawPlugs(&painterLayerDrawing, 0);
         drawLayerEntities(&painterLayerDrawing);
         drawLayerEntitiesOver(&painterLayerDrawing);
+        m_pluginInvoker->drawPlugs(&painterLayerDrawing, 1);
     }
 
     if (redrawMethod & RS2::RedrawOverlay) {

@@ -278,6 +278,8 @@ public:
     LC_QuickInfoWidget* getEntityInfoWidget(void) const {return m_quickInfoWidget;};
     LC_AnglesBasisWidget* getAnglesBasisWidget() const {return m_anglesBasisWidget;};
 
+    LC_PluginInvoker* getPluginInvoker() const { return m_pluginInvoker.get(); };
+
     // Highlight the active block in the block widget
     void showBlockActivated(const RS_Block* block) const;
 

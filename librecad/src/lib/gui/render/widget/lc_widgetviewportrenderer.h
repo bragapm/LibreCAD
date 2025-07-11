@@ -26,6 +26,7 @@
 #include "lc_graphicviewportrenderer.h"
 
 class QPixmap;
+class LC_PluginInvoker;
 
 class LC_WidgetViewPortRenderer:public LC_GraphicViewportRenderer
 {
@@ -90,6 +91,8 @@ private:
     std::unique_ptr<QPixmap> m_pixmapLayer1;  // Used for grids and absolute 0
     std::unique_ptr<QPixmap> m_pixmapLayer2;  // Used for the actual CAD drawing
     std::unique_ptr<QPixmap> m_pixmapLayer3;  // Used for crosshair and actionitems
+
+    LC_PluginInvoker* m_pluginInvoker = nullptr;
 };
 
 #endif // LC_WIDGETVIEWPORTRENDERER_H

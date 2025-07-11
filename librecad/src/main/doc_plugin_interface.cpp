@@ -1736,8 +1736,8 @@ bool Doc_plugin_interface::selectEntity(const qulonglong &id) {
 QVariantList Doc_plugin_interface::getExtent(){
     auto lb = gView->getViewPort()->getUCSViewLeftBottom();
     auto rt = gView->getViewPort()->getUCSViewRightTop();
-    QPointF upperLeftCorner = QPointF(lb.x, rt.y);
-    QPointF lowerRightCorner = QPointF(rt.x, lb.y);
+    QPointF upperLeftCorner = QPointF(lb.x, lb.y);
+    QPointF lowerRightCorner = QPointF(rt.x, rt.y);
 
     QVariantList extent;
     extent.append(upperLeftCorner);
@@ -1787,11 +1787,9 @@ bool Doc_plugin_interface::selectByWindow(QList<Plug_Entity *> *sel, const QStri
         // qDebug() << "getSelect: passed event loop";
     }
     //    check if a are cancelled by the user issue #349
-    RS_EventHandler* eh = gView->getEventHandler();
-    if (eh && eh->isValid(a.get()) ) {
-        getSelectedEntities(sel, true);
-        status = true;
-    }
+    getSelectedEntities(sel, true);
+    status = true;
+
     gView->killAllActions();
     return status;
 }

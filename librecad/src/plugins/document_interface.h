@@ -584,7 +584,7 @@ public:
     virtual void freezeAllLayer() = 0;
     virtual void unfreezeAllLayer() = 0;
 
-    virtual void zoomToEntity(double centerX, double centerY, double width = 5.0, double height = 2.0) {}
+    virtual void zoomToEntity(double centerX, double centerY, double width = 5.0, double height = 2.0) = 0;
 };
 
 

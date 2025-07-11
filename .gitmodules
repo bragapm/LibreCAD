@@ -1,0 +1,5 @@
+
+[submodule "plugins/geokkp"]
+	path = plugins/geokkp
+	url = https://github.com/bragapm/librecad_geokkp.git
+	branch = LibreCAD-w-SubMenus

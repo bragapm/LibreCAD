@@ -31,21 +31,24 @@
 
 class Document_Interface;
 class QImage;
+class QAction;
 /**
   * Menu locations for Plugins
   */
 class PluginMenuLocation
 {
     public:
-        PluginMenuLocation(QString menuEntryPoint, QString menuEntryActionName, QString menuIcon = "") {
+        PluginMenuLocation(QString menuEntryPoint, QString menuEntryActionName, QString menuIcon = "", bool menuEntryVisible = true) {
             this->menuEntryActionName=menuEntryActionName;
             this->menuEntryPoint=menuEntryPoint;
             this->menuIcon=menuIcon;
+            this->menuEntryVisible=menuEntryVisible;
         }
 
     QString menuEntryPoint;
     QString menuEntryActionName;
     QString menuIcon;
+    bool menuEntryVisible;
 };
 
 class PluginCapabilities {
@@ -68,8 +71,16 @@ public:
     virtual ~QC_PluginInterface() {}
     virtual QString name() const = 0;
     virtual PluginCapabilities getCapabilities() const = 0;
+    virtual void actionCreated([[maybe_unused]]QAction* action) { return; }
     virtual void execComm(Document_Interface *doc, QWidget *parent, QString cmd) = 0;
-    virtual QImage* render(Document_Interface* doc, double b, double l, double t, double r, int x, int y, int flag) { return nullptr; }
+    virtual QImage* render([[maybe_unused]]Document_Interface* doc,
+                           [[maybe_unused]]double b,
+                           [[maybe_unused]]double l,
+                           [[maybe_unused]]double t,
+                           [[maybe_unused]]double r,
+                           [[maybe_unused]]int x,
+                           [[maybe_unused]]int y,
+                           [[maybe_unused]]int flag) { return nullptr; }
 //    virtual void paintEvent(Document_Interface *doc) = 0;
 
 };

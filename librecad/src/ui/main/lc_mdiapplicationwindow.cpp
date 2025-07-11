@@ -115,19 +115,36 @@ QMdiArea *LC_MDIApplicationWindow::getMdiArea() {
   * returns 0 when no menu was found
   */
 QMenu *LC_MDIApplicationWindow::findMenu(const QString &searchMenu, const QObjectList& thisMenuList, const QString& currentEntry) {
-    if (searchMenu==currentEntry) {
-        return static_cast<QMenu*>(thisMenuList.at(0)->parent());
+    // if (searchMenu==currentEntry) {
+    //     return static_cast<QMenu*>(thisMenuList.at(0)->parent());
+    // }
+
+    // QList<QObject*>::const_iterator i=thisMenuList.begin();
+    // while (i != thisMenuList.end()) {
+    //     if ((*i)->inherits ("QMenu")) {
+    //         auto *ii=static_cast<QMenu*>(*i);
+    //         if (QMenu *foundMenu=findMenu(searchMenu, ii->children(), currentEntry+"/"+ii->objectName().replace("&", ""))) {
+    //             return foundMenu;
+    //         }
+    //     }
+    //     ++i;
+    // }
+    // return nullptr;
+
+    if (searchMenu == currentEntry) {
+        return qobject_cast<QMenu*>(thisMenuList.at(0)->parent());
     }
 
-    QList<QObject*>::const_iterator i=thisMenuList.begin();
-    while (i != thisMenuList.end()) {
-        if ((*i)->inherits ("QMenu")) {
-            auto *ii=static_cast<QMenu*>(*i);
-            if (QMenu *foundMenu=findMenu(searchMenu, ii->children(), currentEntry+"/"+ii->objectName().replace("&", ""))) {
+    for (QObject* obj : thisMenuList) {
+        if (obj->inherits("QMenu")) {
+            QMenu* menu = qobject_cast<QMenu*>(obj);
+            QString menuName = menu->objectName().replace("&", "");
+            QString nextEntry = currentEntry.isEmpty() ? menuName : currentEntry + "/" + menuName;
+
+            if (QMenu* foundMenu = findMenu(searchMenu, menu->children(), nextEntry)) {
                 return foundMenu;
             }
         }
-        ++i;
     }
     return nullptr;
 }

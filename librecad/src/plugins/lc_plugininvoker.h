@@ -29,6 +29,7 @@
 class QC_PluginInterface;
 class QC_ApplicationWindow;
 class LC_ActionContext;
+class RS_Painter;
 
 class LC_PluginInvoker: public QObject{
     Q_OBJECT
@@ -38,6 +39,7 @@ public:
     void loadPlugins();
 public slots:
     void execPlug();
+    void drawPlugs(RS_Painter* painter, int flags);
 private:
     QC_ApplicationWindow* m_appWindow = nullptr;
     QList<QC_PluginInterface*> m_loadedPluginList;
