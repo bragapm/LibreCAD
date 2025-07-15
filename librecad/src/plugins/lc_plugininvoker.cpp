@@ -77,6 +77,7 @@ void LC_PluginInvoker::loadPlugins(){
                     loadedPluginFileNames.push_back(fileName);
 
                     PluginCapabilities pluginCapabilities = pluginInterface->getCapabilities();
+                    QList<QAction*> plugActions;
                     for (const PluginMenuLocation& loc : pluginCapabilities.menuEntryPoints) {
                         auto menuBar = m_appWindow->menuBar();
                         if (loc.menuEntryActionName.isEmpty()) {
@@ -98,8 +99,7 @@ void LC_PluginInvoker::loadPlugins(){
                         actpl->setData(loc.menuEntryActionName);
                         connect(actpl, &QAction::triggered, this, &LC_PluginInvoker::execPlug);
                         actpl->setEnabled(true);
-
-                        pluginInterface->actionCreated(actpl);
+                        if(actpl) plugActions.append(actpl);
                         //connect(m_appWindow, &QC_ApplicationWindow::windowsChanged, actpl, &QAction::setEnabled);
 
                         QStringList treemenu = loc.menuEntryPoint.split('/', Qt::SkipEmptyParts);
@@ -121,6 +121,7 @@ void LC_PluginInvoker::loadPlugins(){
                         }
                         if (currentMenu) currentMenu->addAction(actpl);
                     }
+                    pluginInterface->plugInitialized(std::move(plugActions));
                 }
             } else {
                 QMessageBox::information(m_appWindow, "Info", pluginLoader.errorString());

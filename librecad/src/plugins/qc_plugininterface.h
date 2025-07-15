@@ -71,8 +71,8 @@ public:
     virtual ~QC_PluginInterface() {}
     virtual QString name() const = 0;
     virtual PluginCapabilities getCapabilities() const = 0;
-    virtual void actionCreated([[maybe_unused]]QAction* action) { return; }
     virtual void execComm(Document_Interface *doc, QWidget *parent, QString cmd) = 0;
+    virtual void plugInitialized([[maybe_unused]]QList<QAction*> actions) { return; }
     virtual QImage* render([[maybe_unused]]Document_Interface* doc,
                            [[maybe_unused]]double b,
                            [[maybe_unused]]double l,
