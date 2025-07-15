@@ -159,7 +159,7 @@ void RS_ActionDefault::highlightHoveredEntities(LC_MouseEvent *event){
     bool controlPressed = event->isControl;
 
     bool shouldShowQuickInfoWidget = allowEntityQuickInfoAuto || (controlPressed && allowEntityQuickInfoForCTRL);
-    bool showHighlightEntity = m_highlightEntitiesOnHover || shouldShowQuickInfoWidget;
+    bool showHighlightEntity = m_highlightEntitiesOnHover /*|| shouldShowQuickInfoWidget*/;
     bool showEntityDescriptions = isShowEntityDescriptionOnHighlight();
 
     if (!showHighlightEntity && !showEntityDescriptions)
