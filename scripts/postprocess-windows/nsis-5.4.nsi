@@ -3,7 +3,8 @@
 
 ;--------------------------------
 ;Include custom settings if exists
-  !include /NONFATAL "custom.nsh"
+;  !include /NONFATAL "custom.nsh"
+  !include /NONFATAL "..\..\CI\custom-win-x64.nsh"
 
 ;--------------------------------
 ;Include version information
@@ -31,13 +32,8 @@
 ;General
 
   ;Name and file
-<<<<<<< HEAD
   Name "${APPNAME}"
-  OutFile "../../${InstallerName}.exe"
-=======
-  Name "LibreCAD"
-  OutFile "../../generated/LibreCAD-Installer.exe"
->>>>>>> origin/LibreCAD_2.2.0.2_Modified
+  OutFile "../../generated/${InstallerName}.exe"
 
   ;Default installation folder
   InstallDir "$PROGRAMFILES\LibreCAD"
@@ -103,17 +99,17 @@ FunctionEnd
 
 ;--- define Qt folders if not already defined in custom-5.3.nsi
 !ifndef Qt6_Dir
-    !define Qt6_Dir 	"d:\a\LibreCAD\Qt"
+    !define Qt6_Dir 	"D:\Work\Braga\Qt"
 !endif
 !ifndef Qt_Version
-    !define Qt_Version 	"6.9.0"
+    !define Qt_Version 	"6.9.1"
 !endif
 !ifndef Mingw_Ver
     !define Mingw_Ver 	"mingw_64"
 !endif
 ;--- folder contains mingw64-make.exe
 !define MINGW_DIR 	"C:\mingw64\bin"
-!define QTCREATOR_DIR 	"${Qt6_Dir}\Tools\QtCreator\bin"
+!define QTCREATOR_DIR 	"${Qt6_Dir}\Tools\${Mingw_Ver}\bin"
 !define QTMINGW_DIR 	"${Qt6_Dir}\${Qt_Version}\${Mingw_Ver}"
 ;--- folder contains qmake.exe
 !define QMAKE_DIR 	"${QTMINGW_DIR}\bin"
@@ -125,12 +121,13 @@ FunctionEnd
 
 Section "Install Section" SecInstall
   SetOutPath "$INSTDIR"
-  File /r "..\..\generated\Release\*.*"
-  SetOutPath "$INSTDIR\resources"
-  File /r "..\..\librecad\support\*.*"
-  File /r "..\..\generated\plugins"
+  File /r "..\..\windows\*.*"
+  File "..\..\windows\qt.conf"
+;  SetOutPath "$INSTDIR\resources"
+;  File /r "..\..\librecad\support\*.*"
+;  File /r "..\..\windows\resources\plugins"
   SetOutPath "$INSTDIR\resources\qm"
-  File /NONFATAL "..\..\generated\*.qm"
+  File /NONFATAL "${TRANSLATIONS_DIR}\qt*.qm"
   SetOutPath "$INSTDIR"
 
   ;Store installation folder
