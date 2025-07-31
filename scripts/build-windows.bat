@@ -1,25 +1,23 @@
+@echo off
 call set-windows-env.bat
 
-rem qmake6.exe librecad.pro -r -spec win32-g++
-cd ..
-cd 
-dir 
-mkdir build
+pushd ..
 
-cd build
-cmake.exe .. -G "Visual Studio 17 2022"
-cmake --build . --config Release
-rem msbuild /p:Configuration=${{ env.BUILD_CONFIGURATION }} /p:OutDir=${{ runner.temp }}\build\ "${{ env.SOLUTION_FILE_PATH }}\QtStockV3.sln"
+qmake6.exe librecad.pro -r -spec win32-g++
 
-dir *.exe
-if NOT exist Release\LibreCAD.exe (
-	echo "Building Release\LibreCAD.exe failed!"
-	exit /b /1
+if not _%1==_NoClean (
+    mingw32-make.exe clean
 )
 
-set
-windeployqt6.exe --release Release\LibreCAD --compiler-runtime
-cd
-cd scripts
+mingw32-make.exe -j12
+
+if NOT exist windows\LibreCAD.exe (
+    echo "Building windows\LibreCAD.exe failed!"
+    exit /b /1
+)
+
+windeployqt6.exe windows\LibreCAD.exe --compiler-runtime
+
+popd
 
 call build-win-setup.bat
