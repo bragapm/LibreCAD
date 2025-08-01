@@ -139,6 +139,10 @@ void LC_PluginInvoker::execPlug(){
     QC_PluginInterface *plugin = qobject_cast<QC_PluginInterface *>(action->parent());
     //get actual drawing
     QC_MDIWindow *w = m_appWindow->getCurrentMDIWindow();
+    if(!w) {
+        m_appWindow->slotFileNewFromDefaultTemplate();
+        w = m_appWindow->getCurrentMDIWindow();
+    }
     RS_Document *currdoc = w->getDocument();
     //create document interface instance
     QG_GraphicView *graphicView = w->getGraphicView();
@@ -148,6 +152,7 @@ void LC_PluginInvoker::execPlug(){
     plugin->execComm(pligundoc, m_appWindow, action->data().toString());
     //TODO call update view
     graphicView->redraw();
+
 }
 
 void LC_PluginInvoker::drawPlugs(RS_Painter* painter, int flags){
