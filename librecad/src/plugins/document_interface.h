@@ -188,6 +188,46 @@ namespace DPI {
         das,
     };
 
+    enum PaperFormat {
+        FirstPaperFormat,
+        Custom = FirstPaperFormat,
+
+        /* ISO "A" Series */
+        A0,   /* 841 x 1189 mm	33.1 x 46.8 in */
+        A1,   /* 594 x 841 mm	23.4 x 33.1 in */
+        A2,   /* 420 x 594 mm	16.5 x 23.4 in */
+        A3,   /* 297 x 420 mm	11.7 x 16.5 in */
+        A4,   /* 210 x 297 mm	8.3 x 11.7 in  */
+
+        /* Removed ISO "B" and "C" series, C5E, Comm10E, DLE, (envelope sizes) */
+
+        /* US "Office" */
+        Letter,   /* 216 x 279 mm   8.5 x 11.0 in */
+        Legal,    /* 216 x 356 mm   8.5 x 14.0 in */
+        Tabloid,  /* 279 x 432 mm   11.0 x 17.0 in */
+        /* Tabloid = Ledger = ANSI B.  Although, technically, both ANSI B and
+           Ledger are defined in the qt library as 431.8 mm x 279.4 mm / 17
+           x 11", while Tabloid is 279 x 432 mm / 11.0 x 17.0 in .  Using either
+           "Ledger" or "AnsiB" will result in the wrong page orientation when
+           printing or exporting to PDF.) */
+
+        /* ANSI */
+        //Ansi_A,   /* 216 x 279 mm	8.5 x 11.0 in */
+        //Ansi_B,   /* 279 x 432 mm	11.0 x 17.0 in */
+        Ansi_C,   /* 432 x 559 mm	17.0 x 22.0 in */
+        Ansi_D,   /* 559 x 864 mm	22.0 x 34.0 in */
+        Ansi_E,   /* 864 x 1118 mm	34.0 x 44.0 in */
+
+        /* Architectural */
+        Arch_A,    /* 229 x 305 mm	9.0 x 12.0 in */
+        Arch_B,    /* 305 x 457 mm	12.0 x 18.0 in */
+        Arch_C,    /* 457 x 610 mm	18.0 x 24.0 in */
+        Arch_D,    /* 610 x 914 mm	24.0 x 36.0 in */
+        Arch_E,    /* 914 x 1219 mm	36.0 x 48.0 in */
+
+        NPageFormat
+    };
+
 }
 
 class Plug_VertexData
@@ -585,6 +625,9 @@ public:
     virtual void unfreezeAllLayer() = 0;
 
     virtual void zoomToEntity(double centerX, double centerY, double width = 5.0, double height = 2.0) = 0;
+
+    virtual std::tuple<DPI::PaperFormat, bool> getPaperFormat() = 0;
+    virtual void setPaperFormat(DPI::PaperFormat format, bool landscape) = 0;
 };
 
 

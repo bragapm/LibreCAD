@@ -1854,6 +1854,18 @@ QImage Doc_plugin_interface::getRaster(const QPointF bottomLeft, const QPointF t
     return img;
 }
 
+std::tuple<DPI::PaperFormat, bool> Doc_plugin_interface::getPaperFormat()
+{
+    bool landscape = true;
+    DPI::PaperFormat format = static_cast<DPI::PaperFormat>(static_cast<int>(docGr->getPaperFormat(&landscape)));
+    return {format, landscape};
+}
+
+void Doc_plugin_interface::setPaperFormat(DPI::PaperFormat format, bool landscape)
+{
+    docGr->setPaperFormat(static_cast<RS2::PaperFormat>(static_cast<int>(format)), landscape);
+}
+
 void Doc_plugin_interface::toggleLayer(QString name){
     RS_LayerList* listLay = doc->getLayerList();
     RS_Layer *lay = listLay->find(name);

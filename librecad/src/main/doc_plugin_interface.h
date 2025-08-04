@@ -170,6 +170,9 @@ public:
     void zoomToEntity(double centerX, double centerY, double width = 5.0, double height = 2.0) override;
 
     QImage getRaster(const QPointF bottomLeft, const QPointF topRight, int imageX, int imageY, int borderX=0, int borderY=0, bool bgWhite = true, bool monochrome = true) override;
+
+    std::tuple<DPI::PaperFormat, bool> getPaperFormat() override;
+    void setPaperFormat(DPI::PaperFormat format, bool landscape) override;
 private:
     RS_Document *doc;
     RS_Graphic *docGr;
