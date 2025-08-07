@@ -52,6 +52,6 @@ Comment[uk]=Професійна САПР
 Comment[tr]=Profesyonel CAD Sistemi
 TryExec=librecad
 Exec=librecad %F
-Icon=librecad
+Icon=tataletak
 Categories=Graphics;Engineering;
 MimeType=image/vnd.dxf;

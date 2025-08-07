@@ -64,7 +64,7 @@ void RS_System::init(const QString& appName,
     if (QFile::decodeName( arg0).contains( "/.mount")) {
         // in AppImage QCoreApplication::applicationDirPath() directs to /lib64 of mounted AppImage
         // thus use argv[0] to extract the correct path to librecad executable
-        appDir = QFileInfo( QFile::decodeName( arg0)).absoluteFilePath();
+        appDir = QFileInfo( QFile::decodeName( arg0)).absoluteFilePath() + "/usr/bin";
         RS_DEBUG->print("%s\n", (QString("arg0:")+ QString(arg0)).toUtf8().constData());
         RS_DEBUG->print("%s\n", (QString("appDir:")+ appDir).toUtf8().constData());
     }
@@ -682,6 +682,13 @@ QStringList RS_System::getDirectoryList(const QString& _subDirectory) const
 
     for (auto& dir: ret) {
         RS_DEBUG->print("%s\n", QString("%1(): line %2: dir=%3").arg(__func__).arg(__LINE__).arg(dir).toUtf8().constData());
+    }
+
+    if(_subDirectory == "plugins") {
+        qDebug() << "appdir: " << appDir << '/n';
+        for(auto& dir : ret){
+            qDebug() << "possible dirs: " << dir << '/n';
+        }
     }
 
     return ret;

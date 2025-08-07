@@ -23,28 +23,47 @@ if [ 1 -eq $# ] && [ "clean" = "$1" ]; then
     [ -d "appdir" ] && rm -Rf appdir
     compgen -G "LibreCAD*.AppImage" >/dev/null && rm LibreCAD*.AppImage
     echo "cleaned LibreCAD AppImage files"
-    exit
 fi
 
 # create folder structure
 mkdir -p appdir/usr/bin
-mkdir -p appdir/usr/lib/librecad
 mkdir -p appdir/usr/share/applications
 mkdir -p appdir/usr/share/librecad
 mkdir -p appdir/usr/share/metainfo
 mkdir -p appdir/usr/share/doc/librecad
 mkdir -p appdir/usr/share/icons/hicolor/256x256/apps
-mkdir -p appdir/usr/share/icons/hicolor/scalable/apps
 mkdir -p appdir/usr/share/librecad/qm
 
 # strip binaries
 strip unix/librecad
-strip unix/resources/plugins/*/*.so
+strip unix/resources/plugins/*.so
 
 # copy executables and binary resources
 cp unix/librecad appdir/usr/bin/
-cp unix/resources/plugins/*/*.so appdir/usr/lib/librecad/
-cp -r unix/*.qm appdir/usr/share/librecad/qm/
+
+cp -r unix/ECWJP2Reader appdir/usr/bin
+cp unix/template.json appdir/usr/bin
+cp unix/bintang.dxf appdir/usr/bin
+
+# cp -r unix/resources appdir/usr/lib/
+# cp -r unix/resources/plugins appdir/usr/share/librecad
+
+
+SOURCE_PLUG_DIR=unix/resources/plugins/
+
+DEPLOY_PLUG_DIR=appdir/usr/bin/resources/plugins/
+# DEPLOY_PLUG_DIR=appdir/usr/lib/librecad/
+# DEPLOY_PLUG_DIR=appdir/usr/plugins/librecad/
+
+FINAL_PLUG_DIR=appdir/usr/bin/resources/plugins/
+# FINAL_PLUG_DIR=$DEPLOY_PLUG_DIR
+
+mkdir -p $FINAL_PLUG_DIR
+mkdir -p $DEPLOY_PLUG_DIR
+cp ${SOURCE_PLUG_DIR}*.so $DEPLOY_PLUG_DIR
+
+mkdir -p appdir/usr/lib/librecad/
+cp ${SOURCE_PLUG_DIR}*.so appdir/usr/lib/librecad/
 
 cp desktop/librecad.desktop appdir/usr/share/applications/
 cp desktop/org.librecad.librecad.appdata.xml appdir/usr/share/metainfo/
@@ -54,12 +73,87 @@ cp -r librecad/support/fonts appdir/usr/share/librecad/
 cp -r librecad/support/library appdir/usr/share/librecad/
 cp -r librecad/support/patterns appdir/usr/share/librecad/
 
-cp CI/librecad.svg appdir/usr/share/icons/hicolor/scalable/apps/
-convert -resize 256x256 CI/librecad.svg appdir/usr/share/icons/hicolor/256x256/apps/librecad.png
+magick librecad/res/images/tataletak.png -resize 256x256 appdir/usr/share/icons/hicolor/256x256/apps/tataletak.png
 
-wget -c https://github.com/$(wget -q https://github.com/probonopd/go-appimage/releases/expanded_assets/continuous -O - | grep "appimagetool-.*-x86_64.AppImage" | head -n 1 | cut -d '"' -f 2)
+wget -nc https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/latest/download/linuxdeploy-plugin-qt-x86_64.AppImage
+chmod +x linuxdeploy-plugin-qt-x86_64.AppImage
+
+wget -nc https://github.com/linuxdeploy/linuxdeploy/releases/latest/download/linuxdeploy-x86_64.AppImage
+chmod +x linuxdeploy-x86_64.AppImage
+
+export LINUXDEPLOY_OUTPUT_APP_NAME=LibreCAD-Tataletak
+export QMAKE=/home/hazel/Qt/6.9.1/gcc_64/bin/qmake
+export NO_STRIP=1
+export DISABLE_COPYRIGHT_FILES_DEPLOYMENT=1
+# export EXTRA_QT_MODULES='concurrent;opengl;openglwidgets;sql;uitools'
+./linuxdeploy-x86_64.AppImage \
+    --appdir ./appdir \
+    --executable ./appdir/usr/bin/librecad \
+    --desktop-file ./appdir/usr/share/applications/librecad.desktop \
+    --icon-file ./appdir/usr/share/icons/hicolor/256x256/apps/tataletak.png \
+    --plugin qt
+
+EXCLUDES=(
+    "libcap.so*"
+    "libpcre*.so*"
+    "libselinux.so*"
+    "libsystemd.so*"
+    "libkrb5*.so*"
+    "libk5crypto.so*"
+    "libgomp.so*"
+    "libgssapi*.so*"
+    "libzstd.so*"
+    "libxkb*.so*"
+    "libxcb*.so*"
+    "libgthread-2.0.so*"
+    "libglib-2.0.so*"
+    "libssl.so*"
+    "libcrypto.so*"
+    "libmuparser.so*"
+)
+
+# Remove the excluded files
+for lib in "${EXCLUDES[@]}"; do
+    rm -f appdir/usr/lib/$lib
+done
+
+rm -r appdir/usr/lib/librecad/
+mv ${DEPLOY_PLUG_DIR}*.so $FINAL_PLUG_DIR
+# rm -r ${DEPLOY_PLUG_DIR}
+PLUG_TO_LIB=$(realpath --relative-to=$FINAL_PLUG_DIR appdir/usr/lib)
+find $FINAL_PLUG_DIR -type f -name "*.so*" | while read -r file; do
+    echo "Patching RPATH for: $file"
+    patchelf --set-rpath "\$ORIGIN/$PLUG_TO_LIB:\$ORIGIN" "$file"
+done
+
+# some weird behaving dependencies
+cp /usr/lib64/libmuparser.so appdir/usr/lib
+patchelf --set-rpath '$ORIGIN' appdir/usr/lib/libmuparser.so
+cp /usr/lib64/libssl.so.3 appdir/usr/lib
+patchelf --set-rpath '$ORIGIN' appdir/usr/lib/libssl.so.3
+cp /usr/lib64/libcrypto.so.3 appdir/usr/lib
+patchelf --set-rpath '$ORIGIN' appdir/usr/lib/libcrypto.so.3
+
+
+cp -f CI/AppRun appdir/AppRun
+chmod +x appdir/AppRun
+
+patchelf --set-rpath '$ORIGIN/../lib:$ORIGIN/usr/lib:$ORIGIN/usr/bin:$ORIGIN' appdir/AppRun.wrapped
+
+# EXCLUDE_ARGS=()
+# for lib in "${EXCLUDES[@]}"; do
+#     EXCLUDE_ARGS+=( "--exclude-library" "$lib" )
+# done
+# ./linuxdeploy-x86_64.AppImage \
+#     --appdir ./appdir \
+#     --output appimage \
+#     "${EXCLUDE_ARGS[@]}"
+
+wget -nc https://github.com/$(wget -q https://github.com/probonopd/go-appimage/releases/expanded_assets/continuous -O - | grep "appimagetool-.*-x86_64.AppImage" | head -n 1 | cut -d '"' -f 2)
 chmod +x appimagetool-*.AppImage
-# Bundle EVERYTHING
-VERSION=`git describe --always` ARCH=x86_64 ./appimagetool-*.AppImage -s deploy appdir/usr/share/applications/*.desktop
-VERSION=`git describe --always` ./appimagetool-*.AppImage ./appdir
-chmod +x *.AppImage
+VERSION=Tataletak ./appimagetool-*.AppImage ./appdir
+
+./LibreCAD-Tataletak-x86_64.AppImage
+# LD_DEBUG=libs appdir/AppRun
+# LD_DEBUG=libs ./LibreCAD-Tataletak-x86_64.AppImage
+# ./LibreCAD-Tataletak-x86_64.AppImage
