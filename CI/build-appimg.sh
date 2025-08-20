@@ -32,6 +32,10 @@ mkdir -p appdir/usr/share/librecad
 mkdir -p appdir/usr/share/metainfo
 mkdir -p appdir/usr/share/doc/librecad
 mkdir -p appdir/usr/share/icons/hicolor/256x256/apps
+mkdir -p appdir/usr/share/icons/hicolor/128x128/apps
+mkdir -p appdir/usr/share/icons/hicolor/64x64/apps
+mkdir -p appdir/usr/share/icons/hicolor/32x32/apps
+mkdir -p appdir/usr/share/icons/hicolor/16x16/apps
 mkdir -p appdir/usr/share/librecad/qm
 
 # strip binaries
@@ -74,6 +78,10 @@ cp -r librecad/support/library appdir/usr/share/librecad/
 cp -r librecad/support/patterns appdir/usr/share/librecad/
 
 magick librecad/res/images/tataletak.png -resize 256x256 appdir/usr/share/icons/hicolor/256x256/apps/tataletak.png
+magick librecad/res/images/tataletak.png -resize 128x128 appdir/usr/share/icons/hicolor/128x128/apps/tataletak.png
+magick librecad/res/images/tataletak.png -resize 64x64 appdir/usr/share/icons/hicolor/64x64/apps/tataletak.png
+magick librecad/res/images/tataletak.png -resize 32x32 appdir/usr/share/icons/hicolor/32x32/apps/tataletak.png
+magick librecad/res/images/tataletak.png -resize 16x16 appdir/usr/share/icons/hicolor/16x16/apps/tataletak.png
 
 wget -nc https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/latest/download/linuxdeploy-plugin-qt-x86_64.AppImage
 chmod +x linuxdeploy-plugin-qt-x86_64.AppImage
@@ -81,8 +89,12 @@ chmod +x linuxdeploy-plugin-qt-x86_64.AppImage
 wget -nc https://github.com/linuxdeploy/linuxdeploy/releases/latest/download/linuxdeploy-x86_64.AppImage
 chmod +x linuxdeploy-x86_64.AppImage
 
+# remove problematic sql drivers
+rm -f ~/Qt/6.9.1/gcc_64/plugins/sqldrivers/libqsqlmimer.so
+rm -f ~/Qt/6.9.1/gcc_64/plugins/sqldrivers/libqsqlmysql.so
+
 export LINUXDEPLOY_OUTPUT_APP_NAME=LibreCAD-Tataletak
-export QMAKE=/home/hazel/Qt/6.9.1/gcc_64/bin/qmake
+export QMAKE=~/Qt/6.9.1/gcc_64/bin/qmake
 export NO_STRIP=1
 export DISABLE_COPYRIGHT_FILES_DEPLOYMENT=1
 # export EXTRA_QT_MODULES='concurrent;opengl;openglwidgets;sql;uitools'
