@@ -110,6 +110,7 @@ EXCLUDES=(
     "libssl.so*"
     "libcrypto.so*"
     "libmuparser.so*"
+    "libcups.so*"
 )
 
 # Remove the excluded files
@@ -127,8 +128,8 @@ find $FINAL_PLUG_DIR -type f -name "*.so*" | while read -r file; do
 done
 
 # some weird behaving dependencies
-cp /usr/lib64/libmuparser.so appdir/usr/lib
-patchelf --set-rpath '$ORIGIN' appdir/usr/lib/libmuparser.so
+cp /usr/lib64/libmuparser.so* appdir/usr/lib
+patchelf --set-rpath '$ORIGIN' appdir/usr/lib/libmuparser.so*
 cp /usr/lib64/libssl.so.3 appdir/usr/lib
 patchelf --set-rpath '$ORIGIN' appdir/usr/lib/libssl.so.3
 cp /usr/lib64/libcrypto.so.3 appdir/usr/lib
