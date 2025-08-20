@@ -75,7 +75,8 @@ unix {
 win32 {
     TARGET = LibreCAD
 
-    CONFIG += console
+    CONFIG -= console
+    CONFIG += windows
     DEFINES += QC_APPDIR="\"LibreCAD\""
 
     # add MSYSGIT_DIR = PathToGitBinFolder (without quotes) in custom.pro file, for commit hash in about dialog
