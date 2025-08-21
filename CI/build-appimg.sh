@@ -166,7 +166,7 @@ wget -nc https://github.com/$(wget -q https://github.com/probonopd/go-appimage/r
 chmod +x appimagetool-*.AppImage
 VERSION=Tataletak ./appimagetool-*.AppImage ./appdir
 
-./LibreCAD-Tataletak-x86_64.AppImage
+# ./LibreCAD-Tataletak-x86_64.AppImage
 # LD_DEBUG=libs appdir/AppRun
 # LD_DEBUG=libs ./LibreCAD-Tataletak-x86_64.AppImage
 # ./LibreCAD-Tataletak-x86_64.AppImage
