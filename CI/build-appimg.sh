@@ -92,6 +92,7 @@ chmod +x linuxdeploy-x86_64.AppImage
 # remove problematic sql drivers
 rm -f ~/Qt/6.9.1/gcc_64/plugins/sqldrivers/libqsqlmimer.so
 rm -f ~/Qt/6.9.1/gcc_64/plugins/sqldrivers/libqsqlmysql.so
+rm -f ~/Qt/6.9.1/gcc_64/plugins/sqldrivers/libqsqlpsql.so
 
 export LINUXDEPLOY_OUTPUT_APP_NAME=LibreCAD-Tataletak
 export QMAKE=~/Qt/6.9.1/gcc_64/bin/qmake
