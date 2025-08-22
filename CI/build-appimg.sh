@@ -77,11 +77,11 @@ cp -r librecad/support/fonts appdir/usr/share/librecad/
 cp -r librecad/support/library appdir/usr/share/librecad/
 cp -r librecad/support/patterns appdir/usr/share/librecad/
 
-magick librecad/res/images/tataletak.png -resize 256x256 appdir/usr/share/icons/hicolor/256x256/apps/tataletak.png
-magick librecad/res/images/tataletak.png -resize 128x128 appdir/usr/share/icons/hicolor/128x128/apps/tataletak.png
-magick librecad/res/images/tataletak.png -resize 64x64 appdir/usr/share/icons/hicolor/64x64/apps/tataletak.png
-magick librecad/res/images/tataletak.png -resize 32x32 appdir/usr/share/icons/hicolor/32x32/apps/tataletak.png
-magick librecad/res/images/tataletak.png -resize 16x16 appdir/usr/share/icons/hicolor/16x16/apps/tataletak.png
+convert librecad/res/images/tataletak.png -resize 256x256 appdir/usr/share/icons/hicolor/256x256/apps/tataletak.png
+convert librecad/res/images/tataletak.png -resize 128x128 appdir/usr/share/icons/hicolor/128x128/apps/tataletak.png
+convert librecad/res/images/tataletak.png -resize 64x64 appdir/usr/share/icons/hicolor/64x64/apps/tataletak.png
+convert librecad/res/images/tataletak.png -resize 32x32 appdir/usr/share/icons/hicolor/32x32/apps/tataletak.png
+convert librecad/res/images/tataletak.png -resize 16x16 appdir/usr/share/icons/hicolor/16x16/apps/tataletak.png
 
 wget -nc https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/latest/download/linuxdeploy-plugin-qt-x86_64.AppImage
 chmod +x linuxdeploy-plugin-qt-x86_64.AppImage
@@ -141,13 +141,19 @@ find $FINAL_PLUG_DIR -type f -name "*.so*" | while read -r file; do
     patchelf --set-rpath "\$ORIGIN/$PLUG_TO_LIB:\$ORIGIN" "$file"
 done
 
+
+deploy_lib() {
+    local libname="$1"
+    local target_dir=appdir/usr/lib
+
+    lib_dir=$( ldconfig -p | grep $libname | awk '{print $4}' | head -n1 )
+    cp $lib_dir $target_dir/$libname
+    patchelf --set-rpath '$ORIGIN' $target_dir/$libname
+}
 # some weird behaving dependencies
-cp /usr/lib64/libmuparser.so* appdir/usr/lib
-patchelf --set-rpath '$ORIGIN' appdir/usr/lib/libmuparser.so*
-cp /usr/lib64/libssl.so.3 appdir/usr/lib
-patchelf --set-rpath '$ORIGIN' appdir/usr/lib/libssl.so.3
-cp /usr/lib64/libcrypto.so.3 appdir/usr/lib
-patchelf --set-rpath '$ORIGIN' appdir/usr/lib/libcrypto.so.3
+deploy_lib libmuparser.so.2
+deploy_lib libssl.so.3
+deploy_lib libcrypto.so.3
 
 
 cp -f CI/AppRun appdir/AppRun
