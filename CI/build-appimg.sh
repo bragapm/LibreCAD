@@ -118,7 +118,7 @@ EXCLUDES=(
     "libgssapi*.so*"
     "libzstd.so*"
     "libxkb*.so*"
-    "libxcb*.so*"
+    #"libxcb*.so*"
     "libgthread-2.0.so*"
     "libglib-2.0.so*"
     "libssl.so*"
