@@ -36,3 +36,11 @@ void LC_ActionContext::setDocumentAndView(RS_Document *document, RS_GraphicView 
         m_graphicView = view;
         m_entityContainer = document;
 }
+
+void LC_ActionContext::setGraphicView(RS_GraphicView *view) {
+    m_graphicView = view;
+}
+
+void LC_ActionContext::setEntityContainer(RS_EntityContainer *container) {
+    m_entityContainer = container;
+}

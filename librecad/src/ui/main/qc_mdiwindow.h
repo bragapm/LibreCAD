@@ -29,6 +29,8 @@
 
 #include "rs_graphic.h"
 
+class QTabWidget;
+class QWidget;
 class QG_GraphicView;
 class LC_DocumentsStorage;
 class LC_ActionContext;
@@ -109,6 +111,10 @@ protected:
     QG_GraphicView *m_graphicView = nullptr;
     // Document
     RS_Document *m_document = nullptr;
+    // Tab widget for Model and Layout
+    QTabWidget *m_tabWidget = nullptr;
+    // Layout view
+    QWidget *m_layoutView = nullptr;
     // Does the window own the document?
     bool m_owner = false;
     // List of known child windows that show blocks of the same drawing.

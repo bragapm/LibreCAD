@@ -579,7 +579,7 @@ void QC_ApplicationWindow::doWindowActivated(QMdiSubWindow *w, bool forced) {
         return;
     }
 
-    if (w == m_activeMdiSubWindow) {
+    if (w == m_activeMdiSubWindow && !forced) {
         // this may occur after file open, so additional update is needed :(
         RS_GraphicView* activatedGraphicView = getCurrentGraphicView();
         if (activatedGraphicView != nullptr) {

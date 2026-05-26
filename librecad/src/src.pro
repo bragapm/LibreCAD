@@ -393,6 +393,7 @@ HEADERS += \
     lib/engine/settings/lc_settingsexporter.h \
     lib/engine/settings/rs_settings.h \
     lib/engine/document/entities/rs_solid.h \
+    lib/engine/document/entities/lc_viewport.h \
     lib/engine/document/entities/rs_spline.h \
     lib/engine/document/entities/lc_splinepoints.h \
     lib/engine/rs_system.h \
@@ -447,6 +448,8 @@ HEADERS += \
     ui/main/persistence/lc_documentsstorage.h \
     lib/gui/render/widget/lc_graphicviewrenderer.cpp \
     lib/gui/render/widget/lc_printpreviewviewrenderer.cpp \
+    lib/gui/render/widget/lc_layoutviewrenderer.cpp \
+    lib/gui/render/widget/lc_layoutviewrenderer.h \
     lib/gui/render/widget/lc_widgetviewportrenderer.cpp \
     lib/modification/lc_align.h \
     ui/action_options/curve/lc_actiondrawarc2poptions.h \
@@ -503,6 +506,7 @@ HEADERS += \
     ui/main/support/lc_infocursorsettingsmanager.h \
     ui/main/workspaces/lc_workspacesinvoker.h \
     ui/view/lc_printpreviewview.h \
+    ui/view/lc_layoutview.h \
     lib/information/rs_locale.h \
     lib/information/rs_information.h \
     lib/information/rs_infoarea.h \
@@ -607,6 +611,7 @@ SOURCES += \
     lib/gui/render/lc_graphicviewportrenderer.cpp \
     lib/gui/render/widget/lc_graphicviewrenderer.cpp \
     lib/gui/render/widget/lc_printpreviewviewrenderer.cpp \
+    lib/gui/render/widget/lc_layoutviewrenderer.cpp \
     lib/gui/render/widget/lc_widgetviewportrenderer.cpp \
     lib/modification/lc_align.cpp \
     ui/action_options/curve/lc_actiondrawarc2poptions.cpp \
@@ -684,6 +689,7 @@ SOURCES += \
     lib/engine/document/entities/rs_polyline.cpp \
     lib/engine/settings/rs_settings.cpp \
     lib/engine/document/entities/rs_solid.cpp \
+    lib/engine/document/entities/lc_viewport.cpp \
     lib/engine/document/entities/rs_spline.cpp \
     lib/engine/document/entities/lc_splinepoints.cpp \
     lib/engine/rs_system.cpp \
@@ -743,6 +749,7 @@ SOURCES += \
     ui/main/support/lc_infocursorsettingsmanager.cpp \
     ui/main/workspaces/lc_workspacesinvoker.cpp \
     ui/view/lc_printpreviewview.cpp \
+    ui/view/lc_layoutview.cpp \
     lib/information/rs_locale.cpp \
     lib/information/rs_information.cpp \
     lib/information/rs_infoarea.cpp \
@@ -818,6 +825,7 @@ HEADERS += actions/dock_widgets/block/rs_actionblocksadd.h \
     actions/drawing/draw/curve/lc_actiondrawparabola4points.h \
     actions/drawing/draw/curve/lc_actiondrawparabolaFD.h \
     actions/drawing/draw/spline/lc_actiondrawsplinepoints.h \
+    actions/drawing/lc_actiondrawviewport.h \
     actions/drawing/draw/curve/rs_actiondrawarc.h \
     actions/drawing/draw/curve/rs_actiondrawarc3p.h \
     actions/drawing/draw/curve/rs_actiondrawarctangential.h \
@@ -988,6 +996,7 @@ SOURCES += actions/dock_widgets/block/rs_actionblocksadd.cpp \
     actions/drawing/draw/curve/lc_actiondrawparabola4points.cpp \
     actions/drawing/draw/curve/lc_actiondrawparabolaFD.cpp \
     actions/drawing/draw/spline/lc_actiondrawsplinepoints.cpp \
+    actions/drawing/lc_actiondrawviewport.cpp \
     actions/drawing/draw/curve/rs_actiondrawarc.cpp \
     actions/drawing/draw/curve/rs_actiondrawarc3p.cpp \
     actions/drawing/draw/curve/rs_actiondrawarctangential.cpp \

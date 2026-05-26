@@ -31,12 +31,18 @@
 #include <QPrintDialog>
 #include <QPrinter>
 #include <QMdiArea>
+#include <QTabWidget>
+#include <QWidget>
 
 #include "lc_documentsstorage.h"
 #include "lc_graphicviewport.h"
 #include "lc_printpreviewview.h"
+#include "lc_layoutview.h"
 #include "qc_applicationwindow.h"
 #include "qc_mdiwindow.h"
+#include "rs_block.h"
+#include "rs_blocklist.h"
+#include "lc_actioncontext.h"
 
 #include "lc_fontfileviewer.h"
 #include "qg_exitdialog.h"
@@ -108,7 +114,66 @@ void QC_MDIWindow::setupGraphicView(QWidget *parent, bool printPreview, LC_Actio
         connect(m_graphicView, &RS_GraphicView::previous_zoom_state, receiver, &QC_ApplicationWindow::setPreviousZoomEnable);
     }
 
-    setWidget(m_graphicView);
+    if (!printPreview) {
+        m_tabWidget = new QTabWidget(this);
+        m_tabWidget->setTabPosition(QTabWidget::South);
+
+        m_tabWidget->addTab(m_graphicView, tr("Model"));
+
+        LC_LayoutView* layoutView = new LC_LayoutView(this, m_document, actionContext);
+        layoutView->initView();
+        m_layoutView = layoutView;
+        m_layoutView->setObjectName("lc_layoutview");
+        m_tabWidget->addTab(m_layoutView, tr("Layout"));
+
+        // Restore document's graphic view to Model view (QG_GraphicView constructor
+        // calls doc->setGraphicView(this) which overrode it with the Layout view)
+        m_document->setGraphicView(m_graphicView);
+        actionContext->setDocumentAndView(m_document, m_graphicView);
+
+        m_tabWidget->setCurrentIndex(0);
+        setWidget(m_tabWidget);
+
+        connect(m_tabWidget, &QTabWidget::currentChanged, this, [this](int index) {
+            auto receiver = dynamic_cast<QC_ApplicationWindow *>(this->window());
+            if (receiver) {
+                receiver->slotWindowActivatedForced(this);
+            }
+            if (QG_GraphicView* gv = getGraphicView()) {
+                gv->setFocus();
+            }
+
+            LC_ActionContext* actionCtx = QC_ApplicationWindow::getAppWindow()->getActionContext();
+            if (actionCtx) {
+                if (index == 1) { // Layout tab
+                    RS_Graphic* graphic = dynamic_cast<RS_Graphic*>(m_document);
+                    if (graphic) {
+                        RS_BlockList* blockList = graphic->getBlockList();
+                        RS_Block* paperSpace = nullptr;
+                        for(auto block : *blockList) {
+                            if(block && block->getName() == "*Paper_Space") {
+                                paperSpace = block;
+                                break;
+                            }
+                        }
+                        if(!paperSpace) {
+                            paperSpace = new RS_Block(graphic, RS_BlockData("*Paper_Space", RS_Vector(0,0), false));
+                            blockList->add(paperSpace);
+                        }
+                        // Switch action context to paper space for Layout tab
+                        actionCtx->setEntityContainer(paperSpace);
+                        actionCtx->setGraphicView(dynamic_cast<LC_LayoutView*>(m_layoutView));
+                    }
+                } else { // Model tab
+                    // Restore action context to model space
+                    actionCtx->setEntityContainer(m_document);
+                    actionCtx->setGraphicView(m_graphicView);
+                }
+            }
+        });
+    } else {
+        setWidget(m_graphicView);
+    }
 }
 
 void QC_MDIWindow::addWidgetsListeners(){
@@ -131,6 +196,9 @@ void QC_MDIWindow::removeWidgetsListeners() const {
 
 
 QG_GraphicView* QC_MDIWindow::getGraphicView() const{
+    if (m_tabWidget) {
+        return qobject_cast<QG_GraphicView*>(m_tabWidget->currentWidget());
+    }
     return m_graphicView;
 }
 
@@ -143,8 +211,8 @@ unsigned QC_MDIWindow::getId() const{
 }
 
 RS_EventHandler* QC_MDIWindow::getEventHandler() const{
-    if (m_graphicView) {
-        return m_graphicView->getEventHandler();
+    if (QG_GraphicView* gv = getGraphicView()) {
+        return gv->getEventHandler();
     }
     return nullptr;
 }

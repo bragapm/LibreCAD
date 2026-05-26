@@ -65,7 +65,9 @@ public:
     virtual RS_EntityContainer* getEntityContainer();
     virtual RS_GraphicView* getGraphicView();
 
+    virtual void setEntityContainer(RS_EntityContainer* container);
     virtual void setDocumentAndView(RS_Document *document, RS_GraphicView *view);
+    virtual void setGraphicView(RS_GraphicView *view);
 
     virtual void setSnapMode([[maybe_unused]]const RS_SnapMode &mode) {}
     virtual void setCurrentAction(RS2::ActionType, [[maybe_unused]]void* data){}
