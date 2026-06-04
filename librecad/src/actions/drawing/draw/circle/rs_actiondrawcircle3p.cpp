@@ -58,7 +58,7 @@ void RS_ActionDrawCircle3P::reset(){
 void RS_ActionDrawCircle3P::doTrigger() {
     preparePreview();
     if (m_actionData->data.isValid()){
-        auto *circle = new RS_Circle{m_container, m_actionData->data};
+        auto *circle = new RS_Circle{getContainer(), m_actionData->data};
 
         setPenAndLayerToActive(circle);
 

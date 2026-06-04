@@ -51,8 +51,8 @@ void RS_ActionModifyAttributes::doTrigger(bool keepSelected){
     if (m_graphic) {
         m_graphicView->setForcedActionKillAllowed(false);
         if (RS_DIALOGFACTORY->requestAttributesDialog(data,*m_graphic->getLayerList())) {
-            RS_Modification m(*m_container, m_viewport);
-            m.changeAttributes(data, m_selectedEntities, m_container, keepSelected);
+            RS_Modification m(*getContainer(), m_viewport);
+            m.changeAttributes(data, m_selectedEntities, getContainer(), keepSelected);
         }
         m_graphicView->setForcedActionKillAllowed(true);
     }

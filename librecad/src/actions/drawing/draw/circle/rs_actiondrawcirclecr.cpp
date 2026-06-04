@@ -51,13 +51,13 @@ void RS_ActionDrawCircleCR::init(int status){
 }
 
 void RS_ActionDrawCircleCR::doTrigger() {
-    auto *circle = new RS_Circle(m_container, *m_circleData);
+    auto *circle = new RS_Circle(getContainer(), *m_circleData);
     setPenAndLayerToActive(circle);
 
     switch (getStatus()) {
         case SetCenter: // FIXME _ SAND _ _ REVIEW!!!!!
             // Issue #2188, cannot add out of an undocycle
-            //m_container->addEntity(circle);
+            //getContainer()->addEntity(circle);
             moveRelativeZero(circle->getCenter());
             break;
         case SetRadius:

@@ -12,10 +12,51 @@
 #include <QWheelEvent>
 #include <QMouseEvent>
 #include <QKeyEvent>
+#include "rs_painter.h"
+#include "rs_actionselectsingle.h"
+#include "lc_graphicviewport.h"
+#include "rs_graphic.h"
+#include "rs_block.h"
+#include "rs_blocklist.h"
+
+class ScopedViewportTransform {
+public:
+    ScopedViewportTransform(LC_LayoutView* view, LC_Viewport* activeVp) : m_viewport(view->getViewPort()) {
+        if (activeVp && m_viewport) {
+            oldFactor = m_viewport->getFactor();
+            oldOffsetX = m_viewport->getOffsetX();
+            oldOffsetY = m_viewport->getOffsetY();
+
+            double vpScale = activeVp->getData().modelScale;
+            RS_Vector modelCenter = activeVp->getData().modelCenter;
+            RS_Vector c1 = activeVp->getCorner1();
+            RS_Vector c2 = activeVp->getCorner2();
+            RS_Vector vpCenter = (c1 + c2) * 0.5;
+
+            double effFactor = vpScale * oldFactor.x;
+            int effOffsetX = std::round((vpCenter.x - vpScale * modelCenter.x) * oldFactor.x + oldOffsetX);
+            int effOffsetY = std::round((vpCenter.y - vpScale * modelCenter.y) * oldFactor.y + oldOffsetY);
+
+            m_viewport->justSetOffsetAndFactor(effOffsetX, effOffsetY, effFactor);
+            applied = true;
+        }
+    }
+    ~ScopedViewportTransform() {
+        if (applied) {
+            m_viewport->justSetOffsetAndFactor(oldOffsetX, oldOffsetY, oldFactor.x);
+        }
+    }
+private:
+    LC_GraphicViewport* m_viewport;
+    bool applied = false;
+    RS_Vector oldFactor;
+    int oldOffsetX, oldOffsetY;
+};
 
 LC_LayoutView::LC_LayoutView(QWidget* parent, RS_Document* doc, LC_ActionContext* actionContext)
     : QG_GraphicView(parent, doc, actionContext)
-    , m_layoutActionContext(actionContext) {
+    , m_layoutActionContext(actionContext)
+    , m_document(doc) {
     RS_Graphic* graphic = dynamic_cast<RS_Graphic*>(doc);
     if (graphic) {
         RS_BlockList* blockList = graphic->getBlockList();
@@ -26,11 +67,13 @@ LC_LayoutView::LC_LayoutView(QWidget* parent, RS_Document* doc, LC_ActionContext
                 break;
             }
         }
-        if(!paperSpace) {
+        if (!paperSpace) {
             paperSpace = new RS_Block(graphic, RS_BlockData("*Paper_Space", RS_Vector(0,0), false));
-            blockList->add(paperSpace);
+            graphic->addBlock(paperSpace);
         }
-        setContainer(paperSpace);
+        m_paperSpace = paperSpace;
+        setContainer(m_paperSpace);
+        m_layoutActionContext->setEntityContainer(m_paperSpace);
     }
 }
 
@@ -55,7 +98,7 @@ void LC_LayoutView::initView() {
 }
 
 void LC_LayoutView::createViewRenderer() {
-    setRenderer(std::make_unique<LC_LayoutViewRenderer>(getViewPort(), this));
+    setRenderer(std::make_unique<LC_LayoutViewRenderer>(getViewPort(), this, this));
 }
 
 void LC_LayoutView::setDrawingMode(RS2::DrawingMode m) const {
@@ -109,6 +152,9 @@ void LC_LayoutView::mouseDoubleClickEvent(QMouseEvent* e) {
             
             if (m_activeViewport) {
                 m_activeViewport->setActive(true);
+                m_layoutActionContext->setEntityContainer(m_document);
+            } else {
+                m_layoutActionContext->setEntityContainer(m_paperSpace);
             }
             
             redraw();
@@ -126,9 +172,20 @@ void LC_LayoutView::wheelEvent(QWheelEvent* e) {
             double factor = e->angleDelta().y() > 0 ? 1.25 : 0.8;
             double currentScale = m_activeViewport->getModelScale();
             
+            // Get mouse position in Model Space
+            RS_Vector mouseModelPos;
+            {
+                ScopedViewportTransform svt(this, m_activeViewport);
+                mouseModelPos = getViewPort()->toUCSFromGui(e->position().x(), e->position().y());
+            }
+
+            // Calculate new model center to zoom centered on mouse
+            RS_Vector currentModelCenter = m_activeViewport->getModelCenter();
+            RS_Vector newModelCenter = mouseModelPos - (mouseModelPos - currentModelCenter) / factor;
+
             m_activeViewport->setModelScale(currentScale * factor);
+            m_activeViewport->setModelCenter(newModelCenter);
             m_activeViewport->setCustomView(true);
-            
             redraw();
             e->accept();
             return;
@@ -176,10 +233,15 @@ void LC_LayoutView::mousePressEvent(QMouseEvent* e) {
                 // Clicked outside, deactivate
                 m_activeViewport->setActive(false);
                 m_activeViewport = nullptr;
+                m_layoutActionContext->setEntityContainer(m_paperSpace);
                 redraw();
                 // We let the event pass through in case it needs to trigger standard selection etc.
             }
         }
+        
+        ScopedViewportTransform svt(this, m_activeViewport);
+        QG_GraphicView::mousePressEvent(e);
+        return;
     }
     QG_GraphicView::mousePressEvent(e);
 }
@@ -214,6 +276,8 @@ void LC_LayoutView::mouseMoveEvent(QMouseEvent* e) {
         e->accept();
         return;
     }
+    
+    ScopedViewportTransform svt(this, m_activeViewport);
     QG_GraphicView::mouseMoveEvent(e);
 }
 
@@ -223,6 +287,8 @@ void LC_LayoutView::mouseReleaseEvent(QMouseEvent* e) {
         e->accept();
         return;
     }
+    
+    ScopedViewportTransform svt(this, m_activeViewport);
     QG_GraphicView::mouseReleaseEvent(e);
 }
 
@@ -230,6 +296,7 @@ void LC_LayoutView::keyPressEvent(QKeyEvent* e) {
     if (e->key() == Qt::Key_Escape && m_activeViewport) {
         m_activeViewport->setActive(false);
         m_activeViewport = nullptr;
+        m_layoutActionContext->setEntityContainer(m_paperSpace);
         redraw();
         e->accept();
         return;

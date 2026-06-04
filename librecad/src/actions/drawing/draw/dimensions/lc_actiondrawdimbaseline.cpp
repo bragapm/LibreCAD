@@ -48,7 +48,7 @@ void LC_ActionDrawDimBaseline::reset(){
 
 void LC_ActionDrawDimBaseline::doTrigger() {
     preparePreview();
-    auto *dim = createDim(m_container);
+    auto *dim = createDim(getContainer());
     setPenAndLayerToActive(dim);
     dim->update();
 

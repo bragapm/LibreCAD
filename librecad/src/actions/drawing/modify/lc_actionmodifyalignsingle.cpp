@@ -49,7 +49,7 @@ void LC_ActionModifyAlignSingle::doTrigger() {
             RS_Entity *clone = LC_Align::createCloneMovedToTarget(m_entityToAlign, target, true, hAlign, vAlign);
             if (clone != nullptr) {
                 clone->setSelected(false);
-                m_container->addEntity(clone);
+                getContainer()->addEntity(clone);
 
                 undoCycleReplace(m_entityToAlign, clone);
             }
@@ -93,8 +93,8 @@ void LC_ActionModifyAlignSingle::onMouseMoveEvent(int status, LC_MouseEvent *e) 
                     break;
                 }
                 case LC_Align::DRAWING: {
-                    min = m_container->getMin();
-                    max = m_container->getMax();
+                    min = getContainer()->getMin();
+                    max = getContainer()->getMax();
                     break;
                 }
                 default:
@@ -279,8 +279,8 @@ void LC_ActionModifyAlignSingle::onMouseLeftButtonRelease(int status, LC_MouseEv
                     break;
                 }
                 case LC_Align::DRAWING:
-                    m_alignMin = m_container->getMin();
-                    m_alignMax = m_container->getMax();
+                    m_alignMin = getContainer()->getMin();
+                    m_alignMax = getContainer()->getMax();
                     setStatus(SelectEntity);
                     break;
                 default:
@@ -341,8 +341,8 @@ void LC_ActionModifyAlignSingle::setAlignType(int a) {
     if (a != alignType) {
         LC_ActionModifyAlignData::setAlignType(a);
         if (a == LC_Align::AlignMode::DRAWING){
-            m_alignMin = m_container->getMin();
-            m_alignMax = m_container->getMax();
+            m_alignMin = getContainer()->getMin();
+            m_alignMax = getContainer()->getMax();
             setStatus(SelectEntity);
         }
         else {

@@ -40,7 +40,7 @@ void LC_ActionPolylineChangeSegmentType::doTrigger() {
         createdPolyline->setLayer(m_polyline->getLayer());
         createdPolyline->setPen(m_polyline->getPen(false));
 
-        m_container->addEntity(createdPolyline);
+        getContainer()->addEntity(createdPolyline);
 
         undoCycleReplace(m_polyline, createdPolyline);
         m_polyline = createdPolyline;
@@ -113,7 +113,7 @@ void LC_ActionPolylineChangeSegmentType::onMouseMoveEvent(int status, LC_MouseEv
 }
 
 RS_Polyline* LC_ActionPolylineChangeSegmentType::createModifiedPolyline() {
-    auto* result = new RS_Polyline(m_container);
+    auto* result = new RS_Polyline(getContainer());
 
     for (RS_Entity *entity = m_polyline->firstEntity(RS2::ResolveAll); entity; entity = m_polyline->nextEntity(RS2::ResolveAll)) {
         if (m_polylineSegment == entity){

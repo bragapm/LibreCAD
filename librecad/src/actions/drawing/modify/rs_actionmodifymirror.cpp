@@ -53,7 +53,7 @@ RS_ActionModifyMirror::~RS_ActionModifyMirror() = default;
 
 void RS_ActionModifyMirror::doTrigger(bool keepSelected) {
     RS_DEBUG->print("RS_ActionModifyMirror::trigger()");
-    RS_Modification m(*m_container, m_viewport);
+    RS_Modification m(*getContainer(), m_viewport);
     m.mirror(m_actionData->data, m_selectedEntities, false, keepSelected);
 }
 

@@ -56,7 +56,7 @@ void RS_ActionSelectIntersected::init(int status) {
 void RS_ActionSelectIntersected::doTrigger() {
     if (m_actionData->v1.valid && m_actionData->v2.valid){
         if (toGuiDX(m_actionData->v1.distanceTo(m_actionData->v2)) > 10){
-            RS_Selection s(*m_container, m_viewport);
+            RS_Selection s(*getContainer(), m_viewport);
             s.selectIntersected(m_actionData->v1, m_actionData->v2, m_performSelect);
             init(SetPoint1);
         }

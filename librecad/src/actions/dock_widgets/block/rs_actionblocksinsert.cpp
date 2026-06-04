@@ -88,7 +88,7 @@ void RS_ActionBlocksInsert::trigger(){
     deletePreview();
 
     if (m_block != nullptr) {
-        RS_Creation creation(m_container, m_viewport);
+        RS_Creation creation(getContainer(), m_viewport);
         m_data->updateMode = RS2::Update;
         auto insertData = m_data.get();
         auto insertDataCopy = new RS_InsertData(*insertData);

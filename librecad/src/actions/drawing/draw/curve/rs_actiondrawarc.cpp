@@ -62,7 +62,7 @@ void RS_ActionDrawArc::doTrigger() {
     if (m_alternateArcDirection){
         m_arcData->reversed = !m_arcData->reversed;
     }
-    auto arc = new RS_Arc(m_container, *m_arcData);
+    auto arc = new RS_Arc(getContainer(), *m_arcData);
     setPenAndLayerToActive(arc);
     moveRelativeZero(arc->getCenter());
     undoCycleAdd(arc);

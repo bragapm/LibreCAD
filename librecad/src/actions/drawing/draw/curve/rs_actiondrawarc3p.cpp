@@ -64,7 +64,7 @@ void RS_ActionDrawArc3P::init(int status) {
 void RS_ActionDrawArc3P::doTrigger() {
     preparePreview(m_alternatedPoints);
     if (m_actionData->data.isValid()){
-        auto *arc = new RS_Arc{m_container, m_actionData->data};
+        auto *arc = new RS_Arc{getContainer(), m_actionData->data};
 
         setPenAndLayerToActive(arc);
 

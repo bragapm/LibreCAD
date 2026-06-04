@@ -66,7 +66,7 @@ void RS_ActionDrawLineRelAngle::finish(bool updateTB) {
 }
 
 void RS_ActionDrawLineRelAngle::doTrigger() {
-    RS_Creation creation(m_container, m_viewport);
+    RS_Creation creation(getContainer(), m_viewport);
     moveRelativeZero(*m_pos); // fixme - to undoable?
     // the created line is added to undo and the view automatically by RS_Creation
     creation.createLineRelAngle(*m_pos,m_entity,m_relativeAngleRad,m_length);

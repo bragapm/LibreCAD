@@ -38,7 +38,7 @@ LC_ActionCircleDimBase::~LC_ActionCircleDimBase() = default;
 void LC_ActionCircleDimBase::doTrigger() {
     if (m_entity != nullptr) {
         preparePreview(m_entity, *m_position, m_alternateAngle);
-        auto *newEntity = createDim(m_container);
+        auto *newEntity = createDim(getContainer());
 
         setPenAndLayerToActive(newEntity);
         newEntity->update();

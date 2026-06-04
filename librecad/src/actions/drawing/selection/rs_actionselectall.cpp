@@ -41,7 +41,7 @@ void RS_ActionSelectAll::init(int status) {
 }
 
 void RS_ActionSelectAll::trigger() {
-    RS_Selection s(*m_container, m_viewport);
+    RS_Selection s(*getContainer(), m_viewport);
     s.selectAll(m_select);
     updateSelectionWidget();
 }

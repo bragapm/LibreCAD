@@ -84,7 +84,7 @@ void RS_ActionDrawEllipseAxis::init(int status){
 }
 
 void RS_ActionDrawEllipseAxis::doTrigger() {
-    auto *ellipse = new RS_Ellipse{m_container,
+    auto *ellipse = new RS_Ellipse{getContainer(),
                                    {m_actionData->center, m_actionData->m_vMajorP, m_actionData->ratio,
                                     m_actionData->angle1, m_actionData->angle2, m_actionData->reversed}
     };

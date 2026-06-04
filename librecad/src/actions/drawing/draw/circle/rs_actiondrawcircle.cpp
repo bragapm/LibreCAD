@@ -41,7 +41,7 @@ void RS_ActionDrawCircle::reset() {
 }
 
 void RS_ActionDrawCircle::doTrigger() {
-    auto* circle = new RS_Circle(m_container,*m_circleData);
+    auto* circle = new RS_Circle(getContainer(),*m_circleData);
     setPenAndLayerToActive(circle);
 
     if (m_moveRelPointAtCenterAfterTrigger){

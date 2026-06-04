@@ -58,7 +58,7 @@ void RS_ActionDrawLineParallel::setNumber(int n){
 }
 
 void RS_ActionDrawLineParallel::doTrigger() {
-    RS_Creation creation(m_container, m_viewport);
+    RS_Creation creation(getContainer(), m_viewport);
     RS_Entity *e = creation.createParallel(*m_coord,m_distance, m_numberToCreate,m_entity);
 
     if (e != nullptr){

@@ -89,7 +89,7 @@ void RS_ActionDrawImage::reset() {
 
 void RS_ActionDrawImage::doTrigger() {
     if (!m_imageData->data.file.isEmpty()){
-        RS_Creation creation(m_container, m_viewport);
+        RS_Creation creation(getContainer(), m_viewport);
         creation.createImage(&m_imageData->data);
     }
 

@@ -108,7 +108,7 @@ void LC_ActionPenApply::onMouseLeftButtonRelease([[maybe_unused]]int status, LC_
                     // fixme - sand - replace by version with explicitly provided entity rather than one that relies on selection
                     en->setSelected(true);
 
-                    RS_Modification m(*m_container, m_viewport);
+                    RS_Modification m(*getContainer(), m_viewport);
                     m.changeAttributes(data, false);
                 }
                 break;

@@ -63,7 +63,7 @@ LC_ActionDrawEllipse1Point::~LC_ActionDrawEllipse1Point() = default;
 
 void LC_ActionDrawEllipse1Point::doTrigger() {
     double ratio = m_ActionData->getRatio();
-    auto *ellipse = new RS_Ellipse{m_container,
+    auto *ellipse = new RS_Ellipse{getContainer(),
                                    {m_ActionData->center, getMajorP(), ratio,
                                     m_ActionData->angle1, m_ActionData->angle2, m_ActionData->reversed}
     };

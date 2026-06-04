@@ -21,6 +21,7 @@
 
 #include "lc_viewport.h"
 #include "rs_painter.h"
+#include "rs_line.h"
 #include "rs_graphic.h"
 #include "rs_math.h"
 
@@ -47,6 +48,8 @@ void LC_Viewport::calculateBorders() {
 void LC_Viewport::draw(RS_Painter* painter) {
     if (painter == nullptr) return;
 
+    RS_Pen originalPen = painter->getPen();
+
     // Draw viewport border as a rectangle
     double x1, y1, x2, y2;
     painter->toGui(m_data.corner1, x1, y1);
@@ -56,9 +59,10 @@ void LC_Viewport::draw(RS_Painter* painter) {
     if (x1 > x2) std::swap(x1, x2);
     if (y1 > y2) std::swap(y1, y2);
 
-    // Draw dashed rectangle border. Make it thicker if active.
-    RS2::LineWidth width = m_isActive ? RS2::Width05 : RS2::Width00;
-    RS_Pen borderPen(RS_Color(0, 100, 200), width, RS2::SolidLine);
+    // Draw rectangle border. Make it red and thicker if active.
+    RS2::LineWidth width = m_isActive ? RS2::Width07 : RS2::Width00;
+    RS_Color color = m_isActive ? RS_Color(255, 0, 0) : RS_Color(0, 100, 200);
+    RS_Pen borderPen(color, width, RS2::SolidLine);
     painter->setPen(borderPen);
     painter->drawLineUISimple(x1, y1, x2, y1);
     painter->drawLineUISimple(x2, y1, x2, y2);
@@ -66,11 +70,14 @@ void LC_Viewport::draw(RS_Painter* painter) {
     painter->drawLineUISimple(x1, y2, x1, y1);
 
     // Label "VIEWPORT" in top-left corner
-    QRect labelRect(x1 + 3, y1 + 3, 100, 20);
-    painter->drawText(labelRect, Qt::AlignLeft | Qt::AlignTop, "VIEWPORT", nullptr);
+    QRect labelRect(x1 + 3, y1 + 3, 300, 20);
+    QString coordStr = QString("(%1, %2)").arg(m_data.modelCenter.x, 0, 'f', 2).arg(m_data.modelCenter.y, 0, 'f', 2);
+    QString labelText = m_isActive ? "VIEWPORT (ACTIVE) Center: " + coordStr : "VIEWPORT Center: " + coordStr;
+    painter->drawText(labelRect, Qt::AlignLeft | Qt::AlignTop, labelText, nullptr);
 
     // Render the model space contents
     if (m_modelGraphic != nullptr) {
+        painter->setPen(originalPen);
         m_modelGraphic->calculateBorders();
         RS_Vector modelMin = m_modelGraphic->getMin();
         RS_Vector modelMax = m_modelGraphic->getMax();
@@ -133,6 +140,30 @@ void LC_Viewport::draw(RS_Painter* painter) {
         }
     }
 }
+
+// double LC_Viewport::getDistanceToPoint(const RS_Vector& coord, RS_Entity** entity, RS2::ResolveLevel level, double solidDist) const {
+//     RS_Vector p1(m_data.corner1.x, m_data.corner1.y);
+//     RS_Vector p2(m_data.corner2.x, m_data.corner1.y);
+//     RS_Vector p3(m_data.corner2.x, m_data.corner2.y);
+//     RS_Vector p4(m_data.corner1.x, m_data.corner2.y);
+
+//     RS_Line l1(nullptr, RS_LineData(p1, p2));
+//     RS_Line l2(nullptr, RS_LineData(p2, p3));
+//     RS_Line l3(nullptr, RS_LineData(p3, p4));
+//     RS_Line l4(nullptr, RS_LineData(p4, p1));
+
+//     double d1 = l1.getDistanceToPoint(coord);
+//     double d2 = l2.getDistanceToPoint(coord);
+//     double d3 = l3.getDistanceToPoint(coord);
+//     double d4 = l4.getDistanceToPoint(coord);
+
+//     double minDist = std::min({d1, d2, d3, d4});
+
+//     if (entity) {
+//         *entity = const_cast<LC_Viewport*>(this);
+//     }
+//     return minDist;
+// }
 
 RS_Vector LC_Viewport::getNearestEndpoint(const RS_Vector& coord, double* dist) const {
     // Return nearest of the 4 corners

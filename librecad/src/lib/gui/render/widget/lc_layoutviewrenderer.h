@@ -4,10 +4,11 @@
 #include "lc_widgetviewportrenderer.h"
 
 class RS_Painter;
+class LC_LayoutView;
 
 class LC_LayoutViewRenderer : public LC_WidgetViewPortRenderer {
 public:
-    LC_LayoutViewRenderer(LC_GraphicViewport *viewport, QPaintDevice* paintDevice);
+    LC_LayoutViewRenderer(LC_GraphicViewport *viewport, QPaintDevice* paintDevice, LC_LayoutView* layoutView = nullptr);
     void renderEntity(RS_Painter *painter, RS_Entity *e) override;
 
     RS2::DrawingMode getDrawingMode() const {
@@ -26,6 +27,7 @@ protected:
 private:
     RS2::DrawingMode m_drawingMode = RS2::DrawingMode::ModeAuto;
     double m_paperScale = 1.0;
+    LC_LayoutView* m_layoutView = nullptr;
 };
 
 #endif // LC_LAYOUTVIEWRENDERER_H

@@ -475,11 +475,11 @@ void LC_ActionModifyBreakDivide::createEntitiesForArc(RS_Arc *arc, RS_Vector &sn
 void LC_ActionModifyBreakDivide::createArcEntity(const RS_ArcData &arcData, bool preview, const RS_Pen &pen, RS_Layer *layer, QList<RS_Entity *> &list) const{
     if (preview){
         createRefArc(arcData, list);
-        auto arc = new RS_Arc(m_container, arcData);
+        auto arc = new RS_Arc(getContainer(), arcData);
         list << arc;
     }
     else{
-        auto createdArc = new RS_Arc(m_container, arcData);
+        auto createdArc = new RS_Arc(getContainer(), arcData);
         createdArc->setPen(pen);
         createdArc->setLayer(layer);
         list << createdArc;
@@ -579,7 +579,7 @@ QVector<RS_Vector> LC_ActionModifyBreakDivide::collectAllIntersectionsWithEntity
     QVector<RS_Vector> result;
     RS_VectorSolutions sol;
     // iterate over all entities
-    for (auto* e: *m_container) {
+    for (auto* e: *getContainer()) {
         // consider only visible entities
         if (e && e->isVisible()){
             // select containers / groups:

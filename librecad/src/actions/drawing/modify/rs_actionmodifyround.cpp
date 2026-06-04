@@ -101,7 +101,7 @@ bool RS_ActionModifyRound::removeOldFillet(RS_Entity *e, const bool &isPolyline)
         return false;
 
     if (!isPolyline)
-        m_container->removeEntity(e);
+        getContainer()->removeEntity(e);
 
     return true;
 }
@@ -135,7 +135,7 @@ void RS_ActionModifyRound::doTrigger() {
             }
 
             if (!foundPolyline){
-                for (auto *e: m_container->getEntityList()) {
+                for (auto *e: getContainer()->getEntityList()) {
                     if ((e != m_entity1) && (e != m_entity2)){
                         if (removeOldFillet(e, foundPolyline))
                             break;
@@ -144,7 +144,7 @@ void RS_ActionModifyRound::doTrigger() {
             }
         }
 
-        RS_Modification m(*m_container, m_viewport);
+        RS_Modification m(*getContainer(), m_viewport);
         m.round(m_actionData->coord2,
                 m_actionData->coord1,
                 (RS_AtomicEntity *) m_entity1,

@@ -49,7 +49,7 @@ void RS_ActionPolylineDel::drawSnapper() {
 
 void RS_ActionPolylineDel::doTrigger() {
     RS_DEBUG->print("RS_ActionPolylineDel::trigger()");
-    RS_Modification m(*m_container, m_viewport);
+    RS_Modification m(*getContainer(), m_viewport);
     auto createdPolyline = m.deletePolylineNode(*m_polylineToModify, m_vertexToDelete, false);
     if (createdPolyline != nullptr){
         m_polylineToModify = createdPolyline;

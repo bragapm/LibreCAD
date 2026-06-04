@@ -204,8 +204,7 @@ struct RS_Snapper::ImpData {
  * Constructor.
  */
 RS_Snapper::RS_Snapper(LC_ActionContext *actionContext)
-    :m_container(actionContext->getEntityContainer())
-    ,m_graphicView(actionContext->getGraphicView())
+    :m_graphicView(actionContext->getGraphicView())
     ,m_actionContext(actionContext)
     ,m_infoCursorOverlayData{std::make_unique<LC_InfoCursorData>()}
     ,pImpData(new ImpData),
@@ -517,9 +516,9 @@ double RS_Snapper::getSnapRange() const{
             minGrid = cellVector.magnitude() * m_minGridCellSnapFactor;
         }
     }
-    if (m_container != nullptr && isSizeValid(m_container->getSize())) {
+    if (getContainer() != nullptr && isSizeValid(getContainer()->getSize())) {
         // The size bounding box
-        minSize = getValidSize(m_container->getSize());
+        minSize = getValidSize(getContainer()->getSize());
     }
     if (std::min(minGui, minGrid) < 0.99 * RS_MAXDOUBLE)
         return std::min(minGui, minGrid);
@@ -548,7 +547,7 @@ RS_Vector RS_Snapper::snapFree(const RS_Vector& coord) {
  * @return The coordinates of the point or an invalid vector.
  */
 RS_Vector RS_Snapper::snapEndpoint(const RS_Vector& coord) {
-    RS_Vector vec = m_container->getNearestEndpoint(coord, nullptr/*, &keyEntity*/);
+    RS_Vector vec = getContainer()->getNearestEndpoint(coord, nullptr/*, &keyEntity*/);
     return vec;
 }
 
@@ -575,7 +574,7 @@ RS_Vector RS_Snapper::snapGrid(const RS_Vector& coord) {
  */
 RS_Vector RS_Snapper::snapOnEntity(const RS_Vector& coord) {
     RS_Vector vec{};
-    vec = m_container->getNearestPointOnEntity(coord, true, nullptr, &m_keyEntity);
+    vec = getContainer()->getNearestPointOnEntity(coord, true, nullptr, &m_keyEntity);
     return vec;
 }
 
@@ -586,7 +585,7 @@ RS_Vector RS_Snapper::snapOnEntity(const RS_Vector& coord) {
  * @return The coordinates of the point or an invalid vector.
  */
 RS_Vector RS_Snapper::snapCenter(const RS_Vector& coord) {
-    RS_Vector vec = m_container->getNearestCenter(coord, nullptr);
+    RS_Vector vec = getContainer()->getNearestCenter(coord, nullptr);
     return vec;
 }
 
@@ -598,7 +597,7 @@ RS_Vector RS_Snapper::snapCenter(const RS_Vector& coord) {
  */
 RS_Vector RS_Snapper::snapMiddle(const RS_Vector& coord) {
 //std::cout<<"RS_Snapper::snapMiddle(): middlePoints="<<middlePoints<<std::endl;
-    return m_container->getNearestMiddle(coord,static_cast<double *>(nullptr),m_middlePoints);
+    return getContainer()->getNearestMiddle(coord,static_cast<double *>(nullptr),m_middlePoints);
 }
 
 /**
@@ -610,7 +609,7 @@ RS_Vector RS_Snapper::snapMiddle(const RS_Vector& coord) {
 RS_Vector RS_Snapper::snapDist(const RS_Vector& coord) {
     RS_Vector vec;
 //std::cout<<" RS_Snapper::snapDist(RS_Vector coord): distance="<<distance<<std::endl;
-    vec = m_container->getNearestDist(m_SnapDistance,
+    vec = getContainer()->getNearestDist(m_SnapDistance,
                                     coord,
                                     nullptr);
     return vec;
@@ -624,7 +623,7 @@ RS_Vector RS_Snapper::snapDist(const RS_Vector& coord) {
  */
 RS_Vector RS_Snapper::snapIntersection(const RS_Vector& coord) {
     RS_Vector vec{};
-    vec = m_container->getNearestIntersection(coord,nullptr);
+    vec = getContainer()->getNearestIntersection(coord,nullptr);
     return vec;
 }
 
@@ -718,7 +717,7 @@ RS_Entity* RS_Snapper::catchEntity(const RS_Vector& pos,
     double dist (0.);
 //    std::cout<<"getSnapRange()="<<getSnapRange()<<"\tsnap distance = "<<dist<<std::endl;
 
-    RS_Entity* entity = m_container->getNearestEntity(pos, &dist, level);
+    RS_Entity* entity = getContainer()->getNearestEntity(pos, &dist, level);
 
     int idx = -1;
     if (entity != nullptr && entity->getParent()) {
@@ -766,7 +765,7 @@ RS_Entity* RS_Snapper::catchEntity(const RS_Vector& pos, RS2::EntityType enType,
     }
 
     // fixme - iteration over all elements of drawing
-    for(RS_Entity* en= m_container->firstEntity(level);en;en=m_container->nextEntity(level)){
+    for(RS_Entity* en= getContainer()->firstEntity(level);en;en=getContainer()->nextEntity(level)){
         if(en->isVisible()==false) continue;
         if(en->rtti() != enType && isContainer){
             //whether this entity is a member of member of the type enType
@@ -1039,7 +1038,7 @@ RS_Vector RS_Snapper::snapToRelativeAngle(double baseAngle, const RS_Vector &cur
     res += referenceCoord;
 
     if (m_snapMode.snapOnEntity) {
-        RS_Vector t = m_container->getNearestVirtualIntersection(res, wcsAngleSnapped, nullptr);
+        RS_Vector t = getContainer()->getNearestVirtualIntersection(res, wcsAngleSnapped, nullptr);
         pImpData->snapSpot = t;
         pImpData->snapType = (t == res) ? SnapType::ANGLE_REL : SnapType::ANGLE_ON_ENTITY;
         pImpData->angle = ucsAngleSnapped;
@@ -1074,7 +1073,7 @@ RS_Vector RS_Snapper::doSnapToAngle(const RS_Vector &currentCoord, const RS_Vect
     res += referenceCoord;
 
     if (this->m_snapMode.snapOnEntity) {
-        RS_Vector t = this->m_container->getNearestVirtualIntersection(res, wcsAngleSnapped, nullptr);
+        RS_Vector t = this->getContainer()->getNearestVirtualIntersection(res, wcsAngleSnapped, nullptr);
         this->pImpData->snapSpot = t;
         this->pImpData->snapType = (t == res) ? ANGLE : ANGLE_ON_ENTITY;
         this->pImpData->angle = ucsAngleSnapped;

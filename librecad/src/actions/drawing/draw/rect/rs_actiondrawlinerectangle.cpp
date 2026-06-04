@@ -48,7 +48,7 @@ RS_ActionDrawLineRectangle::RS_ActionDrawLineRectangle(LC_ActionContext *actionC
 RS_ActionDrawLineRectangle::~RS_ActionDrawLineRectangle() = default;
 
 void RS_ActionDrawLineRectangle::doTrigger() {
-    auto *polyline = new RS_Polyline(m_container);
+    auto *polyline = new RS_Polyline(getContainer());
 
     // create and add rectangle:
     RS_Vector worldCorner1 = m_actionData->corner1;

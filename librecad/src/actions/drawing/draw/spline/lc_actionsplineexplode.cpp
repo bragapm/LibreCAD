@@ -76,12 +76,12 @@ void LC_ActionSplineExplode::doTrigger() {
                 RS_Vector firstPoint = startPoint;
                 for (unsigned int i=1; i < strokePoints.size(); i++){
                     RS_Vector end = strokePoints.at(i);
-                    RS_Entity* createdEntity = new RS_Line(m_container, startPoint, end);
+                    RS_Entity* createdEntity = new RS_Line(getContainer(), startPoint, end);
                     setupAndAddCreatedEntity(createdEntity, layerToSet, penToUse);
                     startPoint = end;
                 }
                 if (closed){
-                    RS_Entity* createdEntity = new RS_Line(m_container, startPoint, firstPoint);
+                    RS_Entity* createdEntity = new RS_Line(getContainer(), startPoint, firstPoint);
                     setupAndAddCreatedEntity(createdEntity, layerToSet, penToUse);
                 }
 
@@ -97,11 +97,11 @@ void LC_ActionSplineExplode::doTrigger() {
 }
 
 void LC_ActionSplineExplode::setupAndAddCreatedEntity(RS_Entity *createdEntity, RS_Layer *layerToSet, const RS_Pen &penToUse) {
-    createdEntity->setParent(m_container);
+    createdEntity->setParent(getContainer());
     createdEntity->setPen(penToUse);
     createdEntity->setLayer(layerToSet);
     createdEntity->setSelected(true); // fixme - sand - check whether it should be selected??
-    m_container->addEntity(createdEntity);
+    getContainer()->addEntity(createdEntity);
     undoableAdd(createdEntity);
 }
 

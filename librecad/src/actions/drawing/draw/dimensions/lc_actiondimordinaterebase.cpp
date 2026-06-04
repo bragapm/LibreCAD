@@ -56,7 +56,7 @@ void LC_ActionDimOrdinateRebase::doTrigger([[maybe_unused]]bool keepSelected) {
             auto clone = dynamic_cast<LC_DimOrdinate*>(dimOrdinate->clone());
             clone->setHDir(horizontalDirection);
             clone->setDefinitionPoint(origin);
-            m_container->addEntity(clone); // fixme - sand - dims - probably it's better to merge adding to container with undo?
+            getContainer()->addEntity(clone); // fixme - sand - dims - probably it's better to merge adding to container with undo?
             undoCycleReplace(e, clone);
             clone->update();
         }

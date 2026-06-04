@@ -54,7 +54,7 @@ void RS_ActionPolylineSegment::init(int status){
     RS_PreviewActionInterface::init(status);
     if (m_initWithTarget){
         m_initWithTarget = false;
-        convertPolyline(m_container, m_targetEntity, false);
+        convertPolyline(getContainer(), m_targetEntity, false);
         commandMessage(tr("Polyline created"));
         redraw();
         updateSelectionWidget();
@@ -64,10 +64,10 @@ void RS_ActionPolylineSegment::init(int status){
     else {
         m_targetEntity = nullptr;
 //Experimental feature: trigger action, if already has selected entities
-        if (m_container->countSelected(true, entityType)){
+        if (getContainer()->countSelected(true, entityType)){
 //find a selected entity
 //TODO, find a better starting point
-            for (RS_Entity *e: *m_container) {
+            for (RS_Entity *e: *getContainer()) {
                 if (e->isSelected() &&
                     std::count(entityType.begin(), entityType.end(), e->rtti())){
                     m_targetEntity = e;
@@ -75,7 +75,7 @@ void RS_ActionPolylineSegment::init(int status){
                 }
             }
             if (m_targetEntity){
-                convertPolyline(m_container, m_targetEntity, true);
+                convertPolyline(getContainer(), m_targetEntity, true);
                 commandMessage(tr("Polyline created"));
                 redraw();
                 updateSelectionWidget();
@@ -165,7 +165,7 @@ RS_Polyline* RS_ActionPolylineSegment::convertPolyline(RS_EntityContainer* cnt, 
 
 //get list with useful entities
 
-    for (RS_Entity *e1: *m_container) {
+    for (RS_Entity *e1: *getContainer()) {
         if (useSelected && !e1->isSelected()) continue;
         if (e1->isLocked() || !e1->isVisible() || e1 == selectedEntity) continue;
         if (isLine(e1) || isArc(e1)
@@ -281,7 +281,7 @@ void RS_ActionPolylineSegment::doTrigger() {
     RS_DEBUG->print("RS_ActionPolylineSegment::trigger()");
 
     if (m_targetEntity != nullptr /*&& selectedSegment && targetPoint.valid */){
-        convertPolyline(m_container, m_targetEntity);
+        convertPolyline(getContainer(), m_targetEntity);
 
         m_targetEntity = nullptr;
         setStatus(ChooseEntity);

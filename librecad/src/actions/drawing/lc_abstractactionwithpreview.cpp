@@ -75,7 +75,7 @@ void LC_AbstractActionWithPreview::init(int status){
         // collect selected entities
         QList<RS_Entity*> selectedEntities;
         QList<RS_Entity*> entitiesForTrigger;
-        for (RS_Entity *e: *m_container) {
+        for (RS_Entity *e: *getContainer()) {
             if (e->isSelected()){
                 selectedEntities << e;
                 // check whether specific entity is suitable for processing
@@ -249,7 +249,7 @@ void LC_AbstractActionWithPreview::setupAndAddTriggerEntities(const QList<RS_Ent
             // do setup
             setPenAndLayerToActive(ent);
         }
-        m_container->addEntity(ent);
+        getContainer()->addEntity(ent);
         if (undoableTrigger){
             m_document->addUndoable(ent);
         }
@@ -751,7 +751,7 @@ bool LC_AbstractActionWithPreview::checkMayExpandEntity(const RS_Entity *e, cons
  * @return created point entity
  */
 RS_Point* LC_AbstractActionWithPreview::createPoint(const RS_Vector &coord, QList<RS_Entity *> &list) const{
-    auto *result = new RS_Point(m_container, coord);
+    auto *result = new RS_Point(getContainer(), coord);
     list << result;
     return result;
 }
@@ -781,13 +781,13 @@ void LC_AbstractActionWithPreview::createRefSelectablePoint(const RS_Vector &coo
  * @return created line
  */
 RS_Line* LC_AbstractActionWithPreview::createLine(const RS_Vector &startPoint, const RS_Vector &endPoint, QList<RS_Entity *> &list) const{
-    auto *result = new RS_Line(m_container, startPoint, endPoint);
+    auto *result = new RS_Line(getContainer(), startPoint, endPoint);
     list << result;
     return result;
 }
 
 RS_Line* LC_AbstractActionWithPreview::createLine(const RS_LineData &lineData, QList<RS_Entity *> &list) const{
-    auto *result = new RS_Line(m_container, lineData);
+    auto *result = new RS_Line(getContainer(), lineData);
     list << result;
     return result;
 }

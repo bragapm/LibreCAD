@@ -49,7 +49,7 @@ void RS_ActionSelectContour::onMouseMoveEvent([[maybe_unused]]int status, LC_Mou
 void RS_ActionSelectContour::doTrigger() {
     if (m_entity){
         if (m_entity->isAtomic()){ // fixme - why it is so??? why it's not suitable to select, say, polyline here too?
-            RS_Selection s(*m_container, m_viewport);
+            RS_Selection s(*getContainer(), m_viewport);
             s.selectContour(m_entity);
         } else
            commandMessage(tr("Entity must be an Atomic Entity."));

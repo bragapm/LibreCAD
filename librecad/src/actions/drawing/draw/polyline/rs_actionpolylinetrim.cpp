@@ -47,7 +47,7 @@ void RS_ActionPolylineTrim::doTrigger() {
 
     m_polylineToModify->setSelected(false);
 
-    RS_Modification m(*m_container, m_viewport);
+    RS_Modification m(*getContainer(), m_viewport);
     auto newPolyline = m.polylineTrim((RS_Polyline &) *m_polylineToModify, *m_segment1, *m_segment2, false);
     if (newPolyline != nullptr){
         m_polylineToModify = newPolyline;

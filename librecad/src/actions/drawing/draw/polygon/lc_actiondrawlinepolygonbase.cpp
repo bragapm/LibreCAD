@@ -55,8 +55,8 @@ void LC_ActionDrawLinePolygonBase::doTrigger() {
             if (c_createPolyline) {
                 polyline->setLayer(layer);
                 polyline->setPen(pen);
-                polyline->reparent(m_container);
-                m_container->addEntity(polyline);
+                polyline->reparent(getContainer());
+                getContainer()->addEntity(polyline);
                 undoableAdd(polyline);
             }
             else{
@@ -66,8 +66,8 @@ void LC_ActionDrawLinePolygonBase::doTrigger() {
                         auto *clone = entity->clone(); // use clone for safe deletion of polyline
                         clone->setPen(pen);
                         clone->setLayer(layer);
-                        clone->reparent(m_container);
-                        m_container->addEntity(clone);
+                        clone->reparent(getContainer());
+                        getContainer()->addEntity(clone);
                         undoableAdd(clone);
                     }
                 }

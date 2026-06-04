@@ -45,7 +45,7 @@ namespace {
 
 void LC_ActionDimLinearBase::doTrigger() {
     preparePreview();
-    auto *dim = createDim(m_container);
+    auto *dim = createDim(getContainer());
     setPenAndLayerToActive(dim);
     dim->update();
     undoCycleAdd(dim);

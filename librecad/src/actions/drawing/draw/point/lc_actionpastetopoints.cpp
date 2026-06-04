@@ -44,7 +44,7 @@ void LC_ActionPasteToPoints::init(int status) {
 
 void LC_ActionPasteToPoints::doTrigger(bool keepSelected) {
     undoCycleStart();
-    RS_Modification m(*m_container, m_viewport, false);
+    RS_Modification m(*getContainer(), m_viewport, false);
     for (auto p: m_selectedEntities){
         RS_Vector currentPoint = p->getCenter();
         const RS_PasteData &pasteData = RS_PasteData(currentPoint, m_scaleFactor , m_angle, false, "");

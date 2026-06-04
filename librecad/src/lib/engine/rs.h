@@ -191,6 +191,7 @@ namespace RS2 {
         ActionFilePrint,
         ActionFilePrintPDF,
         ActionFilePrintPreview,
+        ActionFileLayoutView,
         ActionFileExportMakerCam,
         ActionFileQuit,
 

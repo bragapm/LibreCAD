@@ -56,7 +56,7 @@ void RS_ActionEditPaste::init(int status) {
 void RS_ActionEditPaste::trigger() {
     deletePreview();
 
-    RS_Modification m(*m_container, m_viewport);
+    RS_Modification m(*getContainer(), m_viewport);
     m.paste(RS_PasteData(*targetPoint, 1.0, 0.0, false, ""));
 
     redrawDrawing();

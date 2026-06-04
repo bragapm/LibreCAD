@@ -29,6 +29,7 @@
 #define RS_SNAPPER_H
 
 #include <QObject>
+#include "lc_actioncontext.h"
 #include "rs.h"
 
 struct LC_InfoCursorData;
@@ -211,7 +212,8 @@ protected:
     void deleteSnapper();
     void deleteInfoCursor();
     double getSnapRange() const;
-    RS_EntityContainer *m_container = nullptr;
+    RS_EntityContainer *getContainer() const { return m_actionContext->getEntityContainer(); }
+    // m_container is removed to force derived classes to use getContainer() dynamically.
     RS_GraphicView *m_graphicView = nullptr;
     LC_GraphicViewport* m_viewport = nullptr;
     RS_Entity *m_keyEntity = nullptr;

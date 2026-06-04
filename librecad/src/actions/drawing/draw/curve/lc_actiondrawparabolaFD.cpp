@@ -115,7 +115,7 @@ void LC_ActionDrawParabolaFD::init(int status) {
 
 void LC_ActionDrawParabolaFD::doTrigger() {
     if(m_actionData->data.valid){
-        auto* en = new LC_Parabola{m_container, m_actionData->data};
+        auto* en = new LC_Parabola{getContainer(), m_actionData->data};
         undoCycleAdd(en);
     }
     init(SetFocus);

@@ -166,7 +166,7 @@ LC_AbstractActionDrawRectangle::ShapeData LC_ActionDrawRectangle3Points::createP
 
         if (drawPrimitiveShape){
             // simple mode - just create a polyline that connects calculated corner vertexes
-            polyline = new RS_Polyline(m_container);
+            polyline = new RS_Polyline(getContainer());
             polyline->addVertex(m_actionData->corner1);
             polyline->addVertex(m_actionData->corner2);
             polyline->addVertex(m_actionData->corner3);

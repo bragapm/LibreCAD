@@ -72,7 +72,7 @@ void LC_ActionLayersToggleConstruction::init(int status) {
 
 void LC_ActionLayersToggleConstruction::deselectEntities(RS_Layer* layer){
     if (!layer) return;
-    for(auto e: *m_container){ // fixme - sand -  iteration over all entities in container
+    for(auto e: *getContainer()){ // fixme - sand -  iteration over all entities in container
         if (e && e->isVisible() && e->getLayer() == layer) {
             e->setSelected(false);
         }

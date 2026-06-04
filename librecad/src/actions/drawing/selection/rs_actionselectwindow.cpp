@@ -81,7 +81,7 @@ void RS_ActionSelectWindow::doTrigger() {
             RS_Vector ucsP2 = toUCS(m_actionData->v2);
 
             bool selectIntersecting = (ucsP1.x > ucsP2.x) || m_selectIntersecting;
-            RS_Selection s(*m_container, m_viewport);
+            RS_Selection s(*getContainer(), m_viewport);
             bool doSelect = m_select;
             if (m_invertSelectionOperation){
                 doSelect = !doSelect;

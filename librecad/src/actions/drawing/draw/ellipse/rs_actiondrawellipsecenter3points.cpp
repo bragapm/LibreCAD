@@ -55,7 +55,7 @@ void RS_ActionDrawEllipseCenter3Points::init(int status){
 }
 
 void RS_ActionDrawEllipseCenter3Points::doTrigger() {
-    auto *ellipse = new RS_Ellipse(m_container, m_actionData->eData);
+    auto *ellipse = new RS_Ellipse(getContainer(), m_actionData->eData);
 
     undoCycleAdd(ellipse);
     moveRelativeZero(ellipse->getCenter());

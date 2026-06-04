@@ -59,7 +59,7 @@ double RS_ActionDrawEllipseFociPoint::findRatio() const{
 }
 
 void RS_ActionDrawEllipseFociPoint::doTrigger() {
-    auto* ellipse = new RS_Ellipse{m_container,
+    auto* ellipse = new RS_Ellipse{getContainer(),
                                    {m_actionData->center,
                                     m_actionData->major*m_actionData->d,
                                     findRatio(),

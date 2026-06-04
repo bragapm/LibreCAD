@@ -34,7 +34,7 @@ RS_ActionModifyDelete::RS_ActionModifyDelete(LC_ActionContext *actionContext)
 
 void RS_ActionModifyDelete::doTrigger([[maybe_unused]] bool keepSelected) {
     RS_DEBUG->print("RS_ActionModifyDelete::trigger()");
-    RS_Modification m(*m_container, m_viewport);
+    RS_Modification m(*getContainer(), m_viewport);
     m.remove(m_selectedEntities);
     redrawDrawing();
 }

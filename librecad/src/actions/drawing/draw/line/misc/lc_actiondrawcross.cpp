@@ -103,12 +103,12 @@ void LC_ActionDrawCross::addCrossDataEntities(QList<RS_Entity *> &list, const LC
     // create horizontal and vertical lines
 
     RS_LineData horizontalData = crossData.horizontal;
-    RS_Entity *horizontalLine = new RS_Line(m_container, horizontalData);
+    RS_Entity *horizontalLine = new RS_Line(getContainer(), horizontalData);
 
     list << horizontalLine;
 
     RS_LineData verticalData = crossData.vertical;
-    RS_Entity *verticalLine = new RS_Line(m_container, verticalData);
+    RS_Entity *verticalLine = new RS_Line(getContainer(), verticalData);
 
     list << verticalLine;
 }

@@ -74,7 +74,7 @@ void RS_ActionModifyScale::doTrigger(bool keepSelected) {
     if (m_actionData->data.isotropicScaling){
         m_actionData->data.factor.y = m_actionData->data.factor.x;
     }
-    RS_Modification m(*m_container, m_viewport);
+    RS_Modification m(*getContainer(), m_viewport);
     m.scale(m_actionData->data, m_selectedEntities, false, keepSelected);
 }
 

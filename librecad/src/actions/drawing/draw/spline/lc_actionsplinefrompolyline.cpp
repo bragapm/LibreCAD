@@ -75,11 +75,11 @@ void LC_ActionSplineFromPolyline::finish(bool updateTB) {
 
 void LC_ActionSplineFromPolyline::setupAndAddCreatedEntity(RS_Entity *createdEntity, RS_Layer *layerToSet, const RS_Pen &penToUse) {
     // todo - sand - isn't it a candidates for some reusable util?
-    createdEntity->setParent(m_container);
+    createdEntity->setParent(getContainer());
     createdEntity->setPen(penToUse);
     createdEntity->setLayer(layerToSet);
     createdEntity->setSelected(true); // fixme - sand - check whether it should be selected??
-    m_container->addEntity(createdEntity);
+    getContainer()->addEntity(createdEntity);
     undoableAdd(createdEntity);
 }
 

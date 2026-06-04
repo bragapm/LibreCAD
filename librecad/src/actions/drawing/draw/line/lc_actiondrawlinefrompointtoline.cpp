@@ -304,7 +304,7 @@ RS_Line *LC_ActionDrawLineFromPointToLine::createLineFromPointToTarget(RS_Line *
         }
     }
     // resulting line
-    auto* result = new RS_Line(m_container,ortLineStart, ortLineEnd);
+    auto* result = new RS_Line(getContainer(),ortLineStart, ortLineEnd);
     return result;
 }
 

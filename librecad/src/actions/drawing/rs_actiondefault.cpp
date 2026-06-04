@@ -259,7 +259,7 @@ void RS_ActionDefault::onMouseMoveEvent([[maybe_unused]]int status, LC_MouseEven
             if (toGuiDX(m_actionData->v1.distanceTo(m_actionData->v2)) > 10){
                 // look for reference points to drag:
                 double dist;
-                RS_EntityContainer::RefInfo refInfo = m_container->getNearestSelectedRefInfo(m_actionData->v1, &dist);
+                RS_EntityContainer::RefInfo refInfo = getContainer()->getNearestSelectedRefInfo(m_actionData->v1, &dist);
                 RS_Vector ref = refInfo.ref;
                 if (ref.valid == true && toGuiDX(dist) < 8){
                     m_actionData->refMovingEntity = refInfo.entity;
@@ -511,7 +511,7 @@ void RS_ActionDefault::onMouseMoveEvent([[maybe_unused]]int status, LC_MouseEven
 
 //            preview->addSelectionFrom(*container,viewport);
              // fixme - sand - iterating over all entities!!! Rework selection. Add selection manager to the document, after all...
-             for(auto ent: *m_container) {
+             for(auto ent: *getContainer()) {
                 if (ent->isSelected()) {
                     RS_Entity* clone = getClone(ent);
                     m_preview->addEntity(clone);
@@ -649,7 +649,7 @@ void RS_ActionDefault::onMouseLeftButtonPress(int status, LC_MouseEvent *e) {
             m_actionData->v2 = e->snapPoint;
             m_actionData->v2 = getSnapAngleAwarePoint(e, m_actionData->v1, m_actionData->v2);
             deletePreview();
-            RS_Modification m(*m_container, m_viewport);
+            RS_Modification m(*getContainer(), m_viewport);
             RS_MoveData data;
             data.number = 0;
             data.useCurrentLayer = false;
@@ -800,7 +800,7 @@ void RS_ActionDefault::onMouseLeftButtonPress(int status, LC_MouseEvent *e) {
                 clone->setSelected(true);
                 clone->setLayer(refMovingEntity->getLayer());
                 clone->setPen(refMovingEntity->getPen(false));
-                m_container->addEntity(clone);
+                getContainer()->addEntity(clone);
 
                 // delete and add this into undo
                 undoCycleReplace(refMovingEntity, clone);
@@ -830,7 +830,7 @@ void RS_ActionDefault::onMouseLeftButtonRelease(int status, LC_MouseEvent *e) {
             RS_Entity *en = catchEntityByEvent(e);
             if (en != nullptr){
                 deletePreview();
-                RS_Selection s(*m_container, m_viewport);
+                RS_Selection s(*getContainer(), m_viewport);
                 if (e->isShift) {
                     s.selectContour(en);
                 }
@@ -861,7 +861,7 @@ void RS_ActionDefault::onMouseLeftButtonRelease(int status, LC_MouseEvent *e) {
             RS_Vector ucsP2 = toUCS(m_actionData->v2);
             bool selectIntersecting = (ucsP1.x > ucsP2.x);
 
-            RS_Selection s(*m_container, m_viewport);
+            RS_Selection s(*getContainer(), m_viewport);
             bool select = !e->isShift;
 
             bool alterSelectIntersecting = e->isControl;

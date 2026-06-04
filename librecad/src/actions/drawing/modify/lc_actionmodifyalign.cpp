@@ -61,7 +61,7 @@ void LC_ActionModifyAlign::doTrigger([[maybe_unused]]bool keepSelected) {
                 // todo - this is a place to think about regarding usability and consistency. Other Modify actions does not clear "selected" status.
                 // todo - however, from the usability point of view - if the user would like to continue aligning operation, not cleared selection is not convenient.
                 e->setSelected(false);
-                m_container->addEntity(e);
+                getContainer()->addEntity(e);
                 undoableAdd(e);
             }
 
@@ -105,8 +105,8 @@ void LC_ActionModifyAlign::onMouseMoveEventSelected([[maybe_unused]]int status, 
             break;
         }
         case LC_Align::DRAWING: {
-            min = m_container->getMin();
-            max = m_container->getMax();
+            min = getContainer()->getMin();
+            max = getContainer()->getMax();
             break;
         }
         default:
@@ -208,8 +208,8 @@ void LC_ActionModifyAlign::onMouseLeftButtonReleaseSelected([[maybe_unused]]int 
             break;
         }
         case LC_Align::DRAWING: {
-            m_alignMin = m_container->getMin();
-            m_alignMax = m_container->getMax();
+            m_alignMin = getContainer()->getMin();
+            m_alignMax = getContainer()->getMax();
             break;
         }
         default:

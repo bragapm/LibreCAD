@@ -36,7 +36,7 @@ RS_ActionDrawPoint::~RS_ActionDrawPoint() = default;
 
 void RS_ActionDrawPoint::doTrigger() {
     if (m_pointPosition->valid){
-        auto *point = new RS_Point(m_container, RS_PointData(*m_pointPosition));
+        auto *point = new RS_Point(getContainer(), RS_PointData(*m_pointPosition));
         moveRelativeZero(*m_pointPosition);
         undoCycleAdd(point);
     }

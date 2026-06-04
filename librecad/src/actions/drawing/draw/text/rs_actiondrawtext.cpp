@@ -100,7 +100,7 @@ void RS_ActionDrawText::doTrigger() {
     RS_DEBUG->print("RS_ActionDrawText::trigger()");
     if (m_actionData->pos.valid){
         m_textData->angle = toWorldAngleFromUCSBasisDegrees(m_ucsBasicAngleDegrees);
-        auto *text = new RS_Text(m_container, *m_textData);
+        auto *text = new RS_Text(getContainer(), *m_textData);
         text->update();
 
         undoCycleAdd(text);

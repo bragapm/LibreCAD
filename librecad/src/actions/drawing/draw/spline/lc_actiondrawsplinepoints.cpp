@@ -71,7 +71,7 @@ void LC_ActionDrawSplinePoints::init(int status){
 void LC_ActionDrawSplinePoints::doTrigger() {
     if (m_actionData->spline.get() != nullptr) {
         setPenAndLayerToActive(m_actionData->spline.get());
-        auto spline = std::make_unique<LC_SplinePoints>(m_container, m_actionData->spline->getData());
+        auto spline = std::make_unique<LC_SplinePoints>(getContainer(), m_actionData->spline->getData());
         setPenAndLayerToActive(spline.get());
         undoCycleAdd(spline.get());
 
@@ -123,7 +123,7 @@ void LC_ActionDrawSplinePoints::onCoordinateEvent(int status, [[maybe_unused]] b
         case SetStartPoint: {
             m_actionData->undoBuffer.clear();
             if (m_actionData->spline.get() == nullptr){
-                m_actionData->spline = std::make_unique<LC_SplinePoints>(m_container, m_actionData->data);
+                m_actionData->spline = std::make_unique<LC_SplinePoints>(getContainer(), m_actionData->data);
                 m_actionData->spline->addPoint(mouse);
 
                 if (m_showRefEntitiesOnPreview) {

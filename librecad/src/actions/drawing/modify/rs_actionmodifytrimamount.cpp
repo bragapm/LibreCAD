@@ -60,7 +60,7 @@ void RS_ActionModifyTrimAmount::doTrigger() {
 
     if (m_trimEntity && m_trimEntity->isAtomic()){
 
-        RS_Modification m(*m_container, m_viewport, true);
+        RS_Modification m(*getContainer(), m_viewport, true);
         auto* e = dynamic_cast<RS_AtomicEntity *>(m_trimEntity);
         double dist = determineDistance(e);
 
@@ -94,7 +94,7 @@ void RS_ActionModifyTrimAmount::onMouseMoveEvent([[maybe_unused]]int status, LC_
         if (en->isAtomic()){
             highlightHover(en);
             auto* atomic = static_cast<RS_AtomicEntity *>(en);
-            RS_Modification m(*m_container, m_viewport, false);
+            RS_Modification m(*getContainer(), m_viewport, false);
             double dist = determineDistance(atomic);
             bool trimBoth = m_symmetricDistance && !m_distanceIsTotalLength;
             bool trimStart;

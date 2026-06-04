@@ -227,7 +227,7 @@ void LC_ActionDrawStar::addPolylineToEntitiesList(RS_Polyline *polyline, QList<R
                      entity = polyline->nextEntity(RS2::ResolveAll)) {
                     if (entity != nullptr){
                         RS_Entity *clone = entity->clone(); // use clone for safe deletion of polyline
-                        clone->reparent(m_container);
+                        clone->reparent(getContainer());
                         list << clone;
                     }
                 }
@@ -550,7 +550,7 @@ RS_Polyline *LC_ActionDrawStar::createShapePolyline(RS_Vector &snap, QList<RS_En
     }
 
     // now all preparations completed, and we'll create shape
-    auto* polyline = new RS_Polyline(m_container);
+    auto* polyline = new RS_Polyline(getContainer());
 
     // the very first vertex from which shape creation begins.
     RS_Vector startingVertex;

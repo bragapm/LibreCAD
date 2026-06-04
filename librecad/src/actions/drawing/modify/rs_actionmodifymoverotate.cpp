@@ -48,7 +48,7 @@ RS_ActionModifyMoveRotate::~RS_ActionModifyMoveRotate() = default;
 
 void RS_ActionModifyMoveRotate::doTrigger(bool keepSelected) {
     RS_DEBUG->print("RS_ActionModifyMoveRotate::trigger()");
-    RS_Modification m(*m_container, m_viewport);
+    RS_Modification m(*getContainer(), m_viewport);
 	   m.moveRotate(m_actionData->data, m_selectedEntities, false, keepSelected);
     m_actionData->targetPoint = RS_Vector(false);
     finish(false);

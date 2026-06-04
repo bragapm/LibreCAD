@@ -58,12 +58,12 @@ void RS_ActionDrawLineOrthTan::finish(bool updateTB){
 
 void RS_ActionDrawLineOrthTan::doTrigger() {
 
-    RS_Creation creation(m_container, m_viewport, false);
+    RS_Creation creation(getContainer(), m_viewport, false);
     RS_Vector altTangentPosition;
     auto tangent = creation.createLineOrthTan(m_actionData->mousePosition,
         m_actionData->normal, m_actionData->circle, altTangentPosition);
 
-    RS_Entity *newEntity = new RS_Line(m_container, tangent->getData());
+    RS_Entity *newEntity = new RS_Line(getContainer(), tangent->getData());
 
     setPenAndLayerToActive(newEntity);
     undoCycleAdd(newEntity);

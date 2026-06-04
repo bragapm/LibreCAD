@@ -40,7 +40,7 @@ RS_ActionDrawLineTangent1::~RS_ActionDrawLineTangent1() = default;
 
 void RS_ActionDrawLineTangent1::doTrigger() {
     if (m_tangent){
-        auto *newEntity = new RS_Line(m_container, m_tangent->getData());
+        auto *newEntity = new RS_Line(getContainer(), m_tangent->getData());
 
         setPenAndLayerToActive(newEntity);
         undoCycleAdd(newEntity);

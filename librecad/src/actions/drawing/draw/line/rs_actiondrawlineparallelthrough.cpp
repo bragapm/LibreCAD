@@ -49,7 +49,7 @@ void RS_ActionDrawLineParallelThrough::finish(bool updateTB){
 
 void RS_ActionDrawLineParallelThrough::doTrigger() {
     if (m_entity){
-        RS_Creation creation(m_container, m_viewport);
+        RS_Creation creation(getContainer(), m_viewport);
         RS_Entity *e = creation.createParallelThrough(*m_coord,m_numberToCreate,m_entity, m_symmetric);
 
         if (!e){

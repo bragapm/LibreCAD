@@ -100,7 +100,7 @@ void LC_AbstractActionDrawRectangle::doAddPolylineToListOfEntities(RS_Polyline *
                 }
                 // create clone of entity for safe deletion of original polyline
                 RS_Entity *clone = entity->clone();
-                clone->reparent(m_container);
+                clone->reparent(getContainer());
                 list << clone;
             }
         }
@@ -458,7 +458,7 @@ void LC_AbstractActionDrawRectangle::doUpdateMouseButtonHints([[maybe_unused]]in
 RS_Polyline *LC_AbstractActionDrawRectangle::createPolylineByVertexes(RS_Vector bottomLeftCorner, RS_Vector bottomRightCorner,
                                                                       RS_Vector topRightCorner, RS_Vector topLeftCorner,
                                                                       bool drawBulge, bool drawComplex, double radiusX, double radiusY) const{
-    auto *polyline = new RS_Polyline(m_container);
+    auto *polyline = new RS_Polyline(getContainer());
 
     if (drawComplex){ // we'll draw complex shape
 

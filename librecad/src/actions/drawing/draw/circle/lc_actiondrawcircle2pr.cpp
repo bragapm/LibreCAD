@@ -55,7 +55,7 @@ void LC_ActionDrawCircle2PR::init(int status){
 }
 
 void LC_ActionDrawCircle2PR::doTrigger() {
-    auto *circle = new RS_Circle(m_container, *m_circleData);
+    auto *circle = new RS_Circle(getContainer(), *m_circleData);
     setPenAndLayerToActive(circle);
 
     if (m_moveRelPointAtCenterAfterTrigger){

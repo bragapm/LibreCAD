@@ -78,7 +78,7 @@ void RS_ActionEditCopyPaste::doTrigger([[maybe_unused]]bool keepSelected) {
         case  RS2::ActionEditCutQuick:
         case  RS2::ActionEditCopy:
         case  RS2::ActionEditCopyQuick:{
-            RS_Modification m(*m_container, m_viewport);
+            RS_Modification m(*getContainer(), m_viewport);
             m.copy(*m_referencePoint, m_actionType ==  RS2::ActionEditCut || m_actionType == RS2::ActionEditCutQuick);
 
             if (m_invokedWithControl){
@@ -93,7 +93,7 @@ void RS_ActionEditCopyPaste::doTrigger([[maybe_unused]]bool keepSelected) {
             break;
         }
         case RS2::ActionEditPaste: {
-            RS_Modification m(*m_container, m_viewport);
+            RS_Modification m(*getContainer(), m_viewport);
             m.paste(RS_PasteData(*m_referencePoint, 1.0, 0.0, false, ""));
 
             if (!m_invokedWithControl) {

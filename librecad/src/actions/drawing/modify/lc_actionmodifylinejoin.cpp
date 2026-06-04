@@ -301,7 +301,7 @@ void LC_ActionModifyLineJoin::doPrepareTriggerEntities(QList<RS_Entity *> &list)
         RS_Line *l2;
 
         if (m_createPolyline && major1.valid && major2.valid){ // handle polyline mode
-            auto *poly = new RS_Polyline(m_container);
+            auto *poly = new RS_Polyline(getContainer());
             poly->addVertex(major1);
             poly->addVertex(intersectionPoint);
             poly->addVertex(major2);
@@ -413,7 +413,7 @@ LC_ActionModifyLineJoin::LC_LineJoinData *LC_ActionModifyLineJoin::proceedNonPar
     result->parallelLines = false;
 
     // resulting polyline
-    auto *polyline = new RS_Polyline(m_container);
+    auto *polyline = new RS_Polyline(getContainer());
 
     // processing of line 1
     // determining how intersection and snap points are located relating to line endpoints
@@ -467,7 +467,7 @@ void LC_ActionModifyLineJoin::updateLine1TrimData(RS_Vector snap){
     if (polyline != nullptr){ // we'll rebuild polyline, so delete original one
         delete polyline;
     }
-    polyline = new RS_Polyline(m_container);
+    polyline = new RS_Polyline(getContainer());
     m_linesJoinData->polyline = polyline;
 
     RS_Vector &intersection = m_linesJoinData->intersectPoint;
@@ -670,7 +670,7 @@ LC_ActionModifyLineJoin::LC_LineJoinData *LC_ActionModifyLineJoin::proceedParall
         // merge to lines into single line. Here we don't care whether lines are overlapping
         // or not - just use external endpoints for the new line
         if (m_line1EdgeMode == EDGE_EXTEND_TRIM || m_line2EdgeMode == EDGE_EXTEND_TRIM){
-            auto *polyline = new RS_Polyline(m_container);
+            auto *polyline = new RS_Polyline(getContainer());
 
             // we just use most left and most right point as vertexes
             polyline->addVertex(leftPoint);
@@ -690,7 +690,7 @@ LC_ActionModifyLineJoin::LC_LineJoinData *LC_ActionModifyLineJoin::proceedParall
             // fills a gap between lines if there is no intersection
             if (!hasIntersection){
                 // we can do this only if lines are not overlapped
-                auto *polyline = new RS_Polyline(m_container);
+                auto *polyline = new RS_Polyline(getContainer());
 
                 // add gap points
                 polyline->addVertex(middleLeftPoint);

@@ -83,7 +83,7 @@ void RS_ActionDrawLineBisector::setStatus(int status) {
 }
 
 void RS_ActionDrawLineBisector::doTrigger() {
-    RS_Creation creation(m_container, m_viewport);
+    RS_Creation creation(getContainer(), m_viewport);
     creation.createBisector(m_actionData->coord1, m_actionData->coord2, m_length, m_numberToCreate, m_line1, m_line2);
 }
 

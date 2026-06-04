@@ -96,7 +96,7 @@ void LC_ActionDrawCircleByArc::doCreateEntitiesOnTrigger(RS_Entity *en, QList<RS
             auto* arc = dynamic_cast<RS_Arc*>(en);
             RS_CircleData circleData = createCircleData(arc);
             // setup new circle
-            RS_Entity* circle = new RS_Circle(m_container, circleData);
+            RS_Entity* circle = new RS_Circle(getContainer(), circleData);
             // apply attributes
             applyPenAndLayerBySourceEntity(arc, circle, m_penMode, m_layerMode);
             list << circle;
@@ -107,7 +107,7 @@ void LC_ActionDrawCircleByArc::doCreateEntitiesOnTrigger(RS_Entity *en, QList<RS
             auto* ellipseArc = dynamic_cast<RS_Ellipse*>(en);
             RS_EllipseData ellipseData = createEllipseData(ellipseArc);
             // setup new circle
-            auto ellipse = new RS_Ellipse(m_container, ellipseData);
+            auto ellipse = new RS_Ellipse(getContainer(), ellipseData);
             // apply attributes
             applyPenAndLayerBySourceEntity(ellipseArc, ellipse, m_penMode, m_layerMode);
             list << ellipse;
@@ -187,7 +187,7 @@ void LC_ActionDrawCircleByArc::doPreparePreviewEntities([[maybe_unused]]LC_Mouse
             auto *arc = dynamic_cast<RS_Arc *>(en);
 
             RS_CircleData circleData = createCircleData(arc);
-            RS_Entity *circle = new RS_Circle(m_container, circleData);
+            RS_Entity *circle = new RS_Circle(getContainer(), circleData);
             prepareEntityDescription(circle, RS2::EntityDescriptionLevel::DescriptionCreating);
             list << circle;
 
@@ -202,7 +202,7 @@ void LC_ActionDrawCircleByArc::doPreparePreviewEntities([[maybe_unused]]LC_Mouse
 
                 if (ellipseArc->isEllipticArc()){
                     RS_EllipseData ellipseData = createEllipseData(ellipseArc);
-                    auto ellipse = new RS_Ellipse(m_container, ellipseData);
+                    auto ellipse = new RS_Ellipse(getContainer(), ellipseData);
                     prepareEntityDescription(ellipse, RS2::EntityDescriptionLevel::DescriptionCreating);
                     list << ellipse;
 

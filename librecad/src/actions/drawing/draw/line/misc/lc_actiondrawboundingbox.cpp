@@ -98,7 +98,7 @@ void LC_ActionDrawBoundingBox::doTrigger([[maybe_unused]]bool keepSelected) {
 }
 
 void LC_ActionDrawBoundingBox::createBoxPolyline(RS_Layer *activeLayer, const RS_Pen &pen, const RS_Vector &selectionMin, const RS_Vector &selectionMax) {
-    auto e = new RS_Polyline(m_container);
+    auto e = new RS_Polyline(getContainer());
     e->setLayer(activeLayer);
     e->setPen(pen);
 
@@ -108,7 +108,7 @@ void LC_ActionDrawBoundingBox::createBoxPolyline(RS_Layer *activeLayer, const RS
     e->addVertex({selectionMax.x, selectionMax.y});
     e->addVertex({selectionMin.x, selectionMax.y});
 
-    m_container->addEntity(e);
+    getContainer()->addEntity(e);
     m_document->addUndoable(e);
 }
 
@@ -127,18 +127,18 @@ void LC_ActionDrawBoundingBox::createCornerPoints(RS_Layer *activeLayer, const R
 }
 
 void LC_ActionDrawBoundingBox::createPoint(RS_Layer *activeLayer, const RS_Pen &pen, double x, double y) {
-    auto e = new RS_Point(m_container, {{x, y}});
+    auto e = new RS_Point(getContainer(), {{x, y}});
     e->setLayer(activeLayer);
     e->setPen(pen);
-    m_container->addEntity(e);
+    getContainer()->addEntity(e);
     m_document->addUndoable(e);
 }
 
 void LC_ActionDrawBoundingBox::createLine(RS_Layer *activeLayer, const RS_Pen &pen, double x1, double y1, double x2, double y2) {
-    auto e = new RS_Line(m_container, {{x1, y1}, {x2, y2}});
+    auto e = new RS_Line(getContainer(), {{x1, y1}, {x2, y2}});
     e->setLayer(activeLayer);
     e->setPen(pen);
-    m_container->addEntity(e);
+    getContainer()->addEntity(e);
     undoableAdd(e);
 }
 

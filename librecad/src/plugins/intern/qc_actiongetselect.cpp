@@ -93,7 +93,7 @@ void QC_ActionGetSelect::keyPressEvent(QKeyEvent* e){
  * Adds all selected entities from 'container' to the selection.
  */
 void QC_ActionGetSelect::getSelected(QList<Plug_Entity *> *se, Doc_plugin_interface *d) const{
-    for (auto e: *m_container) {
+    for (auto e: *getContainer()) {
         if (e->isSelected()) {
             Plugin_Entity *pe = new Plugin_Entity(e, d);
             se->append(reinterpret_cast<Plug_Entity *>(pe));
@@ -102,7 +102,7 @@ void QC_ActionGetSelect::getSelected(QList<Plug_Entity *> *se, Doc_plugin_interf
 }
 
 void QC_ActionGetSelect::unselectEntities(){
-    for(auto e: *m_container){ // fixme - iterating all entities for selection
+    for(auto e: *getContainer()){ // fixme - iterating all entities for selection
         if (e->isSelected()) {
             e->setSelected(false);
         }

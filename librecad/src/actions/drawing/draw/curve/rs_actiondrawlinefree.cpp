@@ -45,7 +45,7 @@ void RS_ActionDrawLineFree::doTrigger() {
         RS_VectorSolutions sol = m_polyline->getRefPoints();
         if (sol.getNumber() > 2){
             RS_Entity *entity = m_polyline->clone();
-            entity->reparent(m_container);
+            entity->reparent(getContainer());
             entity->calculateBorders();
             undoCycleAdd(entity);
             LC_LOG<<"RS_ActionDrawLineFree::trigger(): polyline added: "<< entity->getId();
@@ -89,7 +89,7 @@ void RS_ActionDrawLineFree::onMouseLeftButtonPress([[maybe_unused]]int status, L
             // fall-through
         case Dragging:
             *m_vertex = e->snapPoint;
-            m_polyline = std::make_unique<RS_Polyline>(m_container, RS_PolylineData(*m_vertex, *m_vertex, false));
+            m_polyline = std::make_unique<RS_Polyline>(getContainer(), RS_PolylineData(*m_vertex, *m_vertex, false));
             setPenAndLayerToActive(m_polyline.get());
             break;
         default:

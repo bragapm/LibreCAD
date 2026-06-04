@@ -47,6 +47,7 @@ cp unix/librecad appdir/usr/bin/
 
 cp -r unix/ECWJP2Reader appdir/usr/bin
 cp unix/template.json appdir/usr/bin
+cp unix/template2.json appdir/usr/bin
 cp unix/bintang.dxf appdir/usr/bin
 cp unix/gusutemplate.dxf appdir/usr/bin
 cp unix/gusutemplate.dwt appdir/usr/bin

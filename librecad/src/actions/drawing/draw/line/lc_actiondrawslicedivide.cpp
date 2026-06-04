@@ -252,7 +252,7 @@ void LC_ActionDrawSliceDivide::doPrepareTriggerEntities(QList<RS_Entity *> &list
         for (uint i = 0; i < count; i++) {
             TickData* tick = m_ticksData.at(i);
             if (tick->isVisible){
-                auto *line = new RS_Line(m_container, tick->tickLine);
+                auto *line = new RS_Line(getContainer(), tick->tickLine);
                 // for ticks, we'll always use current pen and layer
                 setPenAndLayerToActive(line);
                 list<<line;
@@ -373,7 +373,7 @@ void LC_ActionDrawSliceDivide::doCreateArcSegments(RS_Entity *pArc, const RS_Vec
             if (reversed){
                 std::swap(startAngle, endAngle);
             }
-            auto *newArc = new RS_Arc(m_container, RS_ArcData(center, radius, startAngle, endAngle, reversed));
+            auto *newArc = new RS_Arc(getContainer(), RS_ArcData(center, radius, startAngle, endAngle, reversed));
             newArc->setLayer(originalLayer);
             newArc->setPen(originalPen);
             list << newArc;

@@ -57,7 +57,7 @@ void QC_ActionGetEnt::setMessage(QString msg){
 
 void QC_ActionGetEnt::trigger() {
     if (m_entity) {
-        RS_Selection s(*m_container, m_viewport);
+        RS_Selection s(*getContainer(), m_viewport);
         s.selectSingle(m_entity);
         m_completed = true;
         updateMouseButtonHints();

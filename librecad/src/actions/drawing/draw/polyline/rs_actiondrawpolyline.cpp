@@ -376,7 +376,7 @@ void RS_ActionDrawPolyline::onCoordinateEvent(int status, [[maybe_unused]]bool i
                 m_actionData->history.append(mouse);
                 m_actionData->bHistory.append(bulge);
                 if (!m_actionData->polyline){
-                    m_actionData->polyline = new RS_Polyline(m_container, m_actionData->data);
+                    m_actionData->polyline = new RS_Polyline(getContainer(), m_actionData->data);
                     m_actionData->polyline->addVertex(m_actionData->start, 0.0);
                 }
                 if (m_actionData->polyline){
@@ -385,7 +385,7 @@ void RS_ActionDrawPolyline::onCoordinateEvent(int status, [[maybe_unused]]bool i
                     m_actionData->polyline->setEndpoint(mouse);
                     if (m_actionData->polyline->count() == 1){
                         setPenAndLayerToActive(m_actionData->polyline);
-                        m_container->addEntity(m_actionData->polyline);
+                        getContainer()->addEntity(m_actionData->polyline);
                     }
                     deletePreview();
                     deleteSnapper();
@@ -648,7 +648,7 @@ void RS_ActionDrawPolyline::drawEquation(int numberOfPolylines) {
         m_actionData->history.append(m_actionData->point);
 
         if (m_actionData->polyline == nullptr) {
-            m_actionData->polyline = new RS_Polyline(m_container, m_actionData->data);
+            m_actionData->polyline = new RS_Polyline(getContainer(), m_actionData->data);
             m_actionData->polyline->addVertex(m_actionData->start, 0.0);
         }
 
@@ -657,7 +657,7 @@ void RS_ActionDrawPolyline::drawEquation(int numberOfPolylines) {
 
         if (m_actionData->polyline->count() == 1) {
             setPenAndLayerToActive(m_actionData->polyline);
-            m_container->addEntity(m_actionData->polyline);
+            getContainer()->addEntity(m_actionData->polyline);
         }
 
         plottingX += stepSize;
@@ -778,7 +778,7 @@ void RS_ActionDrawPolyline::undo(){
             moveRelativeZero(m_actionData->history.front());
             //remove polyline from container,
             //container calls delete over polyline
-            m_container->removeEntity(m_actionData->polyline);
+            getContainer()->removeEntity(m_actionData->polyline);
             m_actionData->polyline = nullptr;
         }
         if (m_actionData->polyline){

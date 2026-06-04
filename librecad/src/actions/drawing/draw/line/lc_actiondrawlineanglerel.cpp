@@ -64,7 +64,7 @@ bool LC_ActionDrawLineAngleRel::isSetActivePenAndLayerOnTrigger(){
  * @param list
  */
 void LC_ActionDrawLineAngleRel::doPrepareTriggerEntities(QList<RS_Entity *> &list){
-    auto* en = new RS_Line{m_container, m_tickData->tickLineData};
+    auto* en = new RS_Line{getContainer(), m_tickData->tickLineData};
     setPenAndLayerToActive(en);
     list<<en;
 

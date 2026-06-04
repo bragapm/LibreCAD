@@ -71,7 +71,7 @@ void RS_ActionLayersToggleLock::deselectEntitiesOnLockedLayer(RS_Layer* layer)
     if (!layer) return;
     if (!layer->isLocked()) return;
 
-    for(auto e: *m_container){ // fixme - sand -  interation over all entities in container
+    for(auto e: *getContainer()){ // fixme - sand -  interation over all entities in container
         if (e && e->isVisible() && e->getLayer() == layer) {
             e->setSelected(false);
         }

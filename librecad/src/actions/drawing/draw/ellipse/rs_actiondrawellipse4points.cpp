@@ -55,9 +55,9 @@ void RS_ActionDrawEllipse4Points::init(int status) {
 void RS_ActionDrawEllipse4Points::doTrigger() {
     RS_Entity *en;
     if (getStatus() == SetPoint4 && m_actionData->evalid){
-        en = new RS_Ellipse(m_container, m_actionData->eData);
+        en = new RS_Ellipse(getContainer(), m_actionData->eData);
     } else {
-        en = new RS_Circle(m_container, m_actionData->cData);
+        en = new RS_Circle(getContainer(), m_actionData->cData);
     }
 
     if (m_moveRelPointAtCenterAfterTrigger){

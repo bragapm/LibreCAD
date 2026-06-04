@@ -112,7 +112,7 @@ RS_Vector RS_ActionPolylineEquidistant::calculateIntersection(RS_Entity* first,R
 }
 
 void RS_ActionPolylineEquidistant::makeContour(RS_Polyline*  originalPolyline, bool contourOnRightSide, QList<RS_Polyline*> &createdPolylines){
-    if (!m_container){
+    if (!getContainer()){
         RS_DEBUG->print(RS_Debug::D_WARNING,
                         "RS_ActionPolylineEquidistant::makeContour: no valid container");
     }
@@ -137,7 +137,7 @@ void RS_ActionPolylineEquidistant::makeContour(RS_Polyline*  originalPolyline, b
     RS_Arc arcFirst(nullptr, RS_ArcData(origin, 0, 0, 0, false));//previous arc
 
     for (int num = 1; num <= m_number || (m_number == 0 && num <= 1); num++) {
-        auto newPolyline = new RS_Polyline(m_container);
+        auto newPolyline = new RS_Polyline(getContainer());
 
         bool first = true;
         bool closed = originalPolyline->isClosed();
@@ -260,7 +260,7 @@ void RS_ActionPolylineEquidistant::doTrigger() {
 
             for (RS_Polyline *newPolyline: polylines) {
                 newPolyline->setLayerToActive(); // fixme - cache layer to set
-                m_container->addEntity(newPolyline);
+                getContainer()->addEntity(newPolyline);
                 undoableAdd(newPolyline);
             }
             undoCycleEnd();

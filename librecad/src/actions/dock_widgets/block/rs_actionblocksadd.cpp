@@ -45,10 +45,10 @@ void RS_ActionBlocksAdd::trigger(){
             RS_BlockData d = RS_DIALOGFACTORY->requestNewBlockDialog(blockList);
             if (d.isValid()){
                 // Block cannot contain blocks.
-                if (m_container->is(RS2::EntityBlock)){
-                    m_graphic->addBlock(new RS_Block(m_container->getParent(), d));
+                if (getContainer()->is(RS2::EntityBlock)){
+                    m_graphic->addBlock(new RS_Block(getContainer()->getParent(), d));
                 } else {
-                    m_graphic->addBlock(new RS_Block(m_container, d));
+                    m_graphic->addBlock(new RS_Block(getContainer(), d));
                 }
             }
         }

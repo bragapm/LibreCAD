@@ -77,7 +77,7 @@ void RS_ActionDrawCircleTan1_2P::finish(bool updateTB){
 void RS_ActionDrawCircleTan1_2P::doTrigger() {
     //    std::cout<<__FILE__<<" : "<<__func__<<" : line "<<__LINE__<<std::endl;
     //    std::cout<<"begin"<<std::endl;
-    auto *c = new RS_Circle(m_container, m_actionData->cData);
+    auto *c = new RS_Circle(getContainer(), m_actionData->cData);
 
     if (m_moveRelPointAtCenterAfterTrigger){
         moveRelativeZero(c->getCenter());

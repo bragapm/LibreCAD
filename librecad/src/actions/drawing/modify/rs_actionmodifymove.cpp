@@ -50,7 +50,7 @@ RS_ActionModifyMove::~RS_ActionModifyMove() = default;
 
 void RS_ActionModifyMove::doTrigger(bool keepSelected) {
     RS_DEBUG->print("RS_ActionModifyMove::trigger()");
-    RS_Modification m(*m_container, m_viewport);
+    RS_Modification m(*getContainer(), m_viewport);
 
     if (m_actionData->createCopy) {
         bool oldKeepOriginals = m_actionData->data.keepOriginals;

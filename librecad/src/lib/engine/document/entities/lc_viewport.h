@@ -90,6 +90,7 @@ public:
     void draw(RS_Painter* painter) override;
     void calculateBorders() override;
 
+    //double getDistanceToPoint(const RS_Vector& coord, RS_Entity** entity = nullptr, RS2::ResolveLevel level = RS2::ResolveNone, double solidDist = RS_MAXDOUBLE) const override;
     void move(const RS_Vector& offset) override;
     void rotate(const RS_Vector& center, double angle) override;
     void rotate(const RS_Vector& center, const RS_Vector& angleVector) override;

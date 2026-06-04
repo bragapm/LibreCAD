@@ -75,7 +75,7 @@ void RS_ActionLibraryInsert::reset() {
 
 void RS_ActionLibraryInsert::trigger() {
     deletePreview();
-    RS_Creation creation(m_container, m_viewport);
+    RS_Creation creation(getContainer(), m_viewport);
     auto insertData    = m_actionData->data;
     insertData.graphic = m_actionData->prev;
     insertData.angle = toWorldAngleFromUCSBasis(m_actionData->data.angle);

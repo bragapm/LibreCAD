@@ -39,8 +39,8 @@ void RS_ActionLayersLockAll::trigger() {
     if (m_graphic) {
 
         // Deselect entities before locking all layers
-        if (m_lock && m_container) {
-            m_container->setSelected(false);
+        if (m_lock && getContainer()) {
+            getContainer()->setSelected(false);
         }
 
         m_graphic->lockAllLayers(m_lock);

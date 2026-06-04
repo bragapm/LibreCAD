@@ -42,10 +42,10 @@
 
 //             bool cross = (m_box->v1.x>m_box->v2.x);
 
-//             RS_Selection s(*m_container, m_graphic);
+//             RS_Selection s(*getContainer(), m_graphic);
 //             s.selectWindow(RS2::EntityType::EntityUnknown, m_box->v1, m_box->v2, m_select, cross);
 
-//             updateSelectionWidget(m_container->countSelected(),m_container->totalSelectedLength());
+//             updateSelectionWidget(getContainer()->countSelected(),getContainer()->totalSelectedLength());
 //             init();
 //             m_completed = true;
 //         }

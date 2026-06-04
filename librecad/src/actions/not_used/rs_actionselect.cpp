@@ -57,7 +57,7 @@ void RS_ActionSelect::onMouseRightButtonRelease(int status, [[maybe_unused]]QMou
 }
 
 int RS_ActionSelect::countSelected() const {
-    int ret = m_container->countSelected();
+    int ret = getContainer()->countSelected();
     if (ret == 0){
         commandMessage(tr("No entity selected!"));
     }

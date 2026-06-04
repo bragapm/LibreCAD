@@ -38,7 +38,7 @@ void LC_ActionSplineModifyBase::doTrigger() {
             createdEntity->setLayer(m_entityToModify->getLayer());
             createdEntity->setPen(m_entityToModify->getPen(false));
             createdEntity->setParent(m_entityToModify->getParent());
-            m_container->addEntity(createdEntity);
+            getContainer()->addEntity(createdEntity);
             doCompleteTrigger();
             undoCycleReplace(m_entityToModify, createdEntity);
         }

@@ -87,7 +87,7 @@ void RS_ActionDrawMText::reset() {
 void RS_ActionDrawMText::doTrigger() {
     RS_DEBUG->print("RS_ActionDrawText::trigger()");
     if (m_pos->valid){
-        auto text = std::make_unique<RS_MText>(m_container, *m_mtextData);
+        auto text = std::make_unique<RS_MText>(getContainer(), *m_mtextData);
         text->update();
         undoCycleAdd(text.get());
         text.release();

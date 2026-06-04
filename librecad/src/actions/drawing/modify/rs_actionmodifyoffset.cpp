@@ -55,7 +55,7 @@ RS_ActionModifyOffset::RS_ActionModifyOffset(LC_ActionContext *actionContext)
 RS_ActionModifyOffset::~RS_ActionModifyOffset() = default;
 
 void RS_ActionModifyOffset::doTrigger(bool keepSelected) {
-    RS_Modification m(*m_container, m_viewport);
+    RS_Modification m(*getContainer(), m_viewport);
     m.offset(*m_offsetData, m_selectedEntities, false, keepSelected);
     finish(false);
 }

@@ -48,7 +48,7 @@ void LC_ActionDrawMidLine::doTrigger() {
         prepareLine(lineInfo, m_secondEntity, m_alternateEndpoints);
         RS_Line *lineToCreate = lineInfo.line;
         if (lineToCreate != nullptr) {
-            lineToCreate->reparent(m_container);
+            lineToCreate->reparent(getContainer());
             setPenAndLayerToActive(lineToCreate);
             undoCycleAdd(lineToCreate);
         }

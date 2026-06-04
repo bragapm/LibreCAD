@@ -40,6 +40,7 @@
 #include "lc_layoutview.h"
 #include "qc_applicationwindow.h"
 #include "qc_mdiwindow.h"
+#include "rs_actionlayoutview.h"
 #include "rs_block.h"
 #include "rs_blocklist.h"
 #include "lc_actioncontext.h"
@@ -122,6 +123,7 @@ void QC_MDIWindow::setupGraphicView(QWidget *parent, bool printPreview, LC_Actio
 
         LC_LayoutView* layoutView = new LC_LayoutView(this, m_document, actionContext);
         layoutView->initView();
+        // The default action is initialized lazily when the tab is switched to
         m_layoutView = layoutView;
         m_layoutView->setObjectName("lc_layoutview");
         m_tabWidget->addTab(m_layoutView, tr("Layout"));
@@ -146,6 +148,11 @@ void QC_MDIWindow::setupGraphicView(QWidget *parent, bool printPreview, LC_Actio
             LC_ActionContext* actionCtx = QC_ApplicationWindow::getAppWindow()->getActionContext();
             if (actionCtx) {
                 if (index == 1) { // Layout tab
+                    // Lazy initialize default action so it doesn't steal focus on startup
+                    auto* lView = dynamic_cast<LC_LayoutView*>(m_layoutView);
+                    if (lView && lView->getDefaultAction() == nullptr) {
+                        lView->setDefaultAction(new RS_ActionLayoutView(actionCtx));
+                    }
                     RS_Graphic* graphic = dynamic_cast<RS_Graphic*>(m_document);
                     if (graphic) {
                         RS_BlockList* blockList = graphic->getBlockList();

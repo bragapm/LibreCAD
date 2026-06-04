@@ -60,7 +60,7 @@ void RS_ActionDrawCircle2P::reset() {
 void RS_ActionDrawCircle2P::doTrigger() {
     preparePreview();
     if (m_circleData->isValid()){
-        auto *circle = new RS_Circle(m_container,*m_circleData);
+        auto *circle = new RS_Circle(getContainer(),*m_circleData);
 
         setPenAndLayerToActive(circle);
 

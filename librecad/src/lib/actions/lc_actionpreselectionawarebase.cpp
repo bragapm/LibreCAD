@@ -110,7 +110,7 @@ void LC_ActionPreSelectionAwareBase::onMouseLeftButtonRelease(int status, LC_Mou
 
             bool selectIntersecting = (ucsP1.x > ucsP2.x);
 
-            RS_Selection s(*m_container, m_viewport);
+            RS_Selection s(*getContainer(), m_viewport);
             bool performSelection = !e->isShift;
             bool alterSelectIntersecting = e->isControl;
             if (alterSelectIntersecting) {
@@ -273,7 +273,7 @@ void LC_ActionPreSelectionAwareBase::finishMouseMoveOnSelection([[maybe_unused]]
 
 void LC_ActionPreSelectionAwareBase::doSelectEntity(RS_Entity *entityToSelect, bool selectContour) const {
     if (entityToSelect != nullptr){
-        RS_Selection s(*m_container, m_viewport);
+        RS_Selection s(*getContainer(), m_viewport);
         // try to minimize selection clicks - and select contour based on selected entity. May be optional, but what for?
         if (entityToSelect->isAtomic() && selectContour) {
             s.selectContour(entityToSelect);

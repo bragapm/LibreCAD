@@ -98,7 +98,7 @@ void RS_ActionDrawLine::init(int status){
 }
 
 void RS_ActionDrawLine::doTrigger() {
-    auto* line = new RS_Line(m_container, m_actionData->data);
+    auto* line = new RS_Line(getContainer(), m_actionData->data);
     setPenAndLayerToActive(line);
     moveRelativeZero(m_actionData->history.at(m_actionData->index()).currentPoint);
     undoCycleAdd(line);

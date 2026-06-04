@@ -52,7 +52,7 @@ void RS_ActionModifyRotate2::init(int status) {
 
 void RS_ActionModifyRotate2::doTrigger(bool keepSelected) {
     RS_DEBUG->print("RS_ActionModifyRotate2::trigger()");
-    RS_Modification m(*m_container, m_viewport);
+    RS_Modification m(*getContainer(), m_viewport);
     m.rotate2(*m_actionData, m_selectedEntities,false, keepSelected);
     finish(false);
 }

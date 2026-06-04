@@ -44,11 +44,11 @@ void LC_ActionDrawPointsLattice::doTrigger() {
         RS_Pen penToUse = m_graphicView->getGraphic()->getActivePen();
         undoCycleStart();
         for (unsigned i = 0; i < pointsCount; i++) {
-            auto *point = new RS_Point(m_container, pointsToCreate.at(i));
+            auto *point = new RS_Point(getContainer(), pointsToCreate.at(i));
             point->setLayer(layerToSet);
             point->setPen(penToUse);
-            point->setParent(m_container);
-            m_container->addEntity(point);
+            point->setParent(getContainer());
+            getContainer()->addEntity(point);
             undoableAdd(point);
         }
         undoCycleEnd();

@@ -63,7 +63,7 @@ void RS_ActionModifyRotate::onSelectionCompleted(bool singleEntity, bool fromIni
 void RS_ActionModifyRotate::doTrigger(bool keepSelected) {
     RS_DEBUG->print("RS_ActionModifyRotate::trigger()");
     moveRelativeZero(m_rotateData->center);
-    RS_Modification m(*m_container, m_viewport);
+    RS_Modification m(*getContainer(), m_viewport);
     m.rotate(*m_rotateData, m_selectedEntities, false, keepSelected);
 }
 

@@ -39,7 +39,7 @@ RS_ActionModifyExplodeText::~RS_ActionModifyExplodeText() = default;
 
 
 void RS_ActionModifyExplodeText::doTrigger(bool keepSelected) {
-    RS_Modification m(*m_container, m_viewport);
+    RS_Modification m(*getContainer(), m_viewport);
     m.explodeTextIntoLetters(m_selectedEntities, keepSelected);
 }
 

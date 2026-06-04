@@ -64,8 +64,8 @@ RS_ActionInterface::RS_ActionInterface(const char *name,
     , m_status{0}
     , m_name{name}
     , m_finished{false}
-    , m_graphic{m_container->getGraphic()}
-    , m_document{m_container->getDocument()}
+    , m_graphic{getContainer()->getGraphic()}
+    , m_document{getContainer()->getDocument()}
     , m_actionType{actionType}{
 
     RS_DEBUG->print("RS_ActionInterface::RS_ActionInterface: Setting up action: \"%s\"", name);
@@ -490,7 +490,7 @@ int RS_ActionInterface::getGraphicVariableInt(const QString& key, int def) const
 }
 
 void RS_ActionInterface::updateSelectionWidget() const{
-    const RS_EntityContainer::LC_SelectionInfo &info = m_container->getSelectionInfo();
+    const RS_EntityContainer::LC_SelectionInfo &info = getContainer()->getSelectionInfo();
     updateSelectionWidget(info.count, info.length);
 }
 
@@ -652,7 +652,7 @@ void RS_ActionInterface::initPrevious(int stat) {
 bool RS_ActionInterface::undoCycleAdd(RS_Entity *e, bool addToContainer) const{
     // upd. undo list:
     if (addToContainer){
-        m_container->addEntity(e);
+        getContainer()->addEntity(e);
     }
     if (m_document){
         undoCycleStart();

@@ -45,7 +45,7 @@ void LC_ActionEditPasteTransform::init(int status) {
 }
 
 void LC_ActionEditPasteTransform::doTrigger() {
-    RS_Modification m(*m_container, m_viewport, false);
+    RS_Modification m(*getContainer(), m_viewport, false);
 
     int numX = m_pasteData->arrayXCount;
     int numY = m_pasteData->arrayYCount;

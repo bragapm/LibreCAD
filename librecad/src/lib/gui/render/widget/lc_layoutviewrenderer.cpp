@@ -5,6 +5,8 @@
 #include "rs_math.h"
 #include "rs_painter.h"
 #include "lc_overlayentitiescontainer.h"
+#include "lc_layoutview.h"
+#include "lc_viewport.h"
 
 namespace {
     static const RS_Color layoutBackgroundColor = RS_Color(85, 85, 85); // AutoCAD-like dark grey background
@@ -13,8 +15,8 @@ namespace {
     static const RS_Color layoutShadowColor = RS_Color(30, 30, 30);     // Dark shadow
 }
 
-LC_LayoutViewRenderer::LC_LayoutViewRenderer(LC_GraphicViewport *viewport, QPaintDevice* paintDevice)
-   : LC_WidgetViewPortRenderer(viewport, paintDevice) {
+LC_LayoutViewRenderer::LC_LayoutViewRenderer(LC_GraphicViewport *viewport, QPaintDevice* paintDevice, LC_LayoutView* layoutView)
+   : LC_WidgetViewPortRenderer(viewport, paintDevice), m_layoutView(layoutView) {
 }
 
 void LC_LayoutViewRenderer::doRender() {
@@ -36,14 +38,48 @@ void LC_LayoutViewRenderer::doDrawLayerOverlays(RS_Painter *painter) {
         return;
     }
 
-    RS_Pen blackPen(RS_Color(0, 0, 0), RS2::Width00, RS2::SolidLine);
+    LC_Viewport* activeVp = m_layoutView ? m_layoutView->getActiveViewport() : nullptr;
 
-    // Forcefully draw all overlay entities (like rubber bands and snappers) in Black
-    auto forceDrawEntitiesBlack = [&](RS2::OverlayGraphics type) {
+    RS_Vector oldFactor = viewport->getFactor();
+    int oldOffsetX = viewport->getOffsetX();
+    int oldOffsetY = viewport->getOffsetY();
+
+    if (activeVp) {
+        painter->save();
+        
+        // Setup clip rect to active viewport
+        RS_Vector c1 = activeVp->getCorner1();
+        RS_Vector c2 = activeVp->getCorner2();
+        double x1, y1, x2, y2;
+        painter->toGui(c1, x1, y1);
+        painter->toGui(c2, x2, y2);
+        painter->setClipRect(std::min(x1, x2), std::min(y1, y2), std::abs(x2 - x1), std::abs(y2 - y1));
+
+        // Calculate and inject effective transform into the viewport
+        double vpScale = activeVp->getData().modelScale;
+        RS_Vector modelCenter = activeVp->getData().modelCenter;
+        RS_Vector vpCenter = (c1 + c2) * 0.5;
+
+        double effFactor = vpScale * oldFactor.x;
+        int effOffsetX = std::round((vpCenter.x - vpScale * modelCenter.x) * oldFactor.x + oldOffsetX);
+        int effOffsetY = std::round((vpCenter.y - vpScale * modelCenter.y) * oldFactor.y + oldOffsetY);
+
+        viewport->justSetOffsetAndFactor(effOffsetX, effOffsetY, effFactor);
+    }
+
+    auto drawEntities = [&](RS2::OverlayGraphics type) {
         RS_EntityContainer* overlayContainer = overlaysManager->entitiesAt(type);
         if (overlayContainer != nullptr) {
             for (auto e : overlayContainer->getEntityList()) {
-                painter->setPen(blackPen);
+                RS_Pen pen = e->getPen(true);
+                if (e->isHighlighted()) {
+                    // Default highlight color
+                    pen.setColor(RS_Color(255, 0, 0)); 
+                }
+                pen.setLineType(RS2::SolidLine);
+                pen.setWidth(RS2::LineWidth::Width00);
+                painter->setPen(pen);
+
                 bool selected = e->isSelected();
                 e->setSelected(false);
                 e->draw(painter);
@@ -54,12 +90,6 @@ void LC_LayoutViewRenderer::doDrawLayerOverlays(RS_Painter *painter) {
         }
     };
 
-    forceDrawEntitiesBlack(RS2::OverlayGraphics::OverlayEffects);
-    forceDrawEntitiesBlack(RS2::OverlayGraphics::ActionPreviewEntity);
-    forceDrawEntitiesBlack(RS2::OverlayGraphics::Snapper);
-    forceDrawEntitiesBlack(RS2::OverlayGraphics::InfoCursor);
-
-    // Draw drawables (like cursor info)
     auto drawDrawables = [&](RS2::OverlayGraphics type) {
         LC_OverlayDrawablesContainer* overlayContainer = overlaysManager->drawablesAt(type);
         if (overlayContainer != nullptr) {
@@ -67,10 +97,28 @@ void LC_LayoutViewRenderer::doDrawLayerOverlays(RS_Painter *painter) {
         }
     };
 
-    drawDrawables(RS2::OverlayGraphics::OverlayEffects);
-    drawDrawables(RS2::OverlayGraphics::ActionPreviewEntity);
-    drawDrawables(RS2::OverlayGraphics::Snapper);
-    drawDrawables(RS2::OverlayGraphics::InfoCursor);
+    if (activeVp) {
+        drawEntities(RS2::OverlayGraphics::OverlayEffects);
+        drawDrawables(RS2::OverlayGraphics::OverlayEffects);
+        drawEntities(RS2::OverlayGraphics::ActionPreviewEntity);
+        drawDrawables(RS2::OverlayGraphics::ActionPreviewEntity);
+        drawEntities(RS2::OverlayGraphics::Snapper);
+        drawDrawables(RS2::OverlayGraphics::Snapper);
+        drawEntities(RS2::OverlayGraphics::InfoCursor);
+        drawDrawables(RS2::OverlayGraphics::InfoCursor);
+
+        viewport->justSetOffsetAndFactor(oldOffsetX, oldOffsetY, oldFactor.x);
+        painter->restore();
+    } else {
+        drawEntities(RS2::OverlayGraphics::OverlayEffects);
+        drawDrawables(RS2::OverlayGraphics::OverlayEffects);
+        drawEntities(RS2::OverlayGraphics::ActionPreviewEntity);
+        drawDrawables(RS2::OverlayGraphics::ActionPreviewEntity);
+        drawEntities(RS2::OverlayGraphics::Snapper);
+        drawDrawables(RS2::OverlayGraphics::Snapper);
+        drawEntities(RS2::OverlayGraphics::InfoCursor);
+        drawDrawables(RS2::OverlayGraphics::InfoCursor);
+    }
 }
 
 void LC_LayoutViewRenderer::drawPaper(RS_Painter *painter) {

@@ -83,7 +83,7 @@ void RS_ActionDrawLineTangent2::doTrigger() {
     if (m_actionData->tangents.empty() || m_actionData->tangents.front() == nullptr)
         return;
 
-    auto *newEntity = new RS_Line{m_container, m_actionData->tangents.front()->getData()};
+    auto *newEntity = new RS_Line{getContainer(), m_actionData->tangents.front()->getData()};
 
     setPenAndLayerToActive(newEntity);
     undoCycleAdd(newEntity);

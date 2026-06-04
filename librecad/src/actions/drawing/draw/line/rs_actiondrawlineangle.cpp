@@ -88,7 +88,7 @@ void RS_ActionDrawLineAngle::initFromSettings() {
 
 void RS_ActionDrawLineAngle::doTrigger() {
     preparePreview();
-    auto *line = new RS_Line{m_container, m_ActionData->data};
+    auto *line = new RS_Line{getContainer(), m_ActionData->data};
 
     setPenAndLayerToActive(line);
     if (!m_persistRelativeZero){

@@ -62,7 +62,7 @@ void LC_ActionDimArc::doTrigger() {
         return;
     }
 
-    auto newEntity= new LC_DimArc(m_container, *m_dimensionData, m_dimArcData);
+    auto newEntity= new LC_DimArc(getContainer(), *m_dimensionData, m_dimArcData);
     setPenAndLayerToActive(newEntity);
     newEntity->update();
     undoCycleAdd(newEntity);

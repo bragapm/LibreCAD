@@ -18,6 +18,7 @@ public:
     void setDrawingMode(RS2::DrawingMode m) const;
     RS2::DrawingMode getDrawingMode() const;
     void initView() override;
+    RS_Block* getPaperSpace() const { return m_paperSpace; }
 
     void mouseDoubleClickEvent(QMouseEvent* e) override;
     void wheelEvent(QWheelEvent* e) override;
@@ -26,12 +27,16 @@ public:
     void mouseReleaseEvent(QMouseEvent* e) override;
     void keyPressEvent(QKeyEvent* e) override;
 
+    LC_Viewport* getActiveViewport() const { return m_activeViewport; }
+
 protected:
     void createViewRenderer() override;
 
 private:
     LC_ActionContext* m_layoutActionContext;
+    RS_Document* m_document;
     LC_Viewport* m_activeViewport {nullptr};
+    RS_Block* m_paperSpace {nullptr};
     
     // Panning state for active viewport
     bool m_isViewportPanning {false};

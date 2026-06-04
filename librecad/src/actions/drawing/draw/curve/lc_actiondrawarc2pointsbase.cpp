@@ -35,7 +35,7 @@ void LC_ActionDrawArc2PointsBase::doTrigger() {
     if (createdEntity != nullptr){
 
         createdEntity->setSelected(true);
-        createdEntity->setParent(m_container);
+        createdEntity->setParent(getContainer());
         setPenAndLayerToActive(createdEntity);
         undoCycleAdd(createdEntity);
 

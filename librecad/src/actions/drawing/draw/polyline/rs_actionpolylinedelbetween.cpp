@@ -53,7 +53,7 @@ void RS_ActionPolylineDelBetween::drawSnapper() {
 void RS_ActionPolylineDelBetween::doTrigger() {
     RS_DEBUG->print("RS_ActionPolylineDelBetween::trigger()");
 
-    RS_Modification m(*m_container, m_viewport);
+    RS_Modification m(*getContainer(), m_viewport);
     RS_Polyline *modifiedPolyline = m.deletePolylineNodesBetween(*m_polylineToModify, m_vertexToDelete, m_vertexToDelete2, false);
     if (modifiedPolyline != nullptr){
         m_polylineToModify = modifiedPolyline;

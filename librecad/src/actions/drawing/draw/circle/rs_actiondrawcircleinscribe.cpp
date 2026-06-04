@@ -71,7 +71,7 @@ void RS_ActionDrawCircleInscribe::finish(bool updateTB){
 }
 
 void RS_ActionDrawCircleInscribe::doTrigger() {
-    auto *circle = new RS_Circle(m_container, m_actionData->cData);
+    auto *circle = new RS_Circle(getContainer(), m_actionData->cData);
 
     if (m_moveRelPointAtCenterAfterTrigger){
         moveRelativeZero(circle->getCenter());

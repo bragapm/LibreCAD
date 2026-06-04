@@ -33,7 +33,7 @@ LC_ActionModifyAlignRef::LC_ActionModifyAlignRef(LC_ActionContext *actionContext
 
 void LC_ActionModifyAlignRef::doTrigger(bool keepSelected) {
     prepareAlignRefData(m_actionData.targetPoint2);
-    RS_Modification m(*m_container, m_viewport);
+    RS_Modification m(*getContainer(), m_viewport);
     m.alignRef(m_actionData.data, m_selectedEntities, false, keepSelected);
     finish(false);
 }

@@ -115,7 +115,7 @@ void LC_ActionDrawViewport::doTrigger() {
     RS_Graphic* modelGraphic = m_graphic;
 
     LC_ViewportData data(m_corner1, m_corner2);
-    auto* viewport = new LC_Viewport(m_container, data);
+    auto* viewport = new LC_Viewport(getContainer(), data);
     viewport->setModelGraphic(modelGraphic);
     setPenAndLayerToActive(viewport);
     undoCycleAdd(viewport);

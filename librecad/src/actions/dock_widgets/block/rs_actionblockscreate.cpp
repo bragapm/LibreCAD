@@ -62,7 +62,7 @@ void RS_ActionBlocksCreate::doTrigger([[maybe_unused]]bool keepSelected) {
                 RS_DIALOGFACTORY->requestNewBlockDialog(blockList);
 
             if (!d.name.isEmpty()) {
-                RS_Creation creation(m_container, getViewPort());
+                RS_Creation creation(getContainer(), getViewPort());
                 creation.createBlock(&d, *m_referencePoint, true);
                 RS_InsertData id(d.name, *m_referencePoint, RS_Vector(1.0, 1.0), 0.0,
                                  1, 1, RS_Vector(0.0, 0.0));

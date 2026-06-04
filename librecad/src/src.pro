@@ -186,6 +186,7 @@ INCLUDEPATH += \
     actions/file \
     actions/options \
     actions/print_preview \
+    actions/layout \
     ui \
     ui/action_options \
     ui/action_options/circle \
@@ -206,6 +207,7 @@ INCLUDEPATH += \
     ui/action_options/polyline \
     ui/action_options/point \
     ui/action_options/print_preview \
+    ui/action_options/layout \
     ui/action_options/selection \
     ui/action_options/snap \
     ui/action_options/text \
@@ -958,7 +960,8 @@ HEADERS += actions/dock_widgets/block/rs_actionblocksadd.h \
     # actions/not_used/rs_actionsetsnaprestriction.h \
     # actions/not_used/rs_actionzoomautoy.h \
     actions/options/rs_actionoptionsdrawing.h \
-    actions/print_preview/rs_actionprintpreview.h
+    actions/print_preview/rs_actionprintpreview.h \
+    actions/layout/rs_actionlayoutview.h
 
 SOURCES += actions/dock_widgets/block/rs_actionblocksadd.cpp \
     actions/dock_widgets/block/rs_actionblocksattributes.cpp \
@@ -1124,7 +1127,8 @@ SOURCES += actions/dock_widgets/block/rs_actionblocksadd.cpp \
     actions/drawing/zoom/rs_actionzoomwindow.cpp \
     actions/file/lc_actionfileexportmakercam.cpp \
     actions/options/rs_actionoptionsdrawing.cpp \
-    actions/print_preview/rs_actionprintpreview.cpp
+    actions/print_preview/rs_actionprintpreview.cpp \
+    actions/layout/rs_actionlayoutview.cpp
 
 
 # ################################################################################
@@ -1179,6 +1183,7 @@ HEADERS += ui/action_options/lc_actionoptionsmanager.h \
     ui/action_options/polyline/qg_polylineequidistantoptions.h \
     ui/action_options/polyline/qg_polylineoptions.h \
     ui/action_options/print_preview/qg_printpreviewoptions.h \
+    ui/action_options/layout/qg_layoutoptions.h \
     ui/action_options/snap/qg_snapdistoptions.h \
     ui/action_options/snap/qg_snapmiddleoptions.h \
     ui/action_options/text/qg_mtextoptions.h \
@@ -1371,6 +1376,7 @@ SOURCES +=ui/action_options/lc_actionoptionsmanager.cpp \
     ui/action_options/polyline/qg_polylineequidistantoptions.cpp \
     ui/action_options/polyline/qg_polylineoptions.cpp \
     ui/action_options/print_preview/qg_printpreviewoptions.cpp \
+    ui/action_options/layout/qg_layoutoptions.cpp \
     ui/action_options/snap/qg_snapdistoptions.cpp \
     ui/action_options/snap/qg_snapmiddleoptions.cpp \
     ui/action_options/text/qg_mtextoptions.cpp \
@@ -1568,6 +1574,7 @@ FORMS = ui/action_options/circle/lc_circlebyarcoptions.ui \
        ui/action_options/polyline/qg_polylineequidistantoptions.ui \
        ui/action_options/polyline/qg_polylineoptions.ui \
        ui/action_options/print_preview/qg_printpreviewoptions.ui \
+       ui/action_options/layout/qg_layoutoptions.ui \
        ui/action_options/selection/lc_selectwindowoptions.ui \
        ui/action_options/snap/qg_snapdistoptions.ui \
        ui/action_options/snap/qg_snapmiddleoptions.ui \

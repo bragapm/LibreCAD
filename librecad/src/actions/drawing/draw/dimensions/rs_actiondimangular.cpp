@@ -51,7 +51,7 @@ void RS_ActionDimAngular::reset(){
 
 void RS_ActionDimAngular::doTrigger() {
     if (m_line1->getStartpoint().valid && m_line2->getStartpoint().valid) {
-        auto* newEntity = new RS_DimAngular( m_container,*m_dimensionData,*m_edata);
+        auto* newEntity = new RS_DimAngular( getContainer(),*m_dimensionData,*m_edata);
 
         setPenAndLayerToActive(newEntity);
         newEntity->update();

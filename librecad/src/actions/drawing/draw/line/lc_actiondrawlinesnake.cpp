@@ -74,7 +74,7 @@ void LC_ActionDrawLineSnake::resetPoints(){
  * @param list  list of entities to add created line
  */
 void LC_ActionDrawLineSnake::doPrepareTriggerEntities(QList<RS_Entity *> &list){
-    auto *line = new RS_Line(m_container, m_actionData->data);
+    auto *line = new RS_Line(getContainer(), m_actionData->data);
     list << line;
 }
 

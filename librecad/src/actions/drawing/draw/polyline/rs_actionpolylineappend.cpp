@@ -135,13 +135,13 @@ void RS_ActionPolylineAppend::onMouseLeftButtonRelease(int status, LC_MouseEvent
                 auto *clone = dynamic_cast<RS_Polyline *>(m_originalPolyline->clone());
                 m_actionData->polyline = clone;
                 m_actionData->data = clone->getData();
-                m_container->addEntity(clone);
+                getContainer()->addEntity(clone);
             } else {
                 auto nearestSegment = m_originalPolyline->getNearestEntity(mouse, &dist, RS2::ResolveNone);
                 auto *clone = dynamic_cast<RS_Polyline *>(m_originalPolyline->clone());
                 m_actionData->polyline = clone;
                 m_actionData->data = clone->getData();
-                m_container->addEntity(clone);
+                getContainer()->addEntity(clone);
                 m_prepend = false;
                 if (nearestSegment == entFirst) {
                     m_prepend = true;
