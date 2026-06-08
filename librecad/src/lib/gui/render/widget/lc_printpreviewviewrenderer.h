@@ -42,6 +42,7 @@ protected:
     void drawPaper(RS_Painter *painter);
     void setPenForPrintingEntity(RS_Painter *painter, RS_Entity *e);
     void doDrawLayerBackground(RS_Painter *painter) override;
+    void drawLayerEntitiesOver(RS_Painter *painter) override;
     void setupPainter(RS_Painter *painter) override;
     void doRender() override;
 private:

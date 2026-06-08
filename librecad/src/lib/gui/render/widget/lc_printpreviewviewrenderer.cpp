@@ -24,8 +24,10 @@
 
 #include "lc_graphicviewport.h"
 #include "rs_graphic.h"
+#include "rs_block.h"
 #include "rs_math.h"
 #include "rs_painter.h"
+#include "lc_viewport.h"
 
 #define DEBUG_PRINT_PREVIEW_POINTS_NO
 
@@ -43,7 +45,19 @@ LC_PrintPreviewViewRenderer::LC_PrintPreviewViewRenderer(LC_GraphicViewport *vie
 
 void LC_PrintPreviewViewRenderer::doRender() {
     if (graphic != nullptr){
-        m_paperScale = graphic->getPaperScale();
+        bool isPaperSpace = false;
+        if (viewport && viewport->getContainer()) {
+            auto* block = dynamic_cast<RS_Block*>(viewport->getContainer());
+            if (block && block->getName() == "*Paper_Space") {
+                isPaperSpace = true;
+            }
+        }
+        
+        if (isPaperSpace) {
+            m_paperScale = 1.0;
+        } else {
+            m_paperScale = graphic->getPaperScale();
+        }
     }
     else{
         m_paperScale = 1.0;
@@ -68,6 +82,17 @@ void LC_PrintPreviewViewRenderer::drawPaper(RS_Painter *painter) {
     }
 // draw paper:
     RS_Vector pinsbase = graphic->getPaperInsertionBase();
+    bool isPaperSpace = false;
+    if (viewport && viewport->getContainer()) {
+        auto* block = dynamic_cast<RS_Block*>(viewport->getContainer());
+        if (block && block->getName() == "*Paper_Space") {
+            isPaperSpace = true;
+        }
+    }
+    if (isPaperSpace) {
+        pinsbase = RS_Vector(0, 0);
+    }
+    
     RS_Vector printAreaSize = graphic->getPrintAreaSize();
 
     double paperFactorX = painter->toGuiDX(1.0) / m_paperScale;
@@ -298,4 +323,81 @@ void LC_PrintPreviewViewRenderer::setupPainter(RS_Painter *painter)  {
 void LC_PrintPreviewViewRenderer::setDrawingMode(RS2::DrawingMode mode){
     m_drawingMode = mode;
     viewport->notifyChanged();
+}
+
+void LC_PrintPreviewViewRenderer::drawLayerEntitiesOver(RS_Painter *painter) {
+    if (!viewport) return;
+
+    RS_EntityContainer* container = viewport->getContainer();
+    if (!container) return;
+
+    RS_Vector oldFactor = viewport->getFactor();
+    int oldOffsetX = viewport->getOffsetX();
+    int oldOffsetY = viewport->getOffsetY();
+
+    for (auto* entity : *container) {
+        if (entity && entity->rtti() == RS2::EntityOverlayBox) {
+            LC_Viewport* vp = dynamic_cast<LC_Viewport*>(entity);
+            if (!vp) continue;
+
+            painter->save();
+
+            RS_Vector c1 = vp->getCorner1();
+            RS_Vector c2 = vp->getCorner2();
+            double x1, y1, x2, y2;
+            painter->toGui(c1, x1, y1);
+            painter->toGui(c2, x2, y2);
+
+            double minX = std::min(x1, x2);
+            double minY = std::min(y1, y2);
+            double width = std::abs(x2 - x1);
+            double height = std::abs(y2 - y1);
+
+            painter->setClipRect(minX, minY, width, height);
+
+            double vpScale = vp->getData().modelScale;
+            RS_Vector modelCenter = vp->getData().modelCenter;
+            RS_Vector vpCenter = (c1 + c2) * 0.5;
+
+            double effFactor = vpScale * oldFactor.x;
+            int effOffsetX = std::round((vpCenter.x - vpScale * modelCenter.x) * oldFactor.x + oldOffsetX);
+            int effOffsetY = std::round((vpCenter.y - vpScale * modelCenter.y) * oldFactor.y + oldOffsetY);
+
+            viewport->justSetOffsetAndFactor(effOffsetX, effOffsetY, effFactor);
+            painter->setViewPort(viewport); 
+
+            LC_Rect oldClipRect = renderBoundingClipRect;
+            renderBoundingClipRect = prepareBoundingClipRect();
+
+            bool oldDrawSelectedOnly = painter->shouldDrawSelected();
+
+            painter->setDrawSelectedOnly(false);
+            doSetupBeforeContainerDraw();
+            if (graphic) {
+                for (auto* modelEntity : *graphic) {
+                    if (modelEntity->rtti() != RS2::EntityOverlayBox && modelEntity->rtti() != RS2::EntityBlock) {
+                        renderEntity(painter, modelEntity);
+                    }
+                }
+            }
+
+            painter->setDrawSelectedOnly(true);
+            doSetupBeforeContainerDraw();
+            if (graphic) {
+                for (auto* modelEntity : *graphic) {
+                    if (modelEntity->rtti() != RS2::EntityOverlayBox && modelEntity->rtti() != RS2::EntityBlock) {
+                        renderEntity(painter, modelEntity);
+                    }
+                }
+            }
+
+            painter->setDrawSelectedOnly(oldDrawSelectedOnly);
+            renderBoundingClipRect = oldClipRect;
+            
+            viewport->justSetOffsetAndFactor(oldOffsetX, oldOffsetY, oldFactor.x);
+            painter->setViewPort(viewport); 
+
+            painter->restore();
+        }
+    }
 }

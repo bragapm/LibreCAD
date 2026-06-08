@@ -253,6 +253,14 @@ void RS_GraphicView::zoomAuto(bool axis){
     m_viewport->zoomAuto(axis);
 }
 
+void RS_GraphicView::zoomPage() {
+    m_viewport->zoomPage();
+}
+
+void RS_GraphicView::zoomPageEx() {
+    m_viewport->zoomPageEx();
+}
+
 void RS_GraphicView::onViewportChanged() {
     adjustOffsetControls();
     adjustZoomControls();

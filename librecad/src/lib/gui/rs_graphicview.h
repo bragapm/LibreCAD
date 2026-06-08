@@ -124,9 +124,9 @@ public:
     void keyPressEvent(QKeyEvent *event) override;
     void enableCoordinateInput();
     void disableCoordinateInput();
-    void zoomAuto(bool axis=true);
-    void zoomPage();
-    void zoomPageEx();
+    virtual void zoomAuto(bool axis=true);
+    virtual void zoomPage();
+    virtual void zoomPageEx();
 
     virtual void updateGridStatusWidget(QString) = 0;
     void setDefaultSnapMode(RS_SnapMode sm);

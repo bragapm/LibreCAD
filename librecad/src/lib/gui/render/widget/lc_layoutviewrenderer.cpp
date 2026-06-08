@@ -20,17 +20,17 @@ LC_LayoutViewRenderer::LC_LayoutViewRenderer(LC_GraphicViewport *viewport, QPain
 }
 
 void LC_LayoutViewRenderer::doRender() {
-    if (graphic != nullptr) {
-        m_paperScale = graphic->getPaperScale();
-    } else {
-        m_paperScale = 1.0;
-    }
+    // In Layout (Paper Space), the coordinate system is exactly 1:1 with the paper.
+    // We must ignore the global graphic's paper scale (which is used for printing Model Space).
+    m_paperScale = 1.0;
     LC_WidgetViewPortRenderer::doRender();
 }
 
 void LC_LayoutViewRenderer::doDrawLayerBackground(RS_Painter *painter) {
     drawPaper(painter);
 }
+
+
 
 void LC_LayoutViewRenderer::doDrawLayerOverlays(RS_Painter *painter) {
     LC_OverlaysManager *overlaysManager = viewport->getOverlaysManager();
@@ -65,6 +65,7 @@ void LC_LayoutViewRenderer::doDrawLayerOverlays(RS_Painter *painter) {
         int effOffsetY = std::round((vpCenter.y - vpScale * modelCenter.y) * oldFactor.y + oldOffsetY);
 
         viewport->justSetOffsetAndFactor(effOffsetX, effOffsetY, effFactor);
+        painter->setViewPort(viewport); // Update painter with new transform
     }
 
     auto drawEntities = [&](RS2::OverlayGraphics type) {
@@ -108,6 +109,7 @@ void LC_LayoutViewRenderer::doDrawLayerOverlays(RS_Painter *painter) {
         drawDrawables(RS2::OverlayGraphics::InfoCursor);
 
         viewport->justSetOffsetAndFactor(oldOffsetX, oldOffsetY, oldFactor.x);
+        painter->setViewPort(viewport); // Restore painter's transform
         painter->restore();
     } else {
         drawEntities(RS2::OverlayGraphics::OverlayEffects);
@@ -126,7 +128,11 @@ void LC_LayoutViewRenderer::drawPaper(RS_Painter *painter) {
         return;
     }
 
-    RS_Vector pinsbase = graphic->getPaperInsertionBase();
+    // In Layout (Paper Space), the paper itself is the coordinate system.
+    // The paper's bottom-left corner is always exactly at (0,0).
+    // graphic->getPaperInsertionBase() is for projecting Model Space onto paper,
+    // so we ignore it here.
+    RS_Vector pinsbase = RS_Vector(0, 0);
     RS_Vector printAreaSize = graphic->getPrintAreaSize();
 
     double paperFactorX = painter->toGuiDX(1.0) / m_paperScale;
@@ -276,3 +282,109 @@ void LC_LayoutViewRenderer::setDrawingMode(RS2::DrawingMode mode) {
     m_drawingMode = mode;
     viewport->notifyChanged();
 }
+
+void LC_LayoutViewRenderer::drawLayerEntitiesOver(RS_Painter* painter) {
+    if (!graphic) {
+        qDebug() << "[LayoutRenderer] drawLayerEntitiesOver: graphic is NULL, skipping";
+        return;
+    }
+
+    RS_EntityContainer* container = viewport->getContainer();
+    if (!container) {
+        qDebug() << "[LayoutRenderer] drawLayerEntitiesOver: container is NULL, skipping";
+        return;
+    }
+
+    RS_Vector oldFactor = viewport->getFactor();
+    int oldOffsetX = viewport->getOffsetX();
+    int oldOffsetY = viewport->getOffsetY();
+
+    int vpCount = 0;
+    for (auto* entity : *container) {
+        if (entity && entity->rtti() == RS2::EntityOverlayBox) {
+            vpCount++;
+        }
+    }
+    qDebug() << "[LayoutRenderer] drawLayerEntitiesOver: found" << vpCount << "viewports in container";
+
+    for (auto* entity : *container) {
+        if (entity && entity->rtti() == RS2::EntityOverlayBox) {
+            LC_Viewport* vp = dynamic_cast<LC_Viewport*>(entity);
+            if (!vp) continue;
+
+            painter->save();
+
+            RS_Vector c1 = vp->getCorner1();
+            RS_Vector c2 = vp->getCorner2();
+            double x1, y1, x2, y2;
+            painter->toGui(c1, x1, y1);
+            painter->toGui(c2, x2, y2);
+
+            double minX = std::min(x1, x2);
+            double minY = std::min(y1, y2);
+            double width = std::abs(x2 - x1);
+            double height = std::abs(y2 - y1);
+
+            painter->setClipRect(minX, minY, width, height);
+
+            double vpScale = vp->getData().modelScale;
+            RS_Vector modelCenter = vp->getData().modelCenter;
+            RS_Vector vpCenter = (c1 + c2) * 0.5;
+
+            double effFactor = vpScale * oldFactor.x;
+            int effOffsetX = std::round((vpCenter.x - vpScale * modelCenter.x) * oldFactor.x + oldOffsetX);
+            int effOffsetY = std::round((vpCenter.y - vpScale * modelCenter.y) * oldFactor.y + oldOffsetY);
+
+            qDebug() << "[LayoutRenderer] VP modelCenter=(" << modelCenter.x << "," << modelCenter.y
+                     << ") vpScale=" << vpScale
+                     << " effFactor=" << effFactor
+                     << " effOffset=(" << effOffsetX << "," << effOffsetY << ")";
+
+            // Apply new transform
+            viewport->justSetOffsetAndFactor(effOffsetX, effOffsetY, effFactor);
+            painter->setViewPort(viewport); // CRITICAL: Updates painter's cached offset/factor
+
+            LC_Rect oldClipRect = renderBoundingClipRect;
+            renderBoundingClipRect = prepareBoundingClipRect();
+
+            bool oldDrawSelectedOnly = painter->shouldDrawSelected();
+
+            int entityCount = 0;
+            // Draw unselected entities
+            painter->setDrawSelectedOnly(false);
+            doSetupBeforeContainerDraw();
+            if (m_layoutView && m_layoutView->getDocument()) {
+                for (auto* modelEntity : *m_layoutView->getDocument()) {
+                    if (modelEntity->rtti() != RS2::EntityOverlayBox && modelEntity->rtti() != RS2::EntityBlock) {
+                        renderEntity(painter, modelEntity);
+                        entityCount++;
+                    }
+                }
+            }
+
+            // Draw selected entities
+            painter->setDrawSelectedOnly(true);
+            doSetupBeforeContainerDraw();
+            if (m_layoutView && m_layoutView->getDocument()) {
+                for (auto* modelEntity : *m_layoutView->getDocument()) {
+                    if (modelEntity->rtti() != RS2::EntityOverlayBox && modelEntity->rtti() != RS2::EntityBlock) {
+                        renderEntity(painter, modelEntity);
+                    }
+                }
+            }
+
+            qDebug() << "[LayoutRenderer] Rendered" << entityCount << "model entities into viewport";
+
+            painter->setDrawSelectedOnly(oldDrawSelectedOnly);
+
+            renderBoundingClipRect = oldClipRect;
+            
+            // Restore original transform
+            viewport->justSetOffsetAndFactor(oldOffsetX, oldOffsetY, oldFactor.x);
+            painter->setViewPort(viewport); // Restore painter's cached offset/factor
+
+            painter->restore();
+        }
+    }
+}
+

@@ -47,6 +47,10 @@ public:
     QC_MDIWindow(RS_Document *doc,QWidget *parent,bool printPreview, LC_ActionContext* actionContext);
     void removeWidgetsListeners() const;
     ~QC_MDIWindow() override;
+
+protected:
+    void showEvent(QShowEvent *event) override;
+
 public slots:
     void slotPenChanged(const RS_Pen &p);
     void slotFileNew();
@@ -65,6 +69,8 @@ public:
     };
     /** @return Pointer to graphic view */
     QG_GraphicView *getGraphicView() const;
+    QG_GraphicView *getModelView() const { return m_graphicView; }
+    QG_GraphicView *getLayoutView() const;
     /** @return Pointer to document */
     RS_Document *getDocument() const;
     /** @return Pointer to graphic or NULL */

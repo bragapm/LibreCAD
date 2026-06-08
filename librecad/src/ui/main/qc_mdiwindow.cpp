@@ -31,6 +31,7 @@
 #include <QPrintDialog>
 #include <QPrinter>
 #include <QMdiArea>
+#include <QTimer>
 #include <QTabWidget>
 #include <QWidget>
 
@@ -98,6 +99,13 @@ QC_MDIWindow::~QC_MDIWindow(){
     }
 }
 
+void QC_MDIWindow::showEvent(QShowEvent *event) {
+    QMdiSubWindow::showEvent(event);
+    if (m_tabWidget && m_tabWidget->currentIndex() != 0) {
+        m_tabWidget->setCurrentIndex(0);
+    }
+}
+
 void QC_MDIWindow::setupGraphicView(QWidget *parent, bool printPreview, LC_ActionContext* actionContext){
     if (printPreview){
         m_graphicView = new LC_PrintPreviewView(this, m_document, actionContext);
@@ -128,16 +136,17 @@ void QC_MDIWindow::setupGraphicView(QWidget *parent, bool printPreview, LC_Actio
         m_layoutView->setObjectName("lc_layoutview");
         m_tabWidget->addTab(m_layoutView, tr("Layout"));
 
-        // Restore document's graphic view to Model view (QG_GraphicView constructor
-        // calls doc->setGraphicView(this) which overrode it with the Layout view)
+        // Restore ActionContext and Document to the Model Tab (index 0)
+        // because the constructor of LC_LayoutView overwrites them to itself.
         m_document->setGraphicView(m_graphicView);
-        actionContext->setDocumentAndView(m_document, m_graphicView);
+        actionContext->setEntityContainer(m_document);
+        actionContext->setGraphicView(m_graphicView);
 
         m_tabWidget->setCurrentIndex(0);
         setWidget(m_tabWidget);
 
         connect(m_tabWidget, &QTabWidget::currentChanged, this, [this](int index) {
-            auto receiver = dynamic_cast<QC_ApplicationWindow *>(this->window());
+            auto receiver = QC_ApplicationWindow::getAppWindow().get();
             if (receiver) {
                 receiver->slotWindowActivatedForced(this);
             }
@@ -165,19 +174,29 @@ void QC_MDIWindow::setupGraphicView(QWidget *parent, bool printPreview, LC_Actio
                         }
                         if(!paperSpace) {
                             paperSpace = new RS_Block(graphic, RS_BlockData("*Paper_Space", RS_Vector(0,0), false));
-                            blockList->add(paperSpace);
+                            graphic->addBlock(paperSpace);
                         }
-                        // Switch action context to paper space for Layout tab
-                        actionCtx->setEntityContainer(paperSpace);
-                        actionCtx->setGraphicView(dynamic_cast<LC_LayoutView*>(m_layoutView));
+                        if (paperSpace && m_layoutView) {
+                            auto* layoutV = dynamic_cast<LC_LayoutView*>(m_layoutView);
+                            m_document->setGraphicView(layoutV);
+                            actionCtx->setEntityContainer(paperSpace);
+                            actionCtx->setGraphicView(layoutV);
+                            if (layoutV) {
+                                layoutV->redraw(RS2::RedrawAll);
+                            }
+                        }
                     }
                 } else { // Model tab
-                    // Restore action context to model space
+                    // Restore action context and document to model space
+                    m_document->setGraphicView(m_graphicView);
                     actionCtx->setEntityContainer(m_document);
                     actionCtx->setGraphicView(m_graphicView);
+                    m_graphicView->redraw(RS2::RedrawAll);
                 }
             }
         });
+
+
     } else {
         setWidget(m_graphicView);
     }
@@ -207,6 +226,10 @@ QG_GraphicView* QC_MDIWindow::getGraphicView() const{
         return qobject_cast<QG_GraphicView*>(m_tabWidget->currentWidget());
     }
     return m_graphicView;
+}
+
+QG_GraphicView* QC_MDIWindow::getLayoutView() const{
+    return dynamic_cast<QG_GraphicView*>(m_layoutView);
 }
 
 RS_Document* QC_MDIWindow::getDocument() const{

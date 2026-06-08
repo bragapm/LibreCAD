@@ -8,6 +8,11 @@ class RS_Document;
 class LC_Viewport;
 class QWheelEvent;
 class QMouseEvent;
+class QKeyEvent;
+#include <QPoint>
+#include <QKeyEvent>
+#include <functional>
+#include "rs_painter.h"
 
 class LC_LayoutView : public QG_GraphicView {
 Q_OBJECT
@@ -26,8 +31,11 @@ public:
     void mouseMoveEvent(QMouseEvent* e) override;
     void mouseReleaseEvent(QMouseEvent* e) override;
     void keyPressEvent(QKeyEvent* e) override;
+    void keyReleaseEvent(QKeyEvent* e) override;
+
 
     LC_Viewport* getActiveViewport() const { return m_activeViewport; }
+    RS_Document* getDocument() const { return m_document; }
 
 protected:
     void createViewRenderer() override;
@@ -37,10 +45,20 @@ private:
     RS_Document* m_document;
     LC_Viewport* m_activeViewport {nullptr};
     RS_Block* m_paperSpace {nullptr};
-    
-    // Panning state for active viewport
-    bool m_isViewportPanning {false};
-    QPoint m_lastPanPos;
+
+    // Pan state when viewport is active
+    bool   m_isPanning  {false};
+    QPoint m_panLastPos {};
+
+    void panActiveViewport(int dx, int dy);
+    void zoomActiveViewport(double zoomFactor, const QPointF& screenPt);
+    void executeWithModelSpaceTransform(QMouseEvent* e, const std::function<void()>& func);
+
+public:
+    void zoomAuto(bool axis=true) override;
+
+protected:
+    void resizeEvent(QResizeEvent *event) override;
 };
 
 #endif // LC_LAYOUTVIEW_H

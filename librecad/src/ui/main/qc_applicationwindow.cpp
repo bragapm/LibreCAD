@@ -38,6 +38,7 @@
 #include <QStatusBar>
 #include <QTimer>
 #include <QDockWidget>
+#include "rs_block.h"
 
 #include "lc_actiongroupmanager.h"
 #include "lc_actionoptionsmanager.h"
@@ -754,25 +755,34 @@ QC_MDIWindow *QC_ApplicationWindow::createNewDrawingWindow(RS_Document *doc, con
 }
 
 QG_GraphicView* QC_ApplicationWindow::setupNewGraphicView(const QC_MDIWindow* w) {
-    QG_GraphicView* view = w->getGraphicView();
-    LC_GROUP("Appearance");
-    bool antialiasing = LC_GET_BOOL("Antialiasing"); // fixme - sand - check whether its not loaded in loadSettings() later
-    bool showScrollbars = LC_GET_BOOL("ScrollBars", true);
-    bool cursor_hiding = LC_GET_BOOL("cursor_hiding");
-    LC_GROUP_END();
+    QG_GraphicView* modelView = w->getModelView();
+    QG_GraphicView* layoutView = w->getLayoutView();
 
-    view->setAntialiasing(antialiasing);
-    view->setCursorHiding(cursor_hiding);
-    view->setDeviceName(LC_GET_ONE_STR("Hardware","Device", "Mouse"));
-    if (showScrollbars) {
-        view->addScrollbars();
-    }
+    auto setupView = [this](QG_GraphicView* view) {
+        if (!view) return;
+        LC_GROUP("Appearance");
+        bool antialiasing = LC_GET_BOOL("Antialiasing"); // fixme - sand - check whether its not loaded in loadSettings() later
+        bool showScrollbars = LC_GET_BOOL("ScrollBars", true);
+        bool cursor_hiding = LC_GET_BOOL("cursor_hiding");
+        LC_GROUP_END();
 
-    connect(view, &QG_GraphicView::gridStatusChanged, this, &QC_ApplicationWindow::updateGridStatus);
-    connect(view, &RS_GraphicView::currentActionChanged, this, &QC_ApplicationWindow::onViewCurrentActionChanged);
+        view->setAntialiasing(antialiasing);
+        view->setCursorHiding(cursor_hiding);
+        view->setDeviceName(LC_GET_ONE_STR("Hardware","Device", "Mouse"));
+        if (showScrollbars) {
+            view->addScrollbars();
+        }
 
-    setupCustomMenu(view);
-    return view;
+        connect(view, &QG_GraphicView::gridStatusChanged, this, &QC_ApplicationWindow::updateGridStatus);
+        connect(view, &RS_GraphicView::currentActionChanged, this, &QC_ApplicationWindow::onViewCurrentActionChanged);
+
+        setupCustomMenu(view);
+    };
+
+    setupView(modelView);
+    setupView(layoutView);
+
+    return w->getGraphicView();
 }
 
 
@@ -1290,6 +1300,12 @@ void QC_ApplicationWindow::openPrintPreview(QC_MDIWindow *parent){
 
             w->setWindowIcon(QIcon(":/icons/document.lci"));
             QG_GraphicView *view = w->getGraphicView();
+            
+            // Sync print preview with the currently active view's container (e.g. Model vs Paper_Space)
+            if (parent->getGraphicView() && parent->getGraphicView()->getContainer()) {
+                view->setContainer(parent->getGraphicView()->getContainer());
+            }
+            
             view->setDeviceName(LC_GET_ONE_STR("Hardware","Device", "Mouse"));
             //                gv->setBackground(RS_Color(255, 255, 255));
             view->setDefaultAction(new RS_ActionPrintPreview(m_actionContext)); // fixme - sand - is it correct for preview?
@@ -1308,7 +1324,17 @@ void QC_ApplicationWindow::openPrintPreview(QC_MDIWindow *parent){
                 bool bigger = graphic->isBiggerThanPaper();
                 bool fixed  = graphic->getPaperScaleFixed();
 
-                graphic->fitToPage();
+                bool isPaperSpace = false;
+                if (view->getContainer()) {
+                    auto* block = dynamic_cast<RS_Block*>(view->getContainer());
+                    if (block && block->getName() == "*Paper_Space") {
+                        isPaperSpace = true;
+                    }
+                }
+
+                if (!isPaperSpace) {
+                    graphic->fitToPage();
+                }
 
                 // Calling zoomPage() after fitToPage() always fits
                 // preview paper in preview window. The only reason not

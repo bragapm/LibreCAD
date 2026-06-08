@@ -75,9 +75,8 @@ void LC_Viewport::draw(RS_Painter* painter) {
     QString labelText = m_isActive ? "VIEWPORT (ACTIVE) Center: " + coordStr : "VIEWPORT Center: " + coordStr;
     painter->drawText(labelRect, Qt::AlignLeft | Qt::AlignTop, labelText, nullptr);
 
-    // Render the model space contents
-    if (m_modelGraphic != nullptr) {
-        painter->setPen(originalPen);
+    // Auto-fit calculations (rendering is now handled by LC_LayoutViewRenderer)
+    if (m_modelGraphic != nullptr && !m_data.isCustomView) {
         m_modelGraphic->calculateBorders();
         RS_Vector modelMin = m_modelGraphic->getMin();
         RS_Vector modelMax = m_modelGraphic->getMax();
@@ -90,52 +89,14 @@ void LC_Viewport::draw(RS_Painter* painter) {
                 double vpWidth = std::abs(m_data.corner2.x - m_data.corner1.x);
                 double vpHeight = std::abs(m_data.corner2.y - m_data.corner1.y);
 
-                double scale = 1.0;
-                RS_Vector modelCenter;
-
-                if (!m_data.isCustomView) {
-                    double scaleX = vpWidth / modelWidth;
-                    double scaleY = vpHeight / modelHeight;
-                    scale = std::min(scaleX, scaleY) * 0.95; // 5% margin
-                    modelCenter = (modelMin + modelMax) * 0.5;
-                    
-                    // Save for future pan/zoom operations
-                    m_data.modelScale = scale;
-                    m_data.modelCenter = modelCenter;
-                } else {
-                    scale = m_data.modelScale;
-                    modelCenter = m_data.modelCenter;
-                }
-
-                RS_Vector vpCenter = (m_data.corner1 + m_data.corner2) * 0.5;
-
-                painter->save();
-
-                // 1. Set clipping to viewport bounds
-                painter->setClipRect(x1, y1, x2 - x1, y2 - y1);
-
-                // 2. Calculate QPainter transform mapping model center to viewport center
-                double guiModelCenterX, guiModelCenterY;
-                painter->toGui(modelCenter, guiModelCenterX, guiModelCenterY);
-
-                double guiVpCenterX, guiVpCenterY;
-                painter->toGui(vpCenter, guiVpCenterX, guiVpCenterY);
-
-                double tx = guiVpCenterX - scale * guiModelCenterX;
-                double ty = guiVpCenterY - scale * guiModelCenterY;
-
-                // 3. Apply transformation
-                painter->translate(tx, ty);
-                painter->scale(scale, scale);
-
-                // 4. Draw all visible entities from model space
-                for (auto* e : *m_modelGraphic) {
-                    if (e && e->isVisible()) {
-                        e->draw(painter);
-                    }
-                }
-
-                painter->restore();
+                double scaleX = vpWidth / modelWidth;
+                double scaleY = vpHeight / modelHeight;
+                double scale = std::min(scaleX, scaleY) * 0.95; // 5% margin
+                RS_Vector modelCenter = (modelMin + modelMax) * 0.5;
+                
+                // Save for future pan/zoom operations
+                m_data.modelScale = scale;
+                m_data.modelCenter = modelCenter;
             }
         }
     }
