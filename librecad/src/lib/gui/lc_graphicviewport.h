@@ -39,6 +39,7 @@ class LC_View;
 class QDateTime;
 class RS_Undoable;
 class LC_GraphicViewPortListener;
+class LC_ViewportZoomDelegate;
 
 class LC_GraphicViewport: public LC_CoordinatesMapper{
 public:
@@ -168,6 +169,9 @@ public:
     bool areAnglesCounterClockwise();
     double getAnglesBaseAngle();
 
+    void setZoomDelegate(LC_ViewportZoomDelegate* d) { m_zoomDelegate = d; }
+
+
 protected:
     RS_Vector factor{1., 1.};
     int offsetX = 0;
@@ -260,6 +264,8 @@ private:
     int borderRight = 0;
     int borderBottom = 0;
     bool zoomFrozen = false;
+
+    LC_ViewportZoomDelegate* m_zoomDelegate = nullptr;
 };
 
 #endif // LC_GRAPHICVIEWPORT_H

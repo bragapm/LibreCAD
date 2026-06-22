@@ -35,5 +35,16 @@ public:
     virtual void onUCSChanged([[maybe_unused]]LC_UCS* ucs) {}
 };
 
+class LC_ViewportZoomDelegate {
+public:
+    virtual ~LC_ViewportZoomDelegate() = default;
+    virtual bool handleZoomIn(double f, const RS_Vector &center) { return false; }
+    virtual bool handleZoomOut(double f, const RS_Vector &center) { return false; }
+    virtual bool handleZoomPan(int dx, int dy) { return false; }
+    virtual bool handleZoomWindow(const RS_Vector& v1, const RS_Vector& v2, bool keepAspectRatio) { return false; }
+    virtual bool handleZoomAuto(bool axis, bool keepAspectRatio) { return false; }
+    virtual bool handleZoomPrevious() { return false; }
+};
+
 
 #endif // LC_GRAPHICVIEWPORTLISTENER_H

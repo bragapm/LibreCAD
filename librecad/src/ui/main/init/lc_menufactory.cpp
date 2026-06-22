@@ -342,6 +342,7 @@ void LC_MenuFactory::createViewMenu(QMenuBar *menu_bar, QList<QMenu *> &topMenuM
                          "ZoomAuto",
                          "ZoomPrevious",
                          "ZoomWindow",
+                         "FixedZoom",
                          "ZoomPan",
                          "",
                          "ZoomViewSave",

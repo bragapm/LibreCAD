@@ -47,6 +47,9 @@ LC_LayoutView::~LC_LayoutView() = default;
 void LC_LayoutView::initView() {
     // Call parent initView first
     QG_GraphicView::initView();
+    if (getViewPort()) {
+        getViewPort()->setZoomDelegate(this);
+    }
 
     // Set up the right-click context menu for layout paper space
     auto* rightClickMenu = new QMenu(this);
@@ -418,6 +421,75 @@ void LC_LayoutView::keyReleaseEvent(QKeyEvent* e) {
 void LC_LayoutView::resizeEvent(QResizeEvent* event) {
     QG_GraphicView::resizeEvent(event);
     redraw();
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// LC_ViewportZoomDelegate Implementation
+// ──────────────────────────────────────────────────────────────────────────
+
+bool LC_LayoutView::handleZoomIn(double f, const RS_Vector& /*center*/) {
+    if (!m_activeViewport) return false;
+    double vpScale = m_activeViewport->getModelScale();
+    double newScale = vpScale * f;
+    if (newScale < 1e-8) newScale = 1e-8;
+    if (newScale > 1e8)  newScale = 1e8;
+    m_activeViewport->setModelScale(newScale);
+    m_activeViewport->setCustomView(true);
+    redraw(RS2::RedrawDrawing);
+    return true;
+}
+
+bool LC_LayoutView::handleZoomOut(double f, const RS_Vector& /*center*/) {
+    if (!m_activeViewport) return false;
+    double vpScale = m_activeViewport->getModelScale();
+    double newScale = vpScale / f;
+    if (newScale < 1e-8) newScale = 1e-8;
+    if (newScale > 1e8)  newScale = 1e8;
+    m_activeViewport->setModelScale(newScale);
+    m_activeViewport->setCustomView(true);
+    redraw(RS2::RedrawDrawing);
+    return true;
+}
+
+bool LC_LayoutView::handleZoomPan(int dx, int dy) {
+    if (!m_activeViewport) return false;
+    panActiveViewport(dx, dy);
+    redraw(RS2::RedrawDrawing);
+    return true;
+}
+
+bool LC_LayoutView::handleZoomWindow(const RS_Vector& v1, const RS_Vector& v2, bool /*keepAspectRatio*/) {
+    if (!m_activeViewport) return false;
+    RS_Vector center = (v1 + v2) * 0.5;
+    RS_Vector c1 = m_activeViewport->getCorner1();
+    RS_Vector c2 = m_activeViewport->getCorner2();
+    double vpPaperW = std::abs(c2.x - c1.x);
+    double vpPaperH = std::abs(c2.y - c1.y);
+    double modW = std::abs(v2.x - v1.x);
+    double modH = std::abs(v2.y - v1.y);
+    if (modW < 1e-8) modW = 100.0;
+    if (modH < 1e-8) modH = 100.0;
+    
+    double scaleX = vpPaperW / modW;
+    double scaleY = vpPaperH / modH;
+    double newScale = std::min(scaleX, scaleY);
+    
+    m_activeViewport->setModelCenter(center);
+    m_activeViewport->setModelScale(newScale);
+    m_activeViewport->setCustomView(true);
+    redraw(RS2::RedrawDrawing);
+    return true;
+}
+
+bool LC_LayoutView::handleZoomAuto(bool axis, bool /*keepAspectRatio*/) {
+    if (!m_activeViewport) return false;
+    zoomAuto(axis);
+    return true;
+}
+
+bool LC_LayoutView::handleZoomPrevious() {
+    if (!m_activeViewport) return false;
+    return true; // We do not have previous zoom stack for active viewports yet, so just block paper space from zooming
 }
 
 

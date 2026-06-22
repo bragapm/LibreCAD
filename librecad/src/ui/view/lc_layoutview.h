@@ -13,8 +13,9 @@ class QKeyEvent;
 #include <QKeyEvent>
 #include <functional>
 #include "rs_painter.h"
+#include "lc_graphicviewportlistener.h"
 
-class LC_LayoutView : public QG_GraphicView {
+class LC_LayoutView : public QG_GraphicView, public LC_ViewportZoomDelegate {
 Q_OBJECT
 public:
     LC_LayoutView(QWidget* parent, RS_Document* doc, LC_ActionContext* actionContext);
@@ -56,6 +57,14 @@ private:
 
 public:
     void zoomAuto(bool axis=true) override;
+
+    // LC_ViewportZoomDelegate overrides
+    bool handleZoomIn(double f, const RS_Vector &center) override;
+    bool handleZoomOut(double f, const RS_Vector &center) override;
+    bool handleZoomPan(int dx, int dy) override;
+    bool handleZoomWindow(const RS_Vector& v1, const RS_Vector& v2, bool keepAspectRatio) override;
+    bool handleZoomAuto(bool axis, bool keepAspectRatio) override;
+    bool handleZoomPrevious() override;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

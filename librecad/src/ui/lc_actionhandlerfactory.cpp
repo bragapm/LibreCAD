@@ -202,6 +202,7 @@
 #include "rs_actionzoomprevious.h"
 #include "rs_actionzoomredraw.h"
 #include "rs_actionzoomwindow.h"
+#include "tt_actionfixedzoom.h"
 #include "rs_debug.h"
 #include "rs_dialogfactory.h"
 #include "rs_dialogfactoryinterface.h"
@@ -356,6 +357,9 @@ namespace InnerFactory{
             }
             case RS2::ActionZoomRedraw: {
                 return new RS_ActionZoomRedraw(ctx);
+            }
+            case RS2::ActionFixedZoom: {
+                return new tt_fixedzoom(ctx);
             }
             case RS2::ActionDrawPoint: {
                 return new RS_ActionDrawPoint(ctx);

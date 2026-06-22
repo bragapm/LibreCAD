@@ -312,6 +312,7 @@ HEADERS += \
     actions/drawing/modify/lc_actionmodifyalignref.h \
     actions/drawing/modify/lc_actionmodifyalignsingle.h \
     actions/drawing/selection/lc_actionsingleentityselectbase.h \
+    actions/drawing/zoom/tt_actionfixedzoom.h \
     lib/actions/lc_actioninfomessagebuilder.h \
     lib/actions/lc_overlayboxaction.h \    
     lib/engine/document/entities/lc_mleader.h \
@@ -564,6 +565,7 @@ SOURCES += \
     actions/drawing/modify/lc_actionmodifyalignref.cpp \
     actions/drawing/modify/lc_actionmodifyalignsingle.cpp \
     actions/drawing/selection/lc_actionsingleentityselectbase.cpp \
+    actions/drawing/zoom/tt_actionfixedzoom.cpp \
     lib/actions/lc_actioninfomessagebuilder.cpp \
     lib/actions/lc_overlayboxaction.cpp \    
     lib/engine/document/entities/lc_mleader.cpp \

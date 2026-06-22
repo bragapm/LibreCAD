@@ -507,7 +507,9 @@ void LC_ActionFactory::createInfoActions(QMap<QString, QAction *> &map, QActionG
 
 void LC_ActionFactory::createViewActions(QMap<QString, QAction*>& map, QActionGroup* group) {
     createActionHandlerActions(map, group, {
-        {"ZoomWindow",RS2::ActionZoomWindow, tr("&Window Zoom"), ":/icons/zoom_window.lci","zoom-select"}});
+        {"ZoomWindow",RS2::ActionZoomWindow, tr("&Window Zoom"), ":/icons/zoom_window.lci","zoom-select"},
+        {"FixedZoom", RS2::ActionFixedZoom,  tr("&Fixed Zoom"),  ":/icons/zoom_window.lci", "zoom-select"}});
+
 
     createMainWindowActions(map, group, {
         {"Fullscreen",       &QC_ApplicationWindow::toggleFullscreen,     tr("&Fullscreen")},
@@ -1056,6 +1058,7 @@ void LC_ActionFactory::prepareActionsToDisableInPrintPreview(QList<QAction*>& ac
         "ZoomAuto",
         "ZoomPrevious",
         "ZoomWindow",
+        "FixedZoom",
         "ZoomPan",
         "OptionsDrawing",
         "ViewGridOrtho",

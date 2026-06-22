@@ -173,6 +173,7 @@ void LC_GraphicViewport::zoomInY(double f) {
  * zooms out by factor f
  */
 void LC_GraphicViewport::zoomOut(double f, const RS_Vector &center) {
+    if (m_zoomDelegate && m_zoomDelegate->handleZoomOut(f, center)) return;
     if (f < 1.0e-6) {
         RS_DEBUG->print(RS_Debug::D_WARNING, "RS_GraphicView::zoomOut: invalid factor");
         return;
@@ -245,6 +246,7 @@ void LC_GraphicViewport::centerY(double v) {
  * Centers the point v1.
  */
 void LC_GraphicViewport::zoomPan(int dx, int dy) {
+    if (m_zoomDelegate && m_zoomDelegate->handleZoomPan(dx, dy)) return;
     offsetX += dx;
     offsetY -= dy;
     fireViewportChanged();
@@ -258,6 +260,7 @@ void LC_GraphicViewport::zoomPan(int dx, int dy) {
  *                               current graphic view
  */
 void LC_GraphicViewport::zoomWindow(RS_Vector v1, RS_Vector v2,bool keepAspectRatio) {
+    if (m_zoomDelegate && m_zoomDelegate->handleZoomWindow(v1, v2, keepAspectRatio)) return;
 
     // Switch left/right and top/bottom is necessary:
     /*  if (v1.x > v2.x) {
@@ -347,6 +350,7 @@ void LC_GraphicViewport::zoomWindow(RS_Vector v1, RS_Vector v2,bool keepAspectRa
  * zooms in by factor f
  */
 void LC_GraphicViewport::zoomIn(double f, const RS_Vector &center) {
+    if (m_zoomDelegate && m_zoomDelegate->handleZoomIn(f, center)) return;
     if (f < 1.0e-6) {
         RS_DEBUG->print(RS_Debug::D_WARNING, "RS_GraphicView::zoomIn: invalid factor");
         return;
@@ -550,6 +554,7 @@ void LC_GraphicViewport::zoomAutoEnsurePointsIncluded(const RS_Vector &wcsP1, co
  *                        false: factors in x and y are stretched to the max
  */
 void LC_GraphicViewport::zoomAuto(bool axis, bool keepAspectRatio) {
+    if (m_zoomDelegate && m_zoomDelegate->handleZoomAuto(axis, keepAspectRatio)) return;
     RS_DEBUG->print("RS_GraphicView::zoomAuto");
     if (container) {
         container->calculateBorders();
@@ -649,7 +654,7 @@ RS_Grid *LC_GraphicViewport::getGrid() const {
  * Shows previous view.
  */
 void LC_GraphicViewport::zoomPrevious() {
-
+    if (m_zoomDelegate && m_zoomDelegate->handleZoomPrevious()) return;
     RS_DEBUG->print("RS_GraphicView::zoomPrevious");
 
     if (container) {
