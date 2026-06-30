@@ -596,6 +596,8 @@ void QC_ApplicationWindow::doWindowActivated(QMdiSubWindow *w, bool forced) {
                 activatedGraphicView->redraw();
             }
         }
+        auto win = dynamic_cast<QC_MDIWindow *>(w);
+        emit windowsChanged(win && win->getDocument() != nullptr);
         return;
     }
 

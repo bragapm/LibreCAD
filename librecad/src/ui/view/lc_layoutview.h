@@ -54,6 +54,7 @@ private:
     void panActiveViewport(int dx, int dy);
     void zoomActiveViewport(double zoomFactor, const QPointF& screenPt);
     void executeWithModelSpaceTransform(QMouseEvent* e, const std::function<void()>& func);
+    void validateActiveViewport();
 
 public:
     void zoomAuto(bool axis=true) override;

@@ -92,7 +92,18 @@ RS2::DrawingMode LC_LayoutView::getDrawingMode() const {
 // Forward declaration (defined below)
 static bool isInsideViewport(const RS_Vector& pt, LC_Viewport* vp);
 
+void LC_LayoutView::validateActiveViewport() {
+    if (m_activeViewport && (m_activeViewport->isUndone() || !m_activeViewport->isVisible())) {
+        m_activeViewport->setActive(false);
+        m_activeViewport = nullptr;
+        m_isPanning = false;
+        m_layoutActionContext->setEntityContainer(m_paperSpace);
+        redraw();
+    }
+}
+
 void LC_LayoutView::executeWithModelSpaceTransform(QMouseEvent* e, const std::function<void()>& func) {
+    validateActiveViewport();
     if (!m_activeViewport) {
         func();
         return;
@@ -130,6 +141,7 @@ void LC_LayoutView::executeWithModelSpaceTransform(QMouseEvent* e, const std::fu
 }
 
 void LC_LayoutView::mousePressEvent(QMouseEvent* e) {
+    validateActiveViewport();
     if (m_activeViewport) {
         RS_Vector mousePaper = getViewPort()->toUCSFromGui(e->position().x(), e->position().y());
 
@@ -159,6 +171,7 @@ void LC_LayoutView::mousePressEvent(QMouseEvent* e) {
 }
 
 void LC_LayoutView::mouseMoveEvent(QMouseEvent* e) {
+    validateActiveViewport();
     if (m_isPanning && m_activeViewport) {
         QPoint delta = e->pos() - m_panLastPos;
         panActiveViewport(delta.x(), delta.y());
@@ -174,6 +187,7 @@ void LC_LayoutView::mouseMoveEvent(QMouseEvent* e) {
 }
 
 void LC_LayoutView::mouseReleaseEvent(QMouseEvent* e) {
+    validateActiveViewport();
     if (e->button() == Qt::MiddleButton && m_isPanning) {
         m_isPanning = false;
         e->accept();
@@ -186,6 +200,7 @@ void LC_LayoutView::mouseReleaseEvent(QMouseEvent* e) {
 }
 
 void LC_LayoutView::mouseDoubleClickEvent(QMouseEvent* e) {
+    validateActiveViewport();
     executeWithModelSpaceTransform(e, [&]() {
         if (!m_activeViewport) {
             if (e->button() == Qt::LeftButton) {
@@ -194,9 +209,9 @@ void LC_LayoutView::mouseDoubleClickEvent(QMouseEvent* e) {
                 if (paperSpace) {
                     LC_Viewport* clickedViewport = nullptr;
                     for (auto* entity : *paperSpace) {
-                        if (entity && entity->rtti() == RS2::EntityOverlayBox) {
+                        if (entity && entity->rtti() == RS2::EntityViewport) {
                             LC_Viewport* vp = dynamic_cast<LC_Viewport*>(entity);
-                            if (vp && isInsideViewport(mousePaper, vp)) {
+                            if (vp && !vp->isUndone() && vp->isVisible() && isInsideViewport(mousePaper, vp)) {
                                 clickedViewport = vp;
                                 break;
                             }
@@ -327,6 +342,7 @@ void LC_LayoutView::zoomActiveViewport(double zoomFactor, const QPointF& screenP
 }
 
 void LC_LayoutView::zoomAuto(bool axis) {
+    validateActiveViewport();
     if (m_activeViewport && m_document) {
         // Calculate the bounding box of the model
         m_document->calculateBorders();
@@ -367,6 +383,7 @@ void LC_LayoutView::zoomAuto(bool axis) {
 
 
 void LC_LayoutView::wheelEvent(QWheelEvent* e) {
+    validateActiveViewport();
     if (m_activeViewport) {
         RS_Vector mousePaper = getViewPort()->toUCSFromGui(
             static_cast<int>(e->position().x()),
@@ -385,6 +402,7 @@ void LC_LayoutView::wheelEvent(QWheelEvent* e) {
 }
 
 void LC_LayoutView::keyPressEvent(QKeyEvent* e) {
+    validateActiveViewport();
     if (m_activeViewport) {
         if (e->key() == Qt::Key_Escape) {
             m_activeViewport->setActive(false);
@@ -411,6 +429,7 @@ void LC_LayoutView::keyPressEvent(QKeyEvent* e) {
 }
 
 void LC_LayoutView::keyReleaseEvent(QKeyEvent* e) {
+    validateActiveViewport();
     if (m_activeViewport) {
         e->accept();
         return;
@@ -428,6 +447,7 @@ void LC_LayoutView::resizeEvent(QResizeEvent* event) {
 // ──────────────────────────────────────────────────────────────────────────
 
 bool LC_LayoutView::handleZoomIn(double f, const RS_Vector& /*center*/) {
+    validateActiveViewport();
     if (!m_activeViewport) return false;
     double vpScale = m_activeViewport->getModelScale();
     double newScale = vpScale * f;
@@ -440,6 +460,7 @@ bool LC_LayoutView::handleZoomIn(double f, const RS_Vector& /*center*/) {
 }
 
 bool LC_LayoutView::handleZoomOut(double f, const RS_Vector& /*center*/) {
+    validateActiveViewport();
     if (!m_activeViewport) return false;
     double vpScale = m_activeViewport->getModelScale();
     double newScale = vpScale / f;
@@ -452,6 +473,7 @@ bool LC_LayoutView::handleZoomOut(double f, const RS_Vector& /*center*/) {
 }
 
 bool LC_LayoutView::handleZoomPan(int dx, int dy) {
+    validateActiveViewport();
     if (!m_activeViewport) return false;
     panActiveViewport(dx, dy);
     redraw(RS2::RedrawDrawing);
@@ -459,6 +481,7 @@ bool LC_LayoutView::handleZoomPan(int dx, int dy) {
 }
 
 bool LC_LayoutView::handleZoomWindow(const RS_Vector& v1, const RS_Vector& v2, bool /*keepAspectRatio*/) {
+    validateActiveViewport();
     if (!m_activeViewport) return false;
     RS_Vector center = (v1 + v2) * 0.5;
     RS_Vector c1 = m_activeViewport->getCorner1();
@@ -482,12 +505,14 @@ bool LC_LayoutView::handleZoomWindow(const RS_Vector& v1, const RS_Vector& v2, b
 }
 
 bool LC_LayoutView::handleZoomAuto(bool axis, bool /*keepAspectRatio*/) {
+    validateActiveViewport();
     if (!m_activeViewport) return false;
     zoomAuto(axis);
     return true;
 }
 
 bool LC_LayoutView::handleZoomPrevious() {
+    validateActiveViewport();
     if (!m_activeViewport) return false;
     return true; // We do not have previous zoom stack for active viewports yet, so just block paper space from zooming
 }

@@ -65,6 +65,7 @@
 #include "lc_dimordinate.h"
 #include "lc_dimstyle.h"
 #include "lc_tolerance.h"
+#include "lc_viewport.h"
 
 #include <iso646.h>
 
@@ -1388,6 +1389,32 @@ void RS_FilterDXFRW::addHatch(const DRW_Hatch *data) {
 /**
  * Implementation of the method which handles image entities.
  */
+void RS_FilterDXFRW::addViewport(const DRW_Viewport &data) {
+    if (data.vpID == 1) {
+        return; // Ignore paper space layout viewport
+    }
+    
+    RS_Vector center(data.basePoint.x, data.basePoint.y);
+    RS_Vector halfSize(data.pswidth / 2.0, data.psheight / 2.0);
+    RS_Vector corner1 = center - halfSize;
+    RS_Vector corner2 = center + halfSize;
+    
+    LC_ViewportData vpData(corner1, corner2);
+    vpData.modelCenter = RS_Vector(data.centerPX, data.centerPY);
+    
+    if (data.viewHeight > 1e-6) {
+        vpData.modelScale = data.psheight / data.viewHeight;
+    } else {
+        vpData.modelScale = 1.0;
+    }
+    
+    LC_Viewport* vp = new LC_Viewport(currentContainer, vpData);
+    setEntityAttributes(vp, &data);
+    vp->setModelGraphic(graphic);
+    
+    currentContainer->addEntity(vp);
+}
+
 void RS_FilterDXFRW::addImage(const DRW_Image *data) {
     RS_DEBUG->print("RS_FilterDXF::addImage");
 
@@ -1717,7 +1744,8 @@ void RS_FilterDXFRW::writeBlockRecords(){
     RS_Block *blk;
     for (unsigned i = 0; i < graphic->countBlocks(); i++) {
         blk = graphic->blockAt(i);
-        if (!blk->isUndone()){
+        QString blkName = blk->getName().toLower();
+        if (!blk->isUndone() && !blkName.startsWith("*paper_space") && !blkName.startsWith("$paper_space")){
             RS_DEBUG->print("writing block record: %s", (const char*)blk->getName().toLocal8Bit());
             dxfW->writeBlockRecord(blk->getName().toUtf8().data());
         }
@@ -1753,7 +1781,8 @@ void RS_FilterDXFRW::writeBlocks() {
     //next write "normal" blocks
     for (unsigned i = 0; i < graphic->countBlocks(); i++) {
         blk = graphic->blockAt(i);
-        if (!blk->isUndone()) {
+        QString blkName = blk->getName().toLower();
+        if (!blk->isUndone() && !blkName.startsWith("*paper_space") && !blkName.startsWith("$paper_space")) {
             RS_DEBUG->print("writing block: %s", (const char*)blk->getName().toLocal8Bit());
 
             DRW_Block block;
@@ -2361,6 +2390,20 @@ void RS_FilterDXFRW::writeEntities(){
             writeEntity(e);
         }
     }
+
+    // Write Paper Space entities into ENTITIES section
+    for (unsigned i = 0; i < graphic->countBlocks(); i++) {
+        RS_Block* blk = graphic->blockAt(i);
+        QString blkName = blk->getName().toLower();
+        if (!blk->isUndone() && (blkName.startsWith("*paper_space") || blkName.startsWith("$paper_space"))) {
+            for (RS_Entity *e = blk->firstEntity(RS2::ResolveNone);
+                 e ; e = blk->nextEntity(RS2::ResolveNone)) {
+                if ( !(e->getFlag(RS2::FlagUndone)) ) {
+                    writeEntity(e);
+                }
+            }
+        }
+    }
 }
 
 void RS_FilterDXFRW::writeEntity(RS_Entity* e){
@@ -2420,6 +2463,9 @@ void RS_FilterDXFRW::writeEntity(RS_Entity* e){
         break;
     case RS2::EntityImage:
         writeImage((RS_Image*)e);
+        break;
+    case RS2::EntityViewport:
+        writeViewport((LC_Viewport*)e);
         break;
     default:
         break;
@@ -3237,6 +3283,35 @@ void RS_FilterDXFRW::writeSolid(RS_Solid* s) {
 }
 
 
+void RS_FilterDXFRW::writeViewport(LC_Viewport* vp) {
+    DRW_Viewport dvp;
+    getEntityAttributes(&dvp, vp);
+    
+    const LC_ViewportData& data = vp->getData();
+    
+    dvp.basePoint.x = (data.corner1.x + data.corner2.x) / 2.0;
+    dvp.basePoint.y = (data.corner1.y + data.corner2.y) / 2.0;
+    dvp.basePoint.z = 0.0;
+    
+    dvp.pswidth = std::abs(data.corner2.x - data.corner1.x);
+    dvp.psheight = std::abs(data.corner2.y - data.corner1.y);
+    
+    dvp.centerPX = data.modelCenter.x;
+    dvp.centerPY = data.modelCenter.y;
+    
+    if (data.modelScale > 1e-6) {
+        dvp.viewHeight = dvp.psheight / data.modelScale;
+    } else {
+        dvp.viewHeight = dvp.psheight;
+    }
+    
+    static int vpIdCounter = 2;
+    dvp.vpID = vpIdCounter++;
+    dvp.vpstatus = 1;
+    
+    dxfW->writeViewport(&dvp);
+}
+
 void RS_FilterDXFRW::writeImage(RS_Image * i) {
     DRW_Image image;
     getEntityAttributes(&image, i);
@@ -3364,6 +3439,22 @@ void RS_FilterDXFRW::setEntityAttributes(RS_Entity* entity,
     pen.setWidth(numberToWidth(attrib->lWeight));
 
     entity->setPen(pen);
+
+    if (attrib->space == DRW::PaperSpace && currentContainer == graphic) {
+        RS_Block* paperSpace = graphic->findBlock("*Paper_Space");
+        if (!paperSpace) {
+            paperSpace = new RS_Block(graphic, RS_BlockData("*Paper_Space", RS_Vector(0,0), false));
+            graphic->addBlock(paperSpace);
+        }
+        currentContainer = paperSpace;
+        entity->setParent(paperSpace);
+    } else if (attrib->space == DRW::ModelSpace && currentContainer != graphic && 
+               currentContainer->rtti() == RS2::EntityBlock && 
+               ((RS_Block*)currentContainer)->getName().toLower().startsWith("*paper_space")) {
+        currentContainer = graphic;
+        entity->setParent(graphic);
+    }
+
     RS_DEBUG->print("RS_FilterDXF::setEntityAttributes: OK");
 }
 
@@ -3402,6 +3493,17 @@ void RS_FilterDXFRW::getEntityAttributes(DRW_Entity* ent, const RS_Entity* entit
     ent->color24 = exact_rgb;
     ent->lWeight = width;
     ent->lineType = lineType.toUtf8().data();
+
+    if (entity->getParent() && entity->getParent()->rtti() == RS2::EntityBlock) {
+        QString parentName = ((RS_Block*)entity->getParent())->getName().toLower();
+        if (parentName.startsWith("*paper_space") || parentName.startsWith("$paper_space")) {
+            ent->space = DRW::PaperSpace;
+        } else {
+            ent->space = DRW::ModelSpace;
+        }
+    } else {
+        ent->space = DRW::ModelSpace;
+    }
 }
 
 

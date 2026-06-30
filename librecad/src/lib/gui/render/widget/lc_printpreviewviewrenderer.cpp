@@ -336,7 +336,7 @@ void LC_PrintPreviewViewRenderer::drawLayerEntitiesOver(RS_Painter *painter) {
     int oldOffsetY = viewport->getOffsetY();
 
     for (auto* entity : *container) {
-        if (entity && entity->rtti() == RS2::EntityOverlayBox) {
+        if (entity && entity->rtti() == RS2::EntityViewport) {
             LC_Viewport* vp = dynamic_cast<LC_Viewport*>(entity);
             if (!vp) continue;
 
@@ -375,7 +375,7 @@ void LC_PrintPreviewViewRenderer::drawLayerEntitiesOver(RS_Painter *painter) {
             doSetupBeforeContainerDraw();
             if (graphic) {
                 for (auto* modelEntity : *graphic) {
-                    if (modelEntity->rtti() != RS2::EntityOverlayBox && modelEntity->rtti() != RS2::EntityBlock) {
+                    if (modelEntity->rtti() != RS2::EntityViewport && modelEntity->rtti() != RS2::EntityBlock) {
                         renderEntity(painter, modelEntity);
                     }
                 }
@@ -385,7 +385,7 @@ void LC_PrintPreviewViewRenderer::drawLayerEntitiesOver(RS_Painter *painter) {
             doSetupBeforeContainerDraw();
             if (graphic) {
                 for (auto* modelEntity : *graphic) {
-                    if (modelEntity->rtti() != RS2::EntityOverlayBox && modelEntity->rtti() != RS2::EntityBlock) {
+                    if (modelEntity->rtti() != RS2::EntityViewport && modelEntity->rtti() != RS2::EntityBlock) {
                         renderEntity(painter, modelEntity);
                     }
                 }

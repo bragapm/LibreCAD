@@ -48,32 +48,47 @@ void LC_Viewport::calculateBorders() {
 void LC_Viewport::draw(RS_Painter* painter) {
     if (painter == nullptr) return;
 
-    RS_Pen originalPen = painter->getPen();
+    RS_Vector p1 = m_data.corner1;
+    RS_Vector p3 = m_data.corner2;
+    RS_Vector p2(p3.x, p1.y);
+    RS_Vector p4(p1.x, p3.y);
 
-    // Draw viewport border as a rectangle
+    // When selected or highlighted, force the pen to be dashed.
+    // The renderer has already applied the correct color for selection/highlight.
+    if (isSelected() || getFlag(RS2::FlagHighlighted)) {
+        RS_Pen pen = painter->getPen();
+        pen.setLineType(RS2::DashLineTiny);
+        pen.setWidth(RS2::Width00);
+        painter->setPen(pen);
+        painter->updateDashOffset(this);
+    } else {
+        // Draw rectangle border. Make it red and thicker if active, else use layer/renderer pen.
+        RS_Pen originalPen = painter->getPen();
+        RS2::LineWidth width = m_isActive ? RS2::Width07 : RS2::Width00;
+        RS_Color color = m_isActive ? RS_Color(255, 0, 0) : originalPen.getColor();
+        RS_Pen borderPen(color, width, RS2::SolidLine);
+        painter->setPen(borderPen);
+    }
+
+    painter->drawLineWCS(p1, p2);
+    painter->drawLineWCS(p2, p3);
+    painter->drawLineWCS(p3, p4);
+    painter->drawLineWCS(p4, p1);
+
+    // Get GUI coordinates for text label
     double x1, y1, x2, y2;
     painter->toGui(m_data.corner1, x1, y1);
     painter->toGui(m_data.corner2, x2, y2);
-
-    // Ensure correct order
     if (x1 > x2) std::swap(x1, x2);
     if (y1 > y2) std::swap(y1, y2);
 
-    // Draw rectangle border. Make it red and thicker if active.
-    RS2::LineWidth width = m_isActive ? RS2::Width07 : RS2::Width00;
-    RS_Color color = m_isActive ? RS_Color(255, 0, 0) : RS_Color(0, 100, 200);
-    RS_Pen borderPen(color, width, RS2::SolidLine);
-    painter->setPen(borderPen);
-    painter->drawLineUISimple(x1, y1, x2, y1);
-    painter->drawLineUISimple(x2, y1, x2, y2);
-    painter->drawLineUISimple(x2, y2, x1, y2);
-    painter->drawLineUISimple(x1, y2, x1, y1);
-
-    // Label "VIEWPORT" in top-left corner
-    QRect labelRect(x1 + 3, y1 + 3, 300, 20);
-    QString coordStr = QString("(%1, %2)").arg(m_data.modelCenter.x, 0, 'f', 2).arg(m_data.modelCenter.y, 0, 'f', 2);
-    QString labelText = m_isActive ? "VIEWPORT (ACTIVE) Center: " + coordStr : "VIEWPORT Center: " + coordStr;
-    painter->drawText(labelRect, Qt::AlignLeft | Qt::AlignTop, labelText, nullptr);
+    // Only draw label when not selected (keep selection visual clean)
+    if (!isSelected()) {
+        QRect labelRect(x1 + 3, y1 + 3, 300, 20);
+        QString coordStr = QString("(%1, %2)").arg(m_data.modelCenter.x, 0, 'f', 2).arg(m_data.modelCenter.y, 0, 'f', 2);
+        QString labelText = m_isActive ? "VIEWPORT (ACTIVE) Center: " + coordStr : "VIEWPORT Center: " + coordStr;
+        painter->drawText(labelRect, Qt::AlignLeft | Qt::AlignTop, labelText, nullptr);
+    }
 
     // Auto-fit calculations (rendering is now handled by LC_LayoutViewRenderer)
     if (m_modelGraphic != nullptr && !m_data.isCustomView) {

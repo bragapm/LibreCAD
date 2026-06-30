@@ -26,6 +26,8 @@
 #include "rs_graphic.h"
 #include "rs_graphicview.h"
 #include "rs_debug.h"
+#include "rs_block.h"
+#include "rs_dialogfactory.h"
 
 LC_ActionDrawViewport::LC_ActionDrawViewport(LC_ActionContext* actionContext)
     : RS_PreviewActionInterface("Draw Viewport", actionContext, RS2::ActionNone) {
@@ -110,6 +112,25 @@ void LC_ActionDrawViewport::onCoordinateEvent(int status, bool /*isZero*/, const
 void LC_ActionDrawViewport::doTrigger() {
     if (!m_corner1.valid || !m_corner2.valid) return;
     if ((m_corner2 - m_corner1).magnitude() < RS_TOLERANCE) return;
+
+    // Only allow viewports in Paper Space
+    auto* blockContainer = dynamic_cast<RS_Block*>(getContainer());
+    if (blockContainer == nullptr || blockContainer->getName() != "*Paper_Space") {
+        commandMessage(tr("Viewports can only be created in the Layout tab."));
+        setStatus(SetCorner1);
+        finish();
+        return;
+    }
+
+    // Only allow one viewport per layout
+    for (RS_Entity* e : *getContainer()) {
+        if (e && e->rtti() == RS2::EntityViewport) {
+            commandMessage(tr("Only one viewport is allowed per layout."));
+            setStatus(SetCorner1);
+            finish();
+            return;
+        }
+    }
 
     // Get the model graphic (model space)
     RS_Graphic* modelGraphic = m_graphic;

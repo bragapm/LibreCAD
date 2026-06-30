@@ -301,16 +301,17 @@ void LC_LayoutViewRenderer::drawLayerEntitiesOver(RS_Painter* painter) {
 
     int vpCount = 0;
     for (auto* entity : *container) {
-        if (entity && entity->rtti() == RS2::EntityOverlayBox) {
+        if (entity && entity->rtti() == RS2::EntityViewport) {
             vpCount++;
         }
     }
     qDebug() << "[LayoutRenderer] drawLayerEntitiesOver: found" << vpCount << "viewports in container";
 
     for (auto* entity : *container) {
-        if (entity && entity->rtti() == RS2::EntityOverlayBox) {
+        if (entity && entity->rtti() == RS2::EntityViewport) {
             LC_Viewport* vp = dynamic_cast<LC_Viewport*>(entity);
             if (!vp) continue;
+            if (vp->isUndone() || !vp->isVisible()) continue;
 
             painter->save();
 
@@ -355,7 +356,7 @@ void LC_LayoutViewRenderer::drawLayerEntitiesOver(RS_Painter* painter) {
             doSetupBeforeContainerDraw();
             if (m_layoutView && m_layoutView->getDocument()) {
                 for (auto* modelEntity : *m_layoutView->getDocument()) {
-                    if (modelEntity->rtti() != RS2::EntityOverlayBox && modelEntity->rtti() != RS2::EntityBlock) {
+                    if (modelEntity->rtti() != RS2::EntityViewport && modelEntity->rtti() != RS2::EntityBlock) {
                         renderEntity(painter, modelEntity);
                         entityCount++;
                     }
@@ -367,7 +368,7 @@ void LC_LayoutViewRenderer::drawLayerEntitiesOver(RS_Painter* painter) {
             doSetupBeforeContainerDraw();
             if (m_layoutView && m_layoutView->getDocument()) {
                 for (auto* modelEntity : *m_layoutView->getDocument()) {
-                    if (modelEntity->rtti() != RS2::EntityOverlayBox && modelEntity->rtti() != RS2::EntityBlock) {
+                    if (modelEntity->rtti() != RS2::EntityViewport && modelEntity->rtti() != RS2::EntityBlock) {
                         renderEntity(painter, modelEntity);
                     }
                 }

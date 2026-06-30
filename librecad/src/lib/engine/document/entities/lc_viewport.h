@@ -58,7 +58,7 @@ public:
     RS_Entity* clone() const override;
 
     RS2::EntityType rtti() const override {
-        return RS2::EntityOverlayBox; // Reuse available type for now
+        return RS2::EntityViewport;
     }
 
     bool isViewport() const { return true; }

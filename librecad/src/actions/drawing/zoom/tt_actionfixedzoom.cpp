@@ -86,7 +86,7 @@ void tt_fixedzoom::onMouseLeftButtonRelease(int status, LC_MouseEvent *e)
 }
 
 RS2::CursorType tt_fixedzoom::doGetMouseCursor([[maybe_unused]] int status){
-    return RS2::MagnifierCursor;
+    return RS2::CrossCursor;
 }
 
 void tt_fixedzoom::mousePressEvent(QMouseEvent *e)

@@ -20,7 +20,7 @@ SUBDIRS     = \
         plotequation \
         pointstocsv \
         gear \
-        geokkp
+        tataletak
 
 TRANSLATIONS = ./ts/plugins_ar.ts \
     ./ts/plugins_ca.ts \

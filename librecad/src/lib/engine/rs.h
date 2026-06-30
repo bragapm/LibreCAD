@@ -163,6 +163,7 @@ namespace RS2 {
         EntitySpline,       /**< Spline */
         EntitySplinePoints,       /**< SplinePoints */
         EntityParabola,       /**< Parabola */
+        EntityViewport,       /**< Viewport */
         EntityOverlayBox,    /**< OverlayBox */
         EntityPreview,    /**< Preview Container */
         EntityPattern,

@@ -2925,6 +2925,9 @@ bool DRW_Viewport::parseCode(int code, dxfReader *reader){
     case 41:
         psheight = reader->getDouble();
         break;
+    case 45:
+        viewHeight = reader->getDouble();
+        break;
     case 68:
         vpstatus = reader->getInt32();
         break;

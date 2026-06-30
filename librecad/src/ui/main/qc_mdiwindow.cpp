@@ -150,9 +150,6 @@ void QC_MDIWindow::setupGraphicView(QWidget *parent, bool printPreview, LC_Actio
             if (receiver) {
                 receiver->slotWindowActivatedForced(this);
             }
-            if (QG_GraphicView* gv = getGraphicView()) {
-                gv->setFocus();
-            }
 
             LC_ActionContext* actionCtx = QC_ApplicationWindow::getAppWindow()->getActionContext();
             if (actionCtx) {
@@ -161,6 +158,7 @@ void QC_MDIWindow::setupGraphicView(QWidget *parent, bool printPreview, LC_Actio
                     auto* lView = dynamic_cast<LC_LayoutView*>(m_layoutView);
                     if (lView && lView->getDefaultAction() == nullptr) {
                         lView->setDefaultAction(new RS_ActionLayoutView(actionCtx));
+                        lView->getDefaultAction()->init(0);
                     }
                     RS_Graphic* graphic = dynamic_cast<RS_Graphic*>(m_document);
                     if (graphic) {
@@ -192,6 +190,13 @@ void QC_MDIWindow::setupGraphicView(QWidget *parent, bool printPreview, LC_Actio
                     actionCtx->setEntityContainer(m_document);
                     actionCtx->setGraphicView(m_graphicView);
                     m_graphicView->redraw(RS2::RedrawAll);
+                }
+            }
+
+            if (QG_GraphicView* gv = getGraphicView()) {
+                gv->setFocus();
+                if (RS_ActionInterface* currentAction = gv->getCurrentAction()) {
+                    currentAction->showOptions();
                 }
             }
         });

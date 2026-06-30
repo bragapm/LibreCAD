@@ -102,7 +102,7 @@ export LINUXDEPLOY_OUTPUT_APP_NAME=LibreCAD-Tataletak
 export QMAKE=~/Qt/6.9.1/gcc_64/bin/qmake
 export NO_STRIP=1
 export DISABLE_COPYRIGHT_FILES_DEPLOYMENT=1
-# export EXTRA_QT_MODULES='concurrent;opengl;openglwidgets;sql;uitools'
+export EXTRA_QT_MODULES='concurrent;opengl;openglwidgets;sql;uitools;network;printsupport'
 ./linuxdeploy-x86_64.AppImage \
     --appdir ./appdir \
     --executable ./appdir/usr/bin/librecad \
@@ -173,6 +173,7 @@ patchelf --set-rpath '$ORIGIN/../lib:$ORIGIN/usr/lib:$ORIGIN/usr/bin:$ORIGIN' ap
 #     --output appimage \
 #     "${EXCLUDE_ARGS[@]}"
 
+rm -f appimagetool-*.AppImage
 wget -nc https://github.com/$(wget -q https://github.com/probonopd/go-appimage/releases/expanded_assets/continuous -O - | grep "appimagetool-.*-x86_64.AppImage" | head -n 1 | cut -d '"' -f 2)
 chmod +x appimagetool-*.AppImage
 VERSION=Tataletak ./appimagetool-*.AppImage ./appdir

@@ -27,6 +27,7 @@
 #ifndef RS_FILTERDXFRW_H
 #define RS_FILTERDXFRW_H
 
+#include "lc_viewport.h"
 #include "rs_filterinterface.h"
 
 #include "rs_color.h"
@@ -124,7 +125,7 @@ public:
     void addDimOrdinate(const DRW_DimOrdinate *data) override;
     void addLeader(const DRW_Leader *data) override;
     void addHatch(const DRW_Hatch* data) override;
-    void addViewport(const DRW_Viewport& /*data*/) override{}
+    void addViewport(const DRW_Viewport& data) override;
     void addImage(const DRW_Image* data) override;
     void linkImage(const DRW_ImageDef* data) override;
 
@@ -167,6 +168,7 @@ public:
     void writeLeader(RS_Leader* l);
     void writeDimension(RS_Dimension* d);
     void writePolyline(RS_Polyline* p);
+    void writeViewport(LC_Viewport* vp);
 
 /*	void writeEntityContainer(DL_WriterA& dw, RS_EntityContainer* con,
                 const DRW_Entity& attrib);

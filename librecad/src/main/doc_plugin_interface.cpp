@@ -339,6 +339,7 @@ void Plugin_Entity::getData(QHash<int, QVariant> *data){
         data->insert(DPI::SIZEV, d.size.y );
         data->insert(DPI::BLKNAME, d.file );
         break;}
+    case RS2::EntityViewport:
     case RS2::EntityOverlayBox:
         //Unused ?
         data->insert(DPI::ETYPE, DPI::OVERLAYBOX);
@@ -657,6 +658,7 @@ void Plugin_Entity::updateData(QHash<int, QVariant> *data){
         }
         img->updateData(vec3, vec, vec2);
         break;}
+    case RS2::EntityViewport:
     case RS2::EntityOverlayBox:
         //Unused ?
         break;
