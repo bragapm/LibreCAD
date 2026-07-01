@@ -1,5 +1,5 @@
 
-[submodule "plugins/geokkp"]
-	path = plugins/geokkp
+[submodule "plugins/tataletak"]
+	path = plugins/tataletak
 	url = https://github.com/bragapm/librecad_geokkp.git
 	branch = LibreCAD-tataletak
