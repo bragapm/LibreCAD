@@ -24,8 +24,8 @@
 **
 **********************************************************************/
 
-#ifndef RS_ACTIONLayoutView_H
-#define RS_ACTIONLayoutView_H
+#ifndef RS_ACTIONLAYOUTVIEW_H
+#define RS_ACTIONLAYOUTVIEW_H
 
 #include <memory>
 

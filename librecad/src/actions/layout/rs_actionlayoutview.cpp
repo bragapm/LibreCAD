@@ -23,12 +23,12 @@
 #include<cmath>
 
 
-#include "rs_actionLayoutView.h" // (Compatibility Issue)
+#include "rs_actionlayoutview.h" // (Compatibility Issue)
 
 #include <QMouseEvent>
 
 #include "lc_graphicviewport.h"
-#include "LC_LayoutView.h" // (Compatibility Issue)
+#include "lc_layoutview.h" // (Compatibility Issue)
 #include "qg_layoutoptions.h"
 #include "rs_coordinateevent.h"
 #include "rs_dialogfactory.h"
