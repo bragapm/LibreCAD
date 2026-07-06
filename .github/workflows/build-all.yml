@@ -2,12 +2,10 @@ name: 2.2.0 bugfix builds
 on:
   push:
     branches:
-<<<<<<< HEAD
       - master
       - 2.2.1
-=======
       - 2.2
->>>>>>> origin/LibreCAD_2.2.0.2_Modified
+      - LibreCAD_Viewport
 
 jobs:
   BuildLinux:
@@ -99,7 +97,6 @@ jobs:
 
       - name: Build
         run: |
-<<<<<<< HEAD
           export CC=clang
           export CXX=clang++
           export ANALYZE="scan-build-18 -o out --use-cc=/usr/bin/clang++ --use-analyzer=/usr/bin/clang++ "
@@ -107,36 +104,6 @@ jobs:
           #${ANALYZE}make release -j$(nproc)
           cmake -S . -B unix
           cmake --build unix -j$(nproc)
-=======
-          export CC=g++
-          export ANALYZE="scan-build-15 -o out --use-cc=g++ --use-analyzer=/usr/bin/clang++ "
-          ${ANALYZE}qmake -r librecad.pro CONFIG+=debug_and_release PREFIX=/usr
-          ${ANALYZE}make release -j$(nproc)
-
-      - name: Create report repository
-        run: |
-          cd out
-          find . -mindepth 2 -type f -print -exec mv {} . \;
-          git config --global user.email "github@librecad.org"
-          git config --global user.name "GHA CI [bot]"
-          git config --global init.defaultBranch gh-pages
-          git init
-          git add .
-          git commit -m "latest analyzer report"
-
-      - name: Push changes
-        if: github.repository_owner == 'LibreCAD'
-        uses: ad-m/github-push-action@master
-        with:
-          repository: ${{ github.repository_owner }}/static-analyzer-reports
-          github_token: ${{ secrets.LC_PUSH_ANALYZER_REPORT }}
-          branch: gh-pages
-          force: true
-          directory: out
-          export CC=gcc
-          qmake -r librecad.pro CONFIG+=debug_and_release PREFIX=/usr BOOST_DIR=${{ github.workspace }}/boost/boost
-          make release -j$(nproc)
->>>>>>> origin/LibreCAD_2.2.0.2_Modified
 
       - name: Create AppImage
         run: |
@@ -353,17 +320,10 @@ jobs:
       - name: Upload latest pre-release
         uses: softprops/action-gh-release@v2
         with:
-<<<<<<< HEAD
           name: "Continuous Build: latest development"
           tag_name: "2.2.2_alpha-latest"
           prerelease: true
           draft: false
-=======
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "2.2.0-latest"
-          prerelease: true
-          title: "Continuous Build"
->>>>>>> origin/LibreCAD_2.2.0.2_Modified
           files: |
             linuxAssets/LibreCAD*.AppImage
             linuxAssetsAarch64/LibreCAD*.AppImage

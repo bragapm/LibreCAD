@@ -36,7 +36,7 @@ add_compile_definitions(LC_VERSION=2.2.2.3-alpha)
 add_compile_definitions(LC_PRERELEASE=true)
 
 
-find_package(Qt6 COMPONENTS Gui Core Widgets PrintSupport Svg Network REQUIRED)
+find_package(Qt6 COMPONENTS Gui Core Widgets PrintSupport Svg Network Sql Concurrent REQUIRED)
 find_package(Qt6 REQUIRED COMPONENTS LinguistTools)
 
 find_package(Boost REQUIRED COMPONENTS)
@@ -166,6 +166,7 @@ include_directories(librecad/src/actions/dock_widgets/cad)
 include_directories(librecad/src/actions/file)
 include_directories(librecad/src/actions/options)
 include_directories(librecad/src/actions/print_preview)
+include_directories(librecad/src/actions/layout)
 include_directories(librecad/src/cmd)
 include_directories(librecad/src/ui)
 include_directories(librecad/src/ui/dialogs)
@@ -241,6 +242,7 @@ include_directories(librecad/src/ui/action_options/image)
 include_directories(librecad/src/ui/action_options/misc)
 include_directories(librecad/src/ui/action_options/insert)
 include_directories(librecad/src/ui/action_options/other)
+include_directories(librecad/src/ui/action_options/layout)
 include_directories(librecad/src/main/console_dxf2pdf)
 include_directories(librecad/src/plugins)
 include_directories(librecad/src/plugins/intern)
@@ -376,6 +378,8 @@ set(SOURCES
 		librecad/src/actions/dock_widgets/block/rs_actionblockstoggleview.h
 		librecad/src/actions/drawing/rs_actiondefault.cpp
 		librecad/src/actions/drawing/rs_actiondefault.h
+		librecad/src/actions/drawing/lc_actiondrawviewport.cpp
+		librecad/src/actions/drawing/lc_actiondrawviewport.h
 		librecad/src/actions/drawing/draw/dimensions/rs_actiondimaligned.cpp
 		librecad/src/actions/drawing/draw/dimensions/rs_actiondimaligned.h
 		librecad/src/actions/drawing/draw/dimensions/rs_actiondimangular.cpp
@@ -567,6 +571,8 @@ set(SOURCES
 		librecad/src/actions/drawing/draw/polyline/rs_actionpolylinetrim.h
 		librecad/src/actions/print_preview/rs_actionprintpreview.cpp
 		librecad/src/actions/print_preview/rs_actionprintpreview.h
+		librecad/src/actions/layout/rs_actionlayoutview.cpp
+		librecad/src/actions/layout/rs_actionlayoutview.h
 #        librecad/src/actions/not_used/rs_actionselect.cpp
 #        librecad/src/actions/not_used/rs_actionselect.h
 		librecad/src/actions/drawing/selection/rs_actionselectall.cpp
@@ -609,6 +615,8 @@ set(SOURCES
 		librecad/src/actions/drawing/zoom/rs_actionzoomscroll.h
 		librecad/src/actions/drawing/zoom/rs_actionzoomwindow.cpp
 		librecad/src/actions/drawing/zoom/rs_actionzoomwindow.h
+		librecad/src/actions/drawing/zoom/tt_actionfixedzoom.cpp
+		librecad/src/actions/drawing/zoom/tt_actionfixedzoom.h
         librecad/src/cmd/rs_commands.cpp
         librecad/src/cmd/rs_commands.h
 		librecad/src/cmd/lc_commandItems.h
@@ -733,6 +741,8 @@ set(SOURCES
 		librecad/src/lib/engine/document/entities/rs_solid.h
 		librecad/src/lib/engine/document/entities/rs_spline.cpp
 		librecad/src/lib/engine/document/entities/rs_spline.h
+		librecad/src/lib/engine/document/entities/lc_viewport.cpp
+		librecad/src/lib/engine/document/entities/lc_viewport.h
         librecad/src/lib/engine/rs_system.cpp
         librecad/src/lib/engine/rs_system.h
 		librecad/src/lib/engine/document/entities/rs_text.cpp
@@ -935,6 +945,9 @@ set(SOURCES
 		librecad/src/ui/action_options/image/qg_imageoptions.h
 		librecad/src/ui/action_options/insert/qg_insertoptions.cpp
 		librecad/src/ui/action_options/insert/qg_insertoptions.h
+		librecad/src/ui/action_options/layout/qg_layoutoptions.cpp
+		librecad/src/ui/action_options/layout/qg_layoutoptions.h
+		librecad/src/ui/action_options/layout/qg_layoutoptions.ui
 		librecad/src/ui/dialogs/actions/qg_layerdialog.cpp
 		librecad/src/ui/dialogs/actions/qg_layerdialog.h
 		librecad/src/ui/dock_widgets/layers_tree/lc_layerdialog_ex.cpp
@@ -1017,6 +1030,8 @@ set(SOURCES
 		librecad/src/ui/actions/lc_actiongroupmanager.h
 		librecad/src/ui/view/lc_centralwidget.cpp
 		librecad/src/ui/view/lc_centralwidget.h
+		librecad/src/ui/view/lc_layoutview.cpp
+		librecad/src/ui/view/lc_layoutview.h
 		librecad/src/ui/dialogs/settings/options_device/lc_deviceoptions.cpp
 		librecad/src/ui/dialogs/settings/options_device/lc_deviceoptions.h
         librecad/src/ui/dock_widgets/lc_dockwidget.h
@@ -1425,6 +1440,8 @@ set(SOURCES
 		librecad/src/lib/gui/render/widget/lc_printpreviewviewrenderer.cpp
 		librecad/src/lib/gui/render/widget/lc_graphicviewrenderer.h
 		librecad/src/lib/gui/render/widget/lc_graphicviewrenderer.cpp
+		librecad/src/lib/gui/render/widget/lc_layoutviewrenderer.cpp
+		librecad/src/lib/gui/render/widget/lc_layoutviewrenderer.h
 		librecad/src/lib/gui/lc_graphicviewport.h
 		librecad/src/lib/gui/lc_graphicviewport.cpp
 		librecad/src/lib/gui/render/lc_graphicviewportrenderer.h
