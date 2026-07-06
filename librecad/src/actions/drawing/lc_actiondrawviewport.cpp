@@ -122,9 +122,9 @@ void LC_ActionDrawViewport::doTrigger() {
         return;
     }
 
-    // Only allow one viewport per layout
+    // Only allow one viewport per layout (skip undone/deleted entities)
     for (RS_Entity* e : *getContainer()) {
-        if (e && e->rtti() == RS2::EntityViewport) {
+        if (e && !e->isUndone() && e->rtti() == RS2::EntityViewport) {
             commandMessage(tr("Only one viewport is allowed per layout."));
             setStatus(SetCorner1);
             finish();
@@ -143,8 +143,8 @@ void LC_ActionDrawViewport::doTrigger() {
 
     RS_DEBUG->print("LC_ActionDrawViewport: viewport added");
 
-    // Reset for next viewport
-    m_corner1 = RS_Vector(false);
-    m_corner2 = RS_Vector(false);
-    setStatus(SetCorner1);
+    // The layout allows only one viewport, so finish the action after creating it.
+    // Staying alive at SetCorner1 left stale action state that caused "2 attempts
+    // needed" when recreating a viewport after deletion.
+    finish();
 }

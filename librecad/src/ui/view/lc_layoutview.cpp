@@ -199,6 +199,36 @@ void LC_LayoutView::mouseReleaseEvent(QMouseEvent* e) {
     });
 }
 
+void LC_LayoutView::addEditEntityEntry(QMouseEvent* event, QMenu& menu) {
+    // Call base class first to add the standard "Edit Entity"
+    QG_GraphicView::addEditEntityEntry(event, menu);
+    
+    // Add Fixed Zoom if a viewport is active
+    if (m_activeViewport) {
+        menu.addSeparator();
+        QMenu* zoomMenu = menu.addMenu(tr("Fixed Zoom"));
+        
+        auto addZoomAction = [&](const QString& text, double scale) {
+            QAction* action = zoomMenu->addAction(text);
+            connect(action, &QAction::triggered, this, [this, scale]() {
+                if (m_activeViewport) {
+                    m_activeViewport->setModelScale(scale);
+                    m_activeViewport->setCustomView(true);
+                    redraw(RS2::RedrawAll);
+                }
+            });
+        };
+        
+        addZoomAction("1:10", 0.1);
+        addZoomAction("1:5", 0.2);
+        addZoomAction("1:2", 0.5);
+        addZoomAction("1:1", 1.0);
+        addZoomAction("2:1", 2.0);
+        addZoomAction("5:1", 5.0);
+        addZoomAction("10:1", 10.0);
+    }
+}
+
 void LC_LayoutView::mouseDoubleClickEvent(QMouseEvent* e) {
     validateActiveViewport();
     executeWithModelSpaceTransform(e, [&]() {
@@ -403,17 +433,37 @@ void LC_LayoutView::wheelEvent(QWheelEvent* e) {
 
 void LC_LayoutView::keyPressEvent(QKeyEvent* e) {
     validateActiveViewport();
-    if (m_activeViewport) {
-        if (e->key() == Qt::Key_Escape) {
+    
+    if (e->key() == Qt::Key_Escape) {
+        bool changed = false;
+
+        // 1. Deactivate active viewport if any
+        if (m_activeViewport) {
             m_activeViewport->setActive(false);
             m_activeViewport = nullptr;
             m_isPanning = false;
             m_layoutActionContext->setEntityContainer(m_paperSpace);
+            changed = true;
+        }
+
+        // 2. Deselect any selected viewports in paper space
+        if (m_paperSpace) {
+            for (auto* entity : *m_paperSpace) {
+                if (entity && entity->rtti() == RS2::EntityViewport && entity->isSelected()) {
+                    entity->setSelected(false);
+                    changed = true;
+                }
+            }
+        }
+
+        if (changed) {
             redraw(RS2::RedrawAll);
             e->accept();
             return;
         }
+    }
 
+    if (m_activeViewport) {
         const int PAN_STEP = 20;
         switch (e->key()) {
             case Qt::Key_Left:  panActiveViewport(-PAN_STEP, 0); redraw(RS2::RedrawDrawing); e->accept(); return;

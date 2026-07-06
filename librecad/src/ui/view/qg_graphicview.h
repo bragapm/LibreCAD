@@ -141,7 +141,7 @@ protected:
     void ucsHighlightStep();
 
     virtual void createViewRenderer();
-    void addEditEntityEntry(QMouseEvent* event, QMenu& menu);
+    virtual void addEditEntityEntry(QMouseEvent* event, QMenu& menu);
     // For auto panning by the cursor close to the view border
     void startAutoPanTimer(QMouseEvent *e);
     bool isAutoPan(QMouseEvent* e) const;

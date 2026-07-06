@@ -202,6 +202,18 @@ void LC_LayoutViewRenderer::renderEntity(RS_Painter *painter, RS_Entity *e) {
 
     setPenForPrintingEntity(painter, e);
     justDrawEntity(painter, e);
+
+    // Draw reference points if selected
+    if (e->getFlag(RS2::FlagSelected)) {
+        if (!e->isParentSelected()) {
+            RS_VectorSolutions const &s = e->getRefPoints();
+            size_t refsCount = s.getNumber();
+            for (size_t i = 0; i < refsCount; ++i) {
+                // Draw a standard blue handle
+                painter->drawHandleWCS(s.get(i), RS_Color(0, 0, 255), 4);
+            }
+        }
+    }
 }
 
 void LC_LayoutViewRenderer::setPenForPrintingEntity(RS_Painter *painter, RS_Entity *e) {

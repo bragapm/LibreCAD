@@ -457,7 +457,13 @@ void LC_MDIApplicationWindow::setupCADAreaTabbar() {
 void LC_MDIApplicationWindow::onCADTabBarIndexChanged([[maybe_unused]]int index) const {
     LC_GROUP("Appearance");
     {
-        QList<QTabBar *> tabBarList = m_mdiAreaCAD->findChildren<QTabBar *>();
+        // Use direct children only (Qt::FindDirectChildrenOnly) to avoid finding
+        // the inner QTabBar widgets inside each QC_MDIWindow's Model/Layout QTabWidget.
+        // On Windows, findChildren (recursive) returns those inner tab bars too, and
+        // since they have no close buttons, setTabEnabled(i, false) would disable the
+        // Layout tab — making it appear grey and unclickable (Windows-only bug).
+        QList<QTabBar *> tabBarList = m_mdiAreaCAD->findChildren<QTabBar *>(
+            QString(), Qt::FindDirectChildrenOnly);
         if (tabBarList.isEmpty()){
             return;
         }

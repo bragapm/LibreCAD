@@ -109,7 +109,11 @@ protected:
     void drawCoordinateSystems(RS_Painter *painter);
     void drawEntitiesInOverlay(LC_OverlaysManager *overlaysManager, RS_Painter *painter, RS2::OverlayGraphics overlayType);
     void drawOverlayEntitiesInOverlay(LC_OverlaysManager *overlaysManager, RS_Painter *painter, RS2::OverlayGraphics overlayType);
+
+protected:
     void drawEntityReferencePoints(RS_Painter *painter, const RS_Entity *e) const;
+
+private:
     void setPenForEntity(RS_Painter *painter, RS_Entity *e, bool inOverlay);
     void setPenForDraftEntity(RS_Painter *painter, RS_Entity *e, bool inOverlay);
     void setPenForOverlayEntity(RS_Painter *painter, RS_Entity *e);

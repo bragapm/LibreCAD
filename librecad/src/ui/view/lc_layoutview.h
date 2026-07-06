@@ -68,6 +68,7 @@ public:
     bool handleZoomPrevious() override;
 
 protected:
+    virtual void addEditEntityEntry(QMouseEvent* event, QMenu& menu) override;
     void resizeEvent(QResizeEvent *event) override;
 };
 

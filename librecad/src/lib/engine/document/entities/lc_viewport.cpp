@@ -184,6 +184,47 @@ RS_Vector LC_Viewport::getNearestDist(double /*distance*/, const RS_Vector& coor
     return getNearestEndpoint(coord, dist);
 }
 
+RS_VectorSolutions LC_Viewport::getRefPoints() const {
+    RS_VectorSolutions refPoints;
+    // Four corners
+    refPoints.push_back(m_data.corner1);
+    refPoints.push_back(RS_Vector(m_data.corner2.x, m_data.corner1.y));
+    refPoints.push_back(m_data.corner2);
+    refPoints.push_back(RS_Vector(m_data.corner1.x, m_data.corner2.y));
+    // Center point
+    refPoints.push_back((m_data.corner1 + m_data.corner2) * 0.5);
+    return refPoints;
+}
+
+void LC_Viewport::moveRef(const RS_Vector& ref, const RS_Vector& offset) {
+    RS_Vector c1 = m_data.corner1;
+    RS_Vector c2 = m_data.corner2;
+    RS_Vector center = (c1 + c2) * 0.5;
+
+    // Tolerance for matching reference point
+    double tol = 1.0e-4;
+
+    if (ref.distanceTo(center) < tol) {
+        // Move the entire viewport
+        move(offset);
+        return;
+    } else if (ref.distanceTo(c1) < tol) {
+        m_data.corner1 += offset;
+    } else if (ref.distanceTo(c2) < tol) {
+        m_data.corner2 += offset;
+    } else if (ref.distanceTo(RS_Vector(c2.x, c1.y)) < tol) {
+        m_data.corner2.x += offset.x;
+        m_data.corner1.y += offset.y;
+    } else if (ref.distanceTo(RS_Vector(c1.x, c2.y)) < tol) {
+        m_data.corner1.x += offset.x;
+        m_data.corner2.y += offset.y;
+    }
+    
+    // Ensure corner1 is bottom-left and corner2 is top-right just in case
+    // user crossed the corners over each other, but for now just recalculate borders
+    calculateBorders();
+}
+
 void LC_Viewport::move(const RS_Vector& offset) {
     m_data.corner1 += offset;
     m_data.corner2 += offset;
