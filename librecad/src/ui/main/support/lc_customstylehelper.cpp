@@ -53,7 +53,6 @@ bool LC_CustomStyleHelper::loadStyleSheet(const QString& path) {
         }
     }
     else {
-        qApp->setStyleSheet("");
         m_styleSheetPath = path;
     }
     return false;

@@ -147,11 +147,11 @@ void LC_ApplicationWindowInitializer::initCentralWidget(){
     auto central = new LC_CentralWidget(m_appWin);
     m_appWin->setCentralWidget(central);
     m_appWin->m_mdiAreaCAD = central->getMdiArea();
-    m_appWin->m_mdiAreaCAD->setDocumentMode(true);
+    m_appWin->m_mdiAreaCAD->setDocumentMode(false);
 
     LC_GROUP("WindowOptions");
-    m_appWin->setTabLayout(static_cast<RS2::TabShape>(LC_GET_INT("TabShape", RS2::Triangular)),
-                 static_cast<RS2::TabPosition>(LC_GET_INT("TabPosition", RS2::West)));
+    m_appWin->setTabLayout(static_cast<RS2::TabShape>(LC_GET_INT("TabShape", RS2::Rounded)),
+                           static_cast<RS2::TabPosition>(LC_GET_INT("TabPosition", RS2::North)));
     LC_GROUP_END();
 
     bool tabMode = LC_GET_ONE_BOOL("Startup", "TabMode", false);

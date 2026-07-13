@@ -159,7 +159,7 @@ QG_BlockWidget::QG_BlockWidget(LC_ActionGroupManager* agm,QG_ActionHandler* ah, 
     m_blockView->horizontalHeader()->hide();
 
 #ifndef DONT_FORCE_WIDGETS_CSS
-    blockView->setStyleSheet("QWidget {background-color: white;}  QScrollBar{ background-color: none }");
+    blockView->setStyleSheet("QScrollBar{ background-color: none }");
 #endif
     auto* lay = new QVBoxLayout(this);
     lay->setSpacing ( 2 );

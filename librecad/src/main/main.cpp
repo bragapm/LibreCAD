@@ -349,6 +349,23 @@ int main(int argc, char** argv) {
     loadTranslations();
 
     RS_DEBUG->print("main: creating main window..");
+    // Load Modern Dark Theme QSS
+    QString qssPath = "librecad/res/stylesheet/modern_dark.qss";
+    if (!QFile::exists(qssPath)) {
+        // Fallback for when running from build/ directory
+        qssPath = QCoreApplication::applicationDirPath() + "/../librecad/res/stylesheet/modern_dark.qss";
+    }
+    QFile qssFile(qssPath);
+    if (qssFile.open(QFile::ReadOnly)) {
+        QString styleSheet = QLatin1String(qssFile.readAll());
+        QApplication::setStyle("Fusion");
+        qApp->setStyleSheet(styleSheet);
+        qssFile.close();
+        RS_DEBUG->print("main: loaded modern_dark.qss");
+    } else {
+        qDebug() << "Failed to load QSS from:" << qssPath;
+    }
+
     QC_ApplicationWindow& appWin = *QC_ApplicationWindow::getAppWindow();
     auto& appWindow = QC_ApplicationWindow::getAppWindow();
     if (appWindow != nullptr) {

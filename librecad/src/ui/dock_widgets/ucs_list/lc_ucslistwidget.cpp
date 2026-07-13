@@ -139,7 +139,7 @@ void LC_UCSListWidget::createModel() {
     verticalHeader->hide();
 
 #ifndef DONT_FORCE_WIDGETS_CSS
-    tableView->setStyleSheet("QWidget {background-color: white;}  QScrollBar{ background-color: none }");
+    tableView->setStyleSheet("QScrollBar{ background-color: none }");
 #endif
 
     connect(tableView, &QTableView::customContextMenuRequested, this, &LC_UCSListWidget::onCustomContextMenu);

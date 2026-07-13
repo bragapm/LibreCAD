@@ -229,6 +229,9 @@ void LC_MDIApplicationWindow::doArrangeWindows(RS2::SubWindowMode m, bool actual
  * @param p the tab bar position; if RS2::AnyPosition read the current setting
  */
 void LC_MDIApplicationWindow::setTabLayout(RS2::TabShape s, RS2::TabPosition p) {
+    if (s == RS2::Triangular) {
+        s = RS2::Rounded; // Force Rounded to allow QSS styling
+    }
     LC_GROUP("WindowOptions");
     int shape = (s == RS2::AnyShape) ? LC_GET_INT("TabShape", RS2::Triangular) : s;
     int position = (p == RS2::AnyPosition) ? LC_GET_INT("TabPosition", RS2::West) : p;

@@ -225,7 +225,7 @@ QG_LayerWidget::QG_LayerWidget(LC_ActionGroupManager* agm, QG_ActionHandler *ah,
     m_layerView->verticalHeader()->hide();
 
 #ifndef DONT_FORCE_WIDGETS_CSS
-    m_layerView->setStyleSheet("QWidget {background-color: white;}  QScrollBar{ background-color: none }");
+    m_layerView->setStyleSheet("QScrollBar{ background-color: none }");
 #endif
 
     auto* lay = new QVBoxLayout(this);

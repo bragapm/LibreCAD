@@ -191,7 +191,7 @@ void LC_PenPaletteWidget::initTableView(){
     tableView->setColumnWidth(m_penPaletteModel ->translateColumn(LC_PenPaletteModel::TYPE_ICON), LC_PenPaletteModel::ICON_WIDTH);
     tableView->setColumnWidth(m_penPaletteModel ->translateColumn(LC_PenPaletteModel::WIDTH_ICON), LC_PenPaletteModel::ICON_WIDTH);
 #ifndef DONT_FORCE_WIDGETS_CSS
-    tableView->setStyleSheet("QWidget {background-color: white;}  QScrollBar{ background-color: none }");
+    tableView->setStyleSheet("QScrollBar{ background-color: none }");
 #endif
 
     connect(tableView, &QTableView::clicked, this, &LC_PenPaletteWidget::onTableClicked);

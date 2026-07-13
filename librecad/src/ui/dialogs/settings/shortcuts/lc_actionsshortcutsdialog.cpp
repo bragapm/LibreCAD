@@ -96,7 +96,7 @@ void LC_ActionsShortcutsDialog::initTreeView(){
     treeView->setExpandsOnDoubleClick(true);
 
 #ifndef DONT_FORCE_WIDGETS_CSS
-    treeView->setStyleSheet("QWidget {background-color: white;}  QScrollBar{ background-color: none }");
+    treeView->setStyleSheet("QScrollBar{ background-color: none }");
 #endif
     // todo - do we need context menu there?
     // treeView->setContextMenuPolicy(Qt::CustomContextMenu);

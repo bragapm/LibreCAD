@@ -122,7 +122,7 @@ LC_LayerTreeView *LC_LayerTreeWidget::initTreeView(){
 
     treeView->setContextMenuPolicy(Qt::CustomContextMenu);
 #ifndef DONT_FORCE_WIDGETS_CSS
-    treeView->setStyleSheet("QWidget {background-color: white;}  QScrollBar{ background-color: none }");
+    treeView->setStyleSheet("QScrollBar{ background-color: none }");
 #endif
 
     connect(treeView, &QTreeView::customContextMenuRequested, this, &LC_LayerTreeWidget::onCustomContextMenu);
