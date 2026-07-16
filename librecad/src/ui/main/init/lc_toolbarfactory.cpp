@@ -23,6 +23,9 @@
 
 #include <QMenu>
 #include <QSettings>
+#include <QSize>
+#include <QToolButton>
+#include <QWidget>
 
 #include "lc_actionfactory.h"
 #include "lc_actiongroupmanager.h"
@@ -75,8 +78,8 @@ QToolBar * LC_ToolbarFactory::createSnapToolbar(const QSizePolicy &tbPolicy) con
 QToolBar* LC_ToolbarFactory::createFileToolbar(const QSizePolicy &tbPolicy) const {
     auto *result = createGenericToolbar(tr("File"), "file", tbPolicy, {},1);
     result->addActions(m_appWin->m_actionFactory->file_actions);
-    result->QWidget::addAction(m_agm->getActionByName("FilePrint"));
-    result->QWidget::addAction(m_agm->getActionByName("FilePrintPreview"));
+    result->addAction(m_agm->getActionByName("FilePrint"));
+    result->addAction(m_agm->getActionByName("FilePrintPreview"));
     return result;
 }
 
@@ -168,7 +171,7 @@ QToolBar * LC_ToolbarFactory::createEntityLayersToolbar(const QSizePolicy  &tbPo
 }
 
 void LC_ToolbarFactory::createStandardToolbars(){
-    QSizePolicy tbPolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    QSizePolicy tbPolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
 
     auto file = createFileToolbar(tbPolicy);
     auto edit = createEditToolbar(tbPolicy);
@@ -190,29 +193,22 @@ void LC_ToolbarFactory::createStandardToolbars(){
     auto *creators = createCreatorsToolbar(tbPolicy);
     auto *preferences = createPreferencesToolbar(tbPolicy);
 
-    // We change their object names so that QMainWindow::restoreState() 
-    // doesn't bring them back from the old cluttered user settings.
-    file->setObjectName("modern_file");
-    edit->setObjectName("modern_edit");
-    view->setObjectName("modern_view");
-    viewsList->setObjectName("modern_viewsList");
-    ucsList->setObjectName("modern_ucsList");
-    perspectivesToolbar->setObjectName("modern_perspectives");
-    preferences->setObjectName("modern_preferences");
-    infoCursor->setObjectName("modern_infoCursor");
-
-    file->hide();
-    edit->hide();
-    view->hide();
-    viewsList->hide();
-    ucsList->hide();
-    perspectivesToolbar->hide();
-    preferences->hide();
-    infoCursor->hide();
-    m_appWin->addToolBarBreak();
+    // === BARIS 1: Toolbar utama ===
+    addToTop(file);
+    addToTop(edit);
+    addToTop(view);
     addToTop(pen);
     addToTop(entityLayers);
-    addToTop(m_appWin->m_toolOptionsToolbar);
+
+    // === BARIS 2: Toolbar tambahan ===
+    m_appWin->addToolBarBreak(Qt::TopToolBarArea);
+    addToTop(perspectivesToolbar, true);
+    addToTop(viewsList, true);
+    addToTop(ucsList, true);
+    addToTop(preferences, true);
+    addToTop(infoCursor, true);
+    addToTop(m_appWin->m_toolOptionsToolbar, true);
+
     addToLeft(order);
 
     addToBottom(snap);
@@ -422,7 +418,12 @@ QToolButton* LC_ToolbarFactory::toolButton(QToolBar* toolbar, const QString &too
     return result;
 }
 
-auto LC_ToolbarFactory::addToTop(QToolBar* toolbar) const -> void { m_appWin->addToolBar(Qt::TopToolBarArea, toolbar); }
+auto LC_ToolbarFactory::addToTop(QToolBar* toolbar, bool secondRow) const -> void {
+    toolbar->setMovable(true);
+    toolbar->setFloatable(true);
+    toolbar->setIconSize(QSize(16, 16));
+    m_appWin->addToolBar(Qt::TopToolBarArea, toolbar);
+}
 void LC_ToolbarFactory::addToBottom(QToolBar *toolbar) const { m_appWin->addToolBar(Qt::BottomToolBarArea, toolbar); }
 void LC_ToolbarFactory::addToLeft(QToolBar *toolbar) const { m_appWin->addToolBar(Qt::LeftToolBarArea, toolbar); }
 

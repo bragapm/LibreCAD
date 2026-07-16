@@ -70,7 +70,7 @@ private:
     QToolBar *genericToolbarWithActions(
         const QString &title, const QString &name, QSizePolicy toolBarPolicy, const QList<QAction *> &actions, int toolbarGroup) const;
     QToolButton *toolButton(QToolBar *toolbar, const QString &tooltip, const char *icon, const QList<QAction *> &actions);
-    void addToTop(QToolBar *toolbar) const;
+    void addToTop(QToolBar *toolbar, bool secondRow = false) const;
     void addToBottom(QToolBar *toolbar) const;
     void addToLeft(QToolBar *toolbar) const;
 };

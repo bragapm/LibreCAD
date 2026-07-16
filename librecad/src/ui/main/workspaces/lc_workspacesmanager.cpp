@@ -25,6 +25,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QMessageBox>
+#include <QToolBar>
 
 #include "lc_workspacesmanager.h"
 
@@ -248,6 +249,17 @@ void LC_WorkspacesManager::restoreGeometryAndState(const LC_WorkspacesManager::L
     }
 
     appWin.slotViewStatusBar(workspace.showStatusBar);
+
+    // restoreState() may override toolbar movable/floatable flags saved from
+    // an older session. Force them back to movable so user can always drag toolbars.
+    const auto toolbars = appWin.findChildren<QToolBar*>();
+    for (QToolBar* tb : toolbars) {
+        if (appWin.toolBarArea(tb) == Qt::TopToolBarArea) {
+            tb->setMovable(true);
+            tb->setFloatable(true);
+        }
+    }
+
     appWin.setUpdatesEnabled(true);
     appWin.fireWidgetSettingsChanged();
 }
