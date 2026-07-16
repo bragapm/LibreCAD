@@ -190,14 +190,25 @@ void LC_ToolbarFactory::createStandardToolbars(){
     auto *creators = createCreatorsToolbar(tbPolicy);
     auto *preferences = createPreferencesToolbar(tbPolicy);
 
-    addToTop(infoCursor);
-    addToTop(file);
-    addToTop(edit);
-    addToTop(view);
-    addToTop(perspectivesToolbar);
-    addToTop(viewsList);
-    addToTop(ucsList);
-    addToTop(preferences);
+    // We change their object names so that QMainWindow::restoreState() 
+    // doesn't bring them back from the old cluttered user settings.
+    file->setObjectName("modern_file");
+    edit->setObjectName("modern_edit");
+    view->setObjectName("modern_view");
+    viewsList->setObjectName("modern_viewsList");
+    ucsList->setObjectName("modern_ucsList");
+    perspectivesToolbar->setObjectName("modern_perspectives");
+    preferences->setObjectName("modern_preferences");
+    infoCursor->setObjectName("modern_infoCursor");
+
+    file->hide();
+    edit->hide();
+    view->hide();
+    viewsList->hide();
+    ucsList->hide();
+    perspectivesToolbar->hide();
+    preferences->hide();
+    infoCursor->hide();
     m_appWin->addToolBarBreak();
     addToTop(pen);
     addToTop(entityLayers);
