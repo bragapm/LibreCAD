@@ -272,6 +272,7 @@ RESOURCES += ../res/icons/icons.qrc
 RESOURCES += ../res/controls/controls.qrc
 RESOURCES += ../res/images/images.qrc
 RESOURCES += ../../licenses/licenses.qrc
+RESOURCES += ../res/stylesheet/stylesheet.qrc
 
 
 # ################################################################################

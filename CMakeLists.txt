@@ -252,6 +252,7 @@ set(SOURCES
 		librecad/res/images/images.qrc
 		librecad/res/controls/controls.qrc
         librecad/res/icons/icons.qrc
+        librecad/res/stylesheet/stylesheet.qrc
         libraries/jwwlib/src/dl_attributes.h
         libraries/jwwlib/src/dl_codes.h
         libraries/jwwlib/src/dl_creationinterface.h

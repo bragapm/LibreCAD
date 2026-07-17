@@ -1,41 +1,42 @@
-/* Modern Dark Theme for LibreCAD */
-/* Colors based on TataLetak Mockup */
-/* Window Background: #121318 */
-/* Panels/Toolbars: #1A1C23 */
-/* Borders: #282A36 */
-/* Text: #A0AAB5 */
-/* Accent/Selected: #1D5B68 (Teal/Blue) */
-/* Hover: #2A2D3A */
+/* AutoCAD Dark Theme for LibreCAD */
+/* Window Background: #1E2229 (Hitam kebiruan) */
+/* Darker Areas (Inactive tabs, status bar): #15181D */
+/* Borders: #111418 */
+/* Text: #E0E6ED */
+/* Accent/Selected: #184F8D (Blue) */
+/* Hover: #2D333B */
+/* Canvas: #212830 */
+/* Inputs: #111418 */
 
 QMainWindow, QDialog {
-    background-color: #121318;
-    color: #A0AAB5;
+    background-color: #1E2229;
+    color: #E0E6ED;
 }
 
 QWidget {
-    background-color: #121318;
-    color: #A0AAB5;
+    background-color: #1E2229;
+    color: #E0E6ED;
     font-family: "Segoe UI", "Inter", Arial, sans-serif;
     font-size: 11px;
 }
 
 /* Toolbars */
 QToolBar {
-    background-color: #1A1C23;
+    background-color: #1E2229;
     border: none;
-    border-bottom: 1px solid #282A36;
+    border-bottom: 1px solid #111418;
     spacing: 1px;
     padding: 2px 1px;
 }
 
 QToolBar::separator {
-    background-color: #282A36;
+    background-color: #111418;
     width: 1px;
     margin: 4px 8px;
 }
 
 QToolBar::handle {
-    background-color: #3A3D4A;
+    background-color: #2D333B;
     background-image: url(none);
     border-radius: 2px;
     width: 6px;
@@ -46,66 +47,66 @@ QToolBar::handle {
 
 QToolButton {
     background-color: transparent;
-    color: #A0AAB5;
+    color: #E0E6ED;
     border: 1px solid transparent;
-    border-radius: 4px;
+    border-radius: 2px;
     padding: 5px;
     margin: 1px;
 }
 
 QToolButton:hover {
-    background-color: #2A2D3A;
-    border: 1px solid #3A3D4A;
+    background-color: #2D333B;
+    border: 1px solid #636A73;
 }
 
 QToolButton:pressed, QToolButton:checked {
-    background-color: #1D5B68;
-    border: 1px solid #277A8C;
+    background-color: #184F8D;
+    border: 1px solid #306BB5;
     color: #FFFFFF;
 }
 
 /* Dock Widgets (Panels) */
 QDockWidget {
-    background-color: #1A1C23;
+    background-color: #1E2229;
     color: #E0E6ED;
     titlebar-close-icon: url();
     titlebar-normal-icon: url();
-    border: 1px solid #282A36;
+    border: 1px solid #111418;
 }
 
 QDockWidget::title {
-    background-color: #1A1C23;
+    background-color: #15181D;
     color: #E0E6ED;
-    padding: 8px;
+    padding: 6px 8px;
     text-align: left;
-    border-bottom: 1px solid #282A36;
+    border-bottom: 1px solid #111418;
+    font-weight: bold;
 }
 
 QDockWidget > QWidget {
-    background-color: #1A1C23;
+    background-color: #1E2229;
 }
 
 /* Menus */
 QMenuBar {
-    background-color: #121318;
+    background-color: #15181D;
     color: #E0E6ED;
-    border-bottom: 1px solid #282A36;
+    border-bottom: 1px solid #111418;
 }
 
 QMenuBar::item {
     background-color: transparent;
     padding: 6px 12px;
-    border-radius: 0px;
 }
 
 QMenuBar::item:selected {
-    background-color: #2A2D3A;
+    background-color: #2D333B;
 }
 
 QMenu {
-    background-color: #1A1C23;
+    background-color: #1E2229;
     color: #E0E6ED;
-    border: 1px solid #282A36;
+    border: 1px solid #111418;
 }
 
 QMenu::item {
@@ -113,50 +114,54 @@ QMenu::item {
 }
 
 QMenu::item:selected {
-    background-color: #1D5B68;
+    background-color: #184F8D;
     color: #FFFFFF;
 }
 
 /* Status Bar */
 QStatusBar {
-    background-color: #1A1C23;
-    color: #A0AAB5;
-    border-top: 1px solid #282A36;
+    background-color: #15181D;
+    color: #E0E6ED;
+    border-top: 1px solid #111418;
 }
 
 QStatusBar::item {
     border: none;
-    border-right: 1px solid #282A36;
+    border-right: 1px solid #111418;
 }
 
 QStatusBar QLabel {
-    color: #A0AAB5;
+    color: #E0E6ED;
     padding: 0 8px;
     background-color: transparent;
 }
 
 /* Tabs */
 QTabWidget::pane {
-    border: 1px solid #282A36;
-    background-color: #1A1C23;
+    border: 1px solid #111418;
+    border-top: 1px solid #4A8CDA; /* Accent line for active tab */
+    background-color: #1E2229;
 }
 
 QTabBar::tab {
-    background-color: #121318;
+    background-color: #15181D;
     color: #A0AAB5;
-    padding: 4px 10px;
-    border: 1px solid #282A36;
-    margin: 1px;
+    padding: 6px 16px;
+    border: 1px solid #111418;
+    border-bottom: none;
+    margin: 1px 1px 0 0;
 }
 
 QTabBar::tab:selected {
-    background-color: #1A1C23;
+    background-color: #1E2229;
     color: #FFFFFF;
-    border-bottom-color: #1A1C23;
+    border-top: 2px solid #4A8CDA; /* AutoCAD blue accent */
+    border-left: 1px solid #111418;
+    border-right: 1px solid #111418;
 }
 
 QTabBar::tab:hover:!selected {
-    background-color: #1A1C23;
+    background-color: #42474E;
     color: #E0E6ED;
 }
 
@@ -172,20 +177,19 @@ QTabBar::close-button:hover {
 
 /* Scrollbars */
 QScrollBar:vertical {
-    background-color: #121318;
-    width: 10px;
+    background-color: #15181D;
+    width: 12px;
     margin: 0px;
-    border-left: 1px solid #282A36;
+    border-left: 1px solid #111418;
 }
 
 QScrollBar::handle:vertical {
-    background-color: #3A3D4A;
+    background-color: #2D333B;
     min-height: 20px;
-    border-radius: 5px;
 }
 
 QScrollBar::handle:vertical:hover {
-    background-color: #4A4D5A;
+    background-color: #636A73;
 }
 
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
@@ -193,20 +197,19 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
 }
 
 QScrollBar:horizontal {
-    background-color: #121318;
-    height: 10px;
+    background-color: #15181D;
+    height: 12px;
     margin: 0px;
-    border-top: 1px solid #282A36;
+    border-top: 1px solid #111418;
 }
 
 QScrollBar::handle:horizontal {
-    background-color: #3A3D4A;
+    background-color: #2D333B;
     min-width: 20px;
-    border-radius: 5px;
 }
 
 QScrollBar::handle:horizontal:hover {
-    background-color: #4A4D5A;
+    background-color: #636A73;
 }
 
 QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
@@ -215,41 +218,40 @@ QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
 
 /* Tables / Trees */
 QTableView, QTreeView, QListView {
-    background-color: #1A1C23;
+    background-color: #111418;
     color: #E0E6ED;
-    border: 1px solid #282A36;
-    gridline-color: #282A36;
-    selection-background-color: #1D5B68;
+    border: 1px solid #111418;
+    gridline-color: #1E2229;
+    selection-background-color: #184F8D;
     selection-color: #FFFFFF;
 }
 
 QHeaderView::section {
-    background-color: #121318;
-    color: #A0AAB5;
+    background-color: #15181D;
+    color: #E0E6ED;
     padding: 6px;
     border: none;
-    border-right: 1px solid #282A36;
-    border-bottom: 1px solid #282A36;
-    font-weight: bold;
+    border-right: 1px solid #111418;
+    border-bottom: 1px solid #111418;
 }
 
 QTableView::item:selected, QTreeView::item:selected {
-    background-color: #1D5B68;
+    background-color: #184F8D;
     color: white;
 }
 
 /* Input fields */
 QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox {
-    background-color: #121318;
+    background-color: #111418;
     color: #E0E6ED;
-    border: 1px solid #282A36;
-    padding: 5px;
-    border-radius: 3px;
-    selection-background-color: #1D5B68;
+    border: 1px solid #1A1D21;
+    padding: 4px;
+    border-radius: 2px;
+    selection-background-color: #184F8D;
 }
 
 QLineEdit:focus, QComboBox:focus, QSpinBox:focus {
-    border: 1px solid #3A86FF; /* Blue highlight on focus */
+    border: 1px solid #4A8CDA; /* Blue highlight on focus */
 }
 
 QComboBox::drop-down {
@@ -258,25 +260,25 @@ QComboBox::drop-down {
 }
 
 QPushButton {
-    background-color: #2A2D3A;
+    background-color: #42474E;
     color: #E0E6ED;
-    border: 1px solid #3A3D4A;
-    padding: 6px 16px;
-    border-radius: 3px;
+    border: 1px solid #111418;
+    padding: 5px 16px;
+    border-radius: 2px;
 }
 
 QPushButton:hover {
-    background-color: #3A3D4A;
-    border: 1px solid #4A4D5A;
+    background-color: #2D333B;
+    border: 1px solid #636A73;
 }
 
 QPushButton:pressed {
-    background-color: #1D5B68;
-    border: 1px solid #277A8C;
+    background-color: #184F8D;
+    border: 1px solid #306BB5;
 }
 
 /* MDI Area / Canvas Background */
 QMdiArea {
-    background-color: #0A0A0C;
+    background-color: #212830;
 }
 

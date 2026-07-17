@@ -265,7 +265,7 @@ int main(int argc, char** argv) {
 
     RS_Settings::init(app.organizationName(), app.applicationName());
 
-    QGuiApplication::setDesktopFileName("librecad");
+    QGuiApplication::setDesktopFileName("Tataletak");
 
     loadIconsStylingOptions();
 
@@ -350,20 +350,37 @@ int main(int argc, char** argv) {
 
     RS_DEBUG->print("main: creating main window..");
     // Load Modern Dark Theme QSS
-    QString qssPath = "librecad/res/stylesheet/modern_dark.qss";
-    if (!QFile::exists(qssPath)) {
-        // Fallback for when running from build/ directory
-        qssPath = QCoreApplication::applicationDirPath() + "/../librecad/res/stylesheet/modern_dark.qss";
+    QString styleSheet;
+
+    QFile qssResource(":/stylesheet/modern_dark.qss");
+    if (qssResource.open(QFile::ReadOnly)) {
+        // Loaded from embedded Qt Resource (installer / AppImage / release build)
+        styleSheet = QLatin1String(qssResource.readAll());
+        qssResource.close();
+        RS_DEBUG->print("main: loaded modern_dark.qss from Qt Resource");
+    } else {
+        // Fallback: load from filesystem (development / running from source)
+        QStringList fallbackPaths = {
+            "librecad/res/stylesheet/modern_dark.qss",
+            QCoreApplication::applicationDirPath() + "/../librecad/res/stylesheet/modern_dark.qss",
+            QCoreApplication::applicationDirPath() + "/stylesheet/modern_dark.qss"
+        };
+        for (const QString& path : fallbackPaths) {
+            QFile f(path);
+            if (f.open(QFile::ReadOnly)) {
+                styleSheet = QLatin1String(f.readAll());
+                f.close();
+                RS_DEBUG->print("main: loaded modern_dark.qss from filesystem");
+                break;
+            }
+        }
     }
-    QFile qssFile(qssPath);
-    if (qssFile.open(QFile::ReadOnly)) {
-        QString styleSheet = QLatin1String(qssFile.readAll());
+
+    if (!styleSheet.isEmpty()) {
         QApplication::setStyle("Fusion");
         qApp->setStyleSheet(styleSheet);
-        qssFile.close();
-        RS_DEBUG->print("main: loaded modern_dark.qss");
     } else {
-        qDebug() << "Failed to load QSS from:" << qssPath;
+        qDebug() << "Warning: modern_dark.qss not found, using default style";
     }
 
     QC_ApplicationWindow& appWin = *QC_ApplicationWindow::getAppWindow();

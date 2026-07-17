@@ -171,7 +171,7 @@ QToolBar * LC_ToolbarFactory::createEntityLayersToolbar(const QSizePolicy  &tbPo
 }
 
 void LC_ToolbarFactory::createStandardToolbars(){
-    QSizePolicy tbPolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
+    QSizePolicy tbPolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
     auto file = createFileToolbar(tbPolicy);
     auto edit = createEditToolbar(tbPolicy);
@@ -207,6 +207,9 @@ void LC_ToolbarFactory::createStandardToolbars(){
     addToTop(ucsList, true);
     addToTop(preferences, true);
     addToTop(infoCursor, true);
+
+    // === BARIS 3: Tool Options (Butuh space panjang, sendirikan agar tidak melar) ===
+    m_appWin->addToolBarBreak(Qt::TopToolBarArea);
     addToTop(m_appWin->m_toolOptionsToolbar, true);
 
     addToLeft(order);
