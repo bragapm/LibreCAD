@@ -99,7 +99,7 @@ RS_Graphic::RS_Graphic(RS_EntityContainer* parent)
 
     LC_GROUP_GUARD("Defaults");
     {
-        setUnit(RS_Units::stringToUnit(LC_GET_ONE_STR("Defaults", "Unit", "None")));
+        setUnit(RS_Units::stringToUnit(LC_GET_ONE_STR("Defaults", "Unit", "Meter")));
         addVariable("$SNAPSTYLE", static_cast<int>(LC_GET_INT("IsometricGrid", 0)), 70);
         addVariable("$SNAPISOPAIR", static_cast<int>(LC_GET_INT("IsoGridView", 1)), 70);
         setGridOn(!LC_GET_BOOL("GridOffForNewDrawing", false));

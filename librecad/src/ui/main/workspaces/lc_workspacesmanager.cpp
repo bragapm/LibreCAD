@@ -128,7 +128,7 @@ void LC_WorkspacesManager::fillIconsAndMenuState(LC_WorkspacesManager::LC_Worksp
     }
     LC_GROUP_END();
 
-    workspace.showStatusBar = LC_GET_ONE_BOOL("Appearance", "StatusBarVisible", false);
+    workspace.showStatusBar = LC_GET_ONE_BOOL("Appearance", "StatusBarVisible", true);
 }
 
 void LC_WorkspacesManager::fillBySettings(LC_Workspace &workspace){
@@ -152,7 +152,7 @@ void LC_WorkspacesManager::fillBySettings(LC_Workspace &workspace){
     }
     LC_GROUP_END();
 
-    workspace.showStatusBar = LC_GET_ONE_BOOL("Appearance", "StatusBarVisible", false);
+    workspace.showStatusBar = LC_GET_ONE_BOOL("Appearance", "StatusBarVisible", true);
 
     fillIconsAndMenuState(workspace);
 }

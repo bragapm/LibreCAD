@@ -1,1 +1,109 @@
-<svg height="256" viewBox="0 0 72.248892 72.248892" width="256" xmlns="http://www.w3.org/2000/svg"><g stroke="#000" stroke-linecap="square" transform="matrix(.71389162 -.70025621 .70025621 .71389162 0 0)"><path d="m-31.289627 19.940126h62.682362v62.687038h-62.682362z" fill="none" opacity="0" stroke-width=".532929"/><g fill="#00ff7f" stroke-dashoffset="8" stroke-width="2.25778"><circle cx="3.973732" cy="17.78817" r="5.644445"/><circle cx="-13.118105" cy="35.212818" r="5.644445"/><circle cx="-30.256195" cy="52.68462" r="5.644445"/><circle cx="19.804298" cy="33.316372" r="5.644445"/><circle cx="6.58206" cy="46.796078" r="5.644445"/><circle cx="-6.102839" cy="59.727985" r="5.644445"/><circle cx="36.340755" cy="49.53698" r="5.644445"/><circle cx="26.912931" cy="59.148376" r="5.644445"/><circle cx="17.482935" cy="68.761993" r="5.644445"/></g></g></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   height="256"
+   viewBox="0 0 72.248892 72.248892"
+   width="256"
+   version="1.1"
+   id="svg10"
+   sodipodi:docname="points_lattice.svg"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs10" />
+  <sodipodi:namedview
+     id="namedview10"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="3.3398438"
+     inkscape:cx="127.85029"
+     inkscape:cy="128"
+     inkscape:window-width="1920"
+     inkscape:window-height="1057"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg10" />
+  <g
+     stroke="#000"
+     stroke-linecap="square"
+     transform="matrix(.71389162 -.70025621 .70025621 .71389162 0 0)"
+     id="g10"
+     style="stroke:#ffffff;stroke-opacity:1">
+    <path
+       d="m-31.289627 19.940126h62.682362v62.687038h-62.682362z"
+       fill="none"
+       opacity="0"
+       stroke-width=".532929"
+       id="path1"
+       style="stroke:#ffffff;stroke-opacity:1" />
+    <g
+       fill="#00ff7f"
+       stroke-dashoffset="8"
+       stroke-width="2.25778"
+       id="g9"
+       style="stroke:#ffffff;stroke-opacity:1">
+      <circle
+         cx="3.973732"
+         cy="17.78817"
+         r="5.644445"
+         id="circle1"
+         style="stroke:#ffffff;stroke-opacity:1" />
+      <circle
+         cx="-13.118105"
+         cy="35.212818"
+         r="5.644445"
+         id="circle2"
+         style="stroke:#ffffff;stroke-opacity:1" />
+      <circle
+         cx="-30.256195"
+         cy="52.68462"
+         r="5.644445"
+         id="circle3"
+         style="stroke:#ffffff;stroke-opacity:1" />
+      <circle
+         cx="19.804298"
+         cy="33.316372"
+         r="5.644445"
+         id="circle4"
+         style="stroke:#ffffff;stroke-opacity:1" />
+      <circle
+         cx="6.58206"
+         cy="46.796078"
+         r="5.644445"
+         id="circle5"
+         style="stroke:#ffffff;stroke-opacity:1" />
+      <circle
+         cx="-6.102839"
+         cy="59.727985"
+         r="5.644445"
+         id="circle6"
+         style="stroke:#ffffff;stroke-opacity:1" />
+      <circle
+         cx="36.340755"
+         cy="49.53698"
+         r="5.644445"
+         id="circle7"
+         style="stroke:#ffffff;stroke-opacity:1" />
+      <circle
+         cx="26.912931"
+         cy="59.148376"
+         r="5.644445"
+         id="circle8"
+         style="stroke:#ffffff;stroke-opacity:1" />
+      <circle
+         cx="17.482935"
+         cy="68.761993"
+         r="5.644445"
+         id="circle9"
+         style="stroke:#ffffff;stroke-opacity:1" />
+    </g>
+  </g>
+</svg>

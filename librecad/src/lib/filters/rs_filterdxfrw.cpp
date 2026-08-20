@@ -29,6 +29,7 @@
 #include <QStringConverter>
 
 #include "rs_filterdxfrw.h"
+#include "tracy/Tracy.hpp"  // Tracy Profiler
 
 #include <QFile>
 #include <QFileInfo>
@@ -160,6 +161,8 @@ QString RS_FilterDXFRW::lastError() const
  * taken to be stored in a file.
  */
 bool RS_FilterDXFRW::fileImport(RS_Graphic& g, const QString& file, [[maybe_unused]] RS2::FormatType type) {
+    ZoneScoped;  // Tracy: ukur total waktu buka file DXF/DWG
+    ZoneText(file.toUtf8().constData(), file.toUtf8().size());  // Tracy: tampilkan nama file di tooltip
     RS_DEBUG->print("RS_FilterDXFRW::fileImport");
 
     RS_DEBUG->print("DXFRW Filter: importing file '%s'...", (const char*)QFile::encodeName(file));
@@ -236,6 +239,7 @@ bool RS_FilterDXFRW::fileImport(RS_Graphic& g, const QString& file, [[maybe_unus
  * Implementation of the method which handles layers.
  */
 void RS_FilterDXFRW::addLayer(const DRW_Layer &data) {
+    ZoneScopedN("DXF::addLayer");  // Tracy: ukur waktu parsing tiap layer
     RS_DEBUG->print("RS_FilterDXF::addLayer");
     RS_DEBUG->print("  adding layer: %s", data.name.c_str());
 

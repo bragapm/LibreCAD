@@ -49,9 +49,6 @@ const RS_Color colorBlack = RS_Color(Qt::black);
 const RS_Color colorWhite = RS_Color(Qt::white);
 const QColor qcolorBlack = colorBlack.toQColor();
 const QColor qcolorWhite = colorWhite.toQColor();
-
-// Convert from LibreCAD line style pattern to QPen Dash Pattern.
-// QPen dash pattern by default is in the unit of pixel
     QVector<qreal> rsToQDashPattern(const RS2::LineType &t, double screenWidth, double dpmm, double &newDashOffset) {
         // dash pattern is in mm
         // d*dpmm/screenWidth, so, the scaling factor k = dpmm/screenWidth
@@ -60,8 +57,12 @@ const QColor qcolorWhite = colorWhite.toQColor();
 
         const std::vector<double> &pattern = RS_LineTypePattern::getPattern(t)->pattern;
         QVector<qreal> dashPattern;
-        std::transform(pattern.cbegin(), pattern.cend(), std::back_inserter(dashPattern), [k](double d) {
-            return std::max(k * std::abs(d), 1.);
+        int idx = 0;
+        std::transform(pattern.cbegin(), pattern.cend(), std::back_inserter(dashPattern), [k, &idx](double d) {
+            double scaled = k * std::abs(d);
+            bool isDash = ((idx++ % 2) == 0);
+            double minPixels = isDash ? 3.0 : 2.0;
+            return std::max(scaled, minPixels);
         });
         dashPattern.resize(dashPattern.size() - dashPattern.size() % 2);
 

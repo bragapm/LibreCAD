@@ -87,7 +87,7 @@ protected:
     bool m_scaleLineWidth = true;
 
     Qt::PenJoinStyle penJoinStyle = Qt::RoundJoin;
-    Qt::PenCapStyle penCapStyle = Qt::RoundCap;
+    Qt::PenCapStyle penCapStyle = Qt::FlatCap;
 
     // points rendering settings
     int pdmode = 1;

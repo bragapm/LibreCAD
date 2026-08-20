@@ -48,11 +48,11 @@ public:
     bool hideLayerTypeIcons{false};
     bool dragDropEnabled {true};
     // colors
-    QColor matchedItemColor {QColor("blue")};
-    QColor itemsGridColor {QColor(Qt::lightGray)};
-    QColor virtualLayerBgColor {QColor( 245,245,245)};
-    QColor selectedItemBgColor {QColor( 245,245,245)};
-    QColor activeLayerBgColor {QColor( "white")};
+    QColor matchedItemColor {QColor("#4A8CDA")}; // bright blue for matched items
+    QColor itemsGridColor {QColor("#2C303A")};
+    QColor virtualLayerBgColor {QColor("#222730")};
+    QColor selectedItemBgColor {QColor("#184F8D")};
+    QColor activeLayerBgColor {QColor("#2D333B")};
     // default pens
     RS_Pen defaultPenNormal = RS_Pen(Qt::black, RS2::Width00,RS2::SolidLine);
     RS_Pen defaultPenDimensional = RS_Pen(Qt::blue, RS2::Width02,RS2::SolidLine);;

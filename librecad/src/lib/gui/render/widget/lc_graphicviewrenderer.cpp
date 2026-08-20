@@ -47,6 +47,7 @@ void LC_GraphicViewRenderer::loadSettings() {
     m_absZeroOptions.loadSettings();
     m_ucsMarkOptions.loadSettings();
     m_anglesBaseOptions.loadSettings();
+    m_arrowOptions.loadSettings();
 
     LC_GROUP("Appearance");
     {
@@ -71,7 +72,12 @@ void LC_GraphicViewRenderer::loadSettings() {
 
     LC_GROUP_GUARD("Colors");
     {
-        setBackground(QColor(LC_GET_STR("background", RS_Settings::background)));
+        QString savedBg = LC_GET_STR("background", RS_Settings::background);
+        if (savedBg.compare("#212830", Qt::CaseInsensitive) == 0) {
+            savedBg = "#000000";
+            LC_SET_ONE("Colors", "background", savedBg); // Update saved settings
+        }
+        setBackground(QColor(savedBg));
         m_colorSelectedEntity = QColor(LC_GET_STR("select", RS_Settings::select));
         m_colorHighlightedEntity = QColor(LC_GET_STR("highlight", RS_Settings::highlight));
         m_colorStartHandle = QColor(LC_GET_STR("start_handle", RS_Settings::start_handle));
@@ -233,6 +239,10 @@ void LC_GraphicViewRenderer::doDrawLayerBackground(RS_Painter *painter) {
 void LC_GraphicViewRenderer::drawLayerEntitiesOver(RS_Painter *painter) {
     if (graphic != nullptr) { // fixme - sand - support of preview in hatch dialog, yet probably it's better to use specialized version of view there...
         drawCoordinateSystems(painter);
+        if (m_arrowOptions.m_showArrow) {
+            m_overlayArrow.update(viewport->getWidth(), viewport->getHeight());
+            m_overlayArrow.draw(painter);
+        }
     }
 }
 

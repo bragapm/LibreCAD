@@ -315,7 +315,7 @@ HEADERS += \
     actions/drawing/selection/lc_actionsingleentityselectbase.h \
     actions/drawing/zoom/tt_actionfixedzoom.h \
     lib/actions/lc_actioninfomessagebuilder.h \
-    lib/actions/lc_overlayboxaction.h \    
+    lib/actions/lc_overlayboxaction.h \
     lib/engine/document/entities/lc_mleader.h \
     lib/engine/document/entities/lc_tolerance.h \
     lib/engine/document/ucs/lc_ucslist.h \
@@ -348,6 +348,7 @@ HEADERS += \
     lib/engine/overlays/ucs_mark/lc_overlayrelativezero.h \
     lib/engine/overlays/ucs_mark/lc_overlayucszero.h \
     lib/engine/overlays/ucs_mark/lc_ucs_mark.h \
+    lib/engine/overlays/ucs_mark/lc_overlayarrow.h \
     lib/engine/rs.h \
     lib/engine/document/entities/rs_arc.h \
     lib/engine/document/entities/rs_atomicentity.h \
@@ -536,7 +537,6 @@ HEADERS += \
     ui/components/status_bar/lc_relzerocoordinateswidget.h \
     ui/dialogs/lc_dialog.h \
     ui/main/lc_mdiapplicationwindow.h
-
 SOURCES += \
     actions/dock_widgets/layer/lc_actionentitylayerbase.cpp \
     actions/dock_widgets/layer/lc_actionentitylayertoggle.cpp \
@@ -568,7 +568,7 @@ SOURCES += \
     actions/drawing/selection/lc_actionsingleentityselectbase.cpp \
     actions/drawing/zoom/tt_actionfixedzoom.cpp \
     lib/actions/lc_actioninfomessagebuilder.cpp \
-    lib/actions/lc_overlayboxaction.cpp \    
+    lib/actions/lc_overlayboxaction.cpp \
     lib/engine/document/entities/lc_mleader.cpp \
     lib/engine/document/entities/lc_tolerance.cpp \
     lib/engine/document/ucs/lc_ucslist.cpp \
@@ -581,6 +581,7 @@ SOURCES += \
     lib/engine/overlays/ucs_mark/lc_overlayrelativezero.cpp \
     lib/engine/overlays/ucs_mark/lc_overlayucszero.cpp \
     lib/engine/overlays/ucs_mark/lc_ucs_mark.cpp \
+    lib/engine/overlays/ucs_mark/lc_overlayarrow.cpp \
     lib/engine/settings/lc_settingsexporter.cpp \
     lib/engine/undo/lc_undoablerelzero.cpp \
     lib/engine/utils/lc_rectregion.cpp \
@@ -785,7 +786,6 @@ SOURCES += \
     ui/components/status_bar/lc_relzerocoordinateswidget.cpp \
     ui/dialogs/lc_dialog.cpp \
     ui/main/lc_mdiapplicationwindow.cpp
-
 # ################################################################################
 # Command
 HEADERS += cmd/rs_commands.h

@@ -23,6 +23,7 @@
 #ifndef LC_GRAPHICVIEWRENDERER_H
 #define LC_GRAPHICVIEWRENDERER_H
 #include "lc_overlayanglesbasemark.h"
+#include "lc_overlayarrow.h"
 #include "lc_overlayrelativezero.h"
 #include "lc_overlayucszero.h"
 #include "lc_ucs_mark.h"
@@ -57,6 +58,7 @@ protected:
     LC_OverlayUCSZeroOptions m_absZeroOptions;
     LC_UCSMarkOptions m_ucsMarkOptions;
     LC_AnglesBaseMarkOptions m_anglesBaseOptions;
+    LC_OverlayArrowOptions m_arrowOptions;
 
     int m_entityHandleHalfSize = 2;
 
@@ -99,6 +101,7 @@ protected:
     LC_OverlayUCSZero m_overlayAbsZero = LC_OverlayUCSZero(&m_absZeroOptions);
     LC_OverlayUCSMark m_overlayUCSMark = LC_OverlayUCSMark(&m_ucsMarkOptions);
     LC_OverlayAnglesBaseMark m_overlayAnglesBaseMark = LC_OverlayAnglesBaseMark(&m_anglesBaseOptions);
+    LC_OverlayArrow m_overlayArrow = LC_OverlayArrow(&m_arrowOptions);
 
     void doDrawLayerBackground(RS_Painter *painter) override;
     void doDrawLayerOverlays(RS_Painter *painter) override;

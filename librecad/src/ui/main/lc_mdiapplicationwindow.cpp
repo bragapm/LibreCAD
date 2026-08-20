@@ -234,7 +234,7 @@ void LC_MDIApplicationWindow::setTabLayout(RS2::TabShape s, RS2::TabPosition p) 
     }
     LC_GROUP("WindowOptions");
     int shape = (s == RS2::AnyShape) ? LC_GET_INT("TabShape", RS2::Triangular) : s;
-    int position = (p == RS2::AnyPosition) ? LC_GET_INT("TabPosition", RS2::West) : p;
+    int position = (p == RS2::AnyPosition) ? LC_GET_INT("TabPosition", RS2::North) : p;
     LC_GROUP_END();
     m_mdiAreaCAD->setTabShape(static_cast<QTabWidget::TabShape>(shape));
     m_mdiAreaCAD->setTabPosition(static_cast<QTabWidget::TabPosition>(position));
@@ -449,6 +449,8 @@ void LC_MDIApplicationWindow::doForEachWindow(const std::function<void(QC_MDIWin
 }
 void LC_MDIApplicationWindow::setupCADAreaTabbar() {
     m_mdiAreaCAD->setViewMode(QMdiArea::TabbedView);
+    // Pastikan tab selalu di atas (horizontal) seperti AutoCAD
+    m_mdiAreaCAD->setTabPosition(QTabWidget::North);
     QList<QTabBar *> tabBarList = m_mdiAreaCAD->findChildren<QTabBar *>();
     QTabBar *tabBar = tabBarList.at(0);
     if (tabBar != nullptr) {

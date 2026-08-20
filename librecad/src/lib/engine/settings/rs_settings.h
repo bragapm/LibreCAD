@@ -68,7 +68,7 @@ public:
     // ---------------------------------------------------------------------------
     static constexpr char const* snap_indicator          = "#FFC200";
     static constexpr char const* snap_indicator_lines    = "#FFC200";
-    static constexpr char const* background              = "#212830";
+    static constexpr char const* background              = "#000000";
     static constexpr char const* color_grid_points       = "Gray";
     static constexpr char const* color_grid_lines        = "#aeaeff";
     static constexpr char const* color_meta_grid_points  = "#404040";

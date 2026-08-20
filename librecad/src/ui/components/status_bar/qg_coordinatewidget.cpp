@@ -98,8 +98,8 @@ void QG_CoordinateWidget::setCoordinates(const RS_Vector& wcsAbs, const RS_Vecto
 }
 
 void QG_CoordinateWidget::clearContent(){
-    lCoord1->setText("0 , 0");
-    lCoord2->setText("@  0 , 0");
+    lCoord1->setText("X: 0   Y: 0");
+    lCoord2->setText("X: 0   Y: 0");
     lCoord1b->setText("0 < 0");
     lCoord2b->setText("@  0 < 0");
 }
@@ -129,8 +129,8 @@ void QG_CoordinateWidget::setCoordinates(double ucsX, double ucsY,
         QString relX = RS_Units::formatLinear(ucsDeltaX, unit, m_linearFormat, m_linearPrecision);
         QString relY = RS_Units::formatLinear(ucsDeltaY, unit, m_linearFormat, m_linearPrecision);
 
-        lCoord1->setText(absX + " , " + absY);
-        lCoord2->setText("@  " + relX + " , " + relY);
+        lCoord1->setText("X: " + absX + "   Y: " + absY);
+        lCoord2->setText("X: " + relX + "   Y: " + relY);
 
         // polar coordinates:
         RS_Vector v;

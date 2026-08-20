@@ -400,6 +400,8 @@ LC_CADDockWidget* LC_WidgetFactory::cadDockWidget(const QString& title, const ch
     tb->addWidget(widget);
     tb->setObjectName(name);
     tb->setProperty("_group", 3);
+    tb->setMovable(false);
+    tb->setFloatable(false);
     addToBottom(tb);
     return tb;
 }
@@ -428,6 +430,7 @@ void LC_WidgetFactory::initStatusBar() {
 
     bool useClassicalStatusBar = LC_GET_ONE_BOOL("Startup", "UseClassicStatusBar", false);
     if (useClassicalStatusBar) {
+        status_bar->setVisible(true);
         status_bar->addWidget(m_appWin->m_coordinateWidget);
         status_bar->addWidget(m_appWin->m_mouseWidget);
         status_bar->addWidget(m_appWin->m_selectionWidget);
@@ -447,12 +450,14 @@ void LC_WidgetFactory::initStatusBar() {
                 font.setPointSize(fontsize);
                 status_bar->setFont(font);
             }
-            int height{64};
             if (allow_statusbar_height) {
-                height = LC_GET_INT("StatusbarHeight", 64);
+                int height = LC_GET_INT("StatusbarHeight", 28);
+                status_bar->setMinimumHeight(height);
+                status_bar->setMaximumHeight(height);
+            } else {
+                status_bar->setMinimumHeight(24);
+                status_bar->setMaximumHeight(36);
             }
-            status_bar->setMinimumHeight(height);
-            status_bar->setMaximumHeight(height);
         }
     }
     else {

@@ -42,6 +42,18 @@ find_package(Qt6 REQUIRED COMPONENTS LinguistTools)
 find_package(Boost REQUIRED COMPONENTS)
 find_package(Freetype)
 
+# ─── Tracy Profiler ─────────────────────────────────────────────────────────
+option(TRACY_ENABLE "Enable Tracy Profiler instrumentation" OFF)
+set(TRACY_DIR "C:/TracyProfiler/wolfpld-tracy-05cceee" CACHE PATH "Path to Tracy source directory")
+if(TRACY_ENABLE)
+    message(STATUS "[Tracy] Profiler ENABLED - instrumentation will be compiled in")
+    add_subdirectory(${TRACY_DIR} ${CMAKE_BINARY_DIR}/tracy EXCLUDE_FROM_ALL)
+    add_compile_definitions(TRACY_ENABLE)
+else()
+    message(STATUS "[Tracy] Profiler DISABLED - zero overhead mode")
+endif()
+# ────────────────────────────────────────────────────────────────────────────
+
 file(GLOB_RECURSE AUTO_EXCLUDED_SOURCES
         "${PROJECT_SOURCE_DIR}/librecad/src/lib/debug/*.*"
         "${PROJECT_SOURCE_DIR}/librecad/src/lib/creation/*.*"
@@ -247,6 +259,9 @@ include_directories(librecad/src/main/console_dxf2pdf)
 include_directories(librecad/src/plugins)
 include_directories(librecad/src/plugins/intern)
 include_directories(librecad/src/test)
+
+# Tracy header include (header-only no-ops when TRACY_ENABLE is OFF)
+include_directories(${TRACY_DIR}/public)
 
 set(SOURCES
 		librecad/res/images/images.qrc
@@ -1529,6 +1544,11 @@ endif(WIN32)
 
 #add_executable(LibreCAD ${SOURCES})
 target_link_libraries(librecad PRIVATE Qt6::Core Qt6::Widgets Qt6::Gui Qt6::PrintSupport Qt6::Svg Qt::Network)
+
+# Link Tracy client library when profiling is enabled
+if(TRACY_ENABLE)
+    target_link_libraries(librecad PRIVATE TracyClient)
+endif()
 
 #set_target_properties(librecad PROPERTIES
 #	WIN32_EXECUTABLE ON

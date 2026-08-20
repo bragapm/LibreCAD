@@ -176,10 +176,8 @@ void LC_ApplicationWindowInitializer::initIconSize() const {
     {
         bool custom_size = LC_GET_BOOL("AllowToolbarIconSize", false);
         int icon_size = custom_size ? LC_GET_INT("ToolbarIconSize", 24) : 24;
-
-        if (custom_size) {
-            m_appWin->setIconSize(QSize(icon_size, icon_size));
-        }
+        // Selalu terapkan ukuran icon agar konsisten
+        m_appWin->setIconSize(QSize(icon_size, icon_size));
     }
     LC_GROUP_END();
 }

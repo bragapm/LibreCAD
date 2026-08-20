@@ -1,1 +1,99 @@
-<svg height="256" viewBox="0 0 72.248892 72.248892" width="256" xmlns="http://www.w3.org/2000/svg"><g stroke="#000" stroke-width="2.257778"><path d="m13.546668 28.222219a30.480003 30.480001 0 0 1 30.480002 30.480002" fill="none"/><path d="m64.346671 50.800003-42.897781-42.8977799" fill="none"/><g fill="#00ff7f" stroke-dashoffset="20" stroke-linecap="round"><circle cx="11.288889" cy="27.093336" r="5.644445"/><circle cx="45.155563" cy="60.960003" r="5.644445"/><circle cx="60.960011" cy="47.413342" r="5.644445"/><circle cx="24.835558" cy="11.288889" r="5.644445"/><circle cx="34.99556" cy="37.25333" r="5.644445"/><circle cx="36.688896" cy="23.142225" r="5.644445"/><circle cx="49.106674" cy="35.560005" r="5.644445"/></g></g></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   height="256"
+   viewBox="0 0 72.248892 72.248892"
+   width="256"
+   version="1.1"
+   id="svg9"
+   sodipodi:docname="snap_entity.svg"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs9" />
+  <sodipodi:namedview
+     id="namedview9"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="3.3398438"
+     inkscape:cx="127.85029"
+     inkscape:cy="128"
+     inkscape:window-width="1920"
+     inkscape:window-height="1057"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg9" />
+  <g
+     stroke="#000"
+     stroke-width="2.257778"
+     id="g9"
+     style="stroke:#ffffff;stroke-opacity:1">
+    <path
+       d="m13.546668 28.222219a30.480003 30.480001 0 0 1 30.480002 30.480002"
+       fill="none"
+       id="path1"
+       style="stroke:#ffffff;stroke-opacity:1" />
+    <path
+       d="m64.346671 50.800003-42.897781-42.8977799"
+       fill="none"
+       id="path2"
+       style="stroke:#ffffff;stroke-opacity:1" />
+    <g
+       fill="#00ff7f"
+       stroke-dashoffset="20"
+       stroke-linecap="round"
+       id="g8"
+       style="stroke:#ffffff;stroke-opacity:1">
+      <circle
+         cx="11.288889"
+         cy="27.093336"
+         r="5.644445"
+         id="circle2"
+         style="stroke:#ffffff;stroke-opacity:1" />
+      <circle
+         cx="45.155563"
+         cy="60.960003"
+         r="5.644445"
+         id="circle3"
+         style="stroke:#ffffff;stroke-opacity:1" />
+      <circle
+         cx="60.960011"
+         cy="47.413342"
+         r="5.644445"
+         id="circle4"
+         style="stroke:#ffffff;stroke-opacity:1" />
+      <circle
+         cx="24.835558"
+         cy="11.288889"
+         r="5.644445"
+         id="circle5"
+         style="stroke:#ffffff;stroke-opacity:1" />
+      <circle
+         cx="34.99556"
+         cy="37.25333"
+         r="5.644445"
+         id="circle6"
+         style="stroke:#ffffff;stroke-opacity:1" />
+      <circle
+         cx="36.688896"
+         cy="23.142225"
+         r="5.644445"
+         id="circle7"
+         style="stroke:#ffffff;stroke-opacity:1" />
+      <circle
+         cx="49.106674"
+         cy="35.560005"
+         r="5.644445"
+         id="circle8"
+         style="stroke:#ffffff;stroke-opacity:1" />
+    </g>
+  </g>
+</svg>

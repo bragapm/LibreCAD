@@ -1,1 +1,99 @@
-<svg height="256" viewBox="0 0 256 256" width="256" xmlns="http://www.w3.org/2000/svg"><g stroke="#000" stroke-width="8"><path d="m72 184 112-112" fill="none"/><g fill="#00ff7f" stroke-dashoffset="6" stroke-linejoin="bevel"><circle cx="60" cy="196.00002" opacity=".98" r="24"/><circle cx="196" cy="60.00002" opacity=".98" r="24"/></g></g><g transform="matrix(.7071068 -.7071068 .7071068 .7071068 -59.965515 87.916738)"><path d="m80 132c0-10.66667 0-21.33333 0-32-.000002 0-.000003 0-.000005 0-10.666663 5.33333-21.333327 10.66667-31.99999 16-.000002 0-.000003 0-.000005 0 10.666667 5.33333 21.333333 10.66667 32 16z" fill="#000" fill-rule="evenodd"/><path d="m80 116h35.96021" fill="none" stroke="#000" stroke-width="8"/></g><g transform="matrix(.7071068 -.7071068 .7071068 .7071068 -29.102603 185.05383)"><path d="m176 100v32c10.66667-5.33333 21.33333-10.66667 32-16-10.66667-5.33333-21.33333-10.66667-32-16z" fill="#000" fill-rule="evenodd"/><path d="m140.20142 116h35.79858" fill="none" stroke="#000" stroke-width="8"/></g></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   height="256"
+   viewBox="0 0 256 256"
+   width="256"
+   version="1.1"
+   id="svg6"
+   sodipodi:docname="revert_direction.svg"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs6" />
+  <sodipodi:namedview
+     id="namedview6"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="2.3616262"
+     inkscape:cx="127.87799"
+     inkscape:cy="128.08971"
+     inkscape:window-width="1920"
+     inkscape:window-height="1057"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg6" />
+  <g
+     stroke="#000"
+     stroke-width="8"
+     id="g3">
+    <path
+       d="m72 184 112-112"
+       fill="none"
+       id="path1"
+       style="stroke:#ffffff;stroke-opacity:1" />
+    <g
+       fill="#00ff7f"
+       stroke-dashoffset="6"
+       stroke-linejoin="bevel"
+       id="g2">
+      <circle
+         cx="60"
+         cy="196.00002"
+         opacity=".98"
+         r="24"
+         id="circle1"
+         style="stroke:#ffffff;stroke-opacity:1" />
+      <circle
+         cx="196"
+         cy="60.00002"
+         opacity=".98"
+         r="24"
+         id="circle2"
+         style="stroke:#ffffff;stroke-opacity:1" />
+    </g>
+  </g>
+  <g
+     transform="matrix(.7071068 -.7071068 .7071068 .7071068 -59.965515 87.916738)"
+     id="g4">
+    <path
+       d="m80 132c0-10.66667 0-21.33333 0-32-.000002 0-.000003 0-.000005 0-10.666663 5.33333-21.333327 10.66667-31.99999 16-.000002 0-.000003 0-.000005 0 10.666667 5.33333 21.333333 10.66667 32 16z"
+       fill="#000"
+       fill-rule="evenodd"
+       id="path3"
+       style="fill:#ffffff;fill-opacity:1" />
+    <path
+       d="m80 116h35.96021"
+       fill="none"
+       stroke="#000"
+       stroke-width="8"
+       id="path4"
+       style="fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-opacity:1" />
+  </g>
+  <g
+     transform="matrix(.7071068 -.7071068 .7071068 .7071068 -29.102603 185.05383)"
+     id="g6"
+     style="stroke:#ffffff;stroke-opacity:1;fill:#ffffff;fill-opacity:1">
+    <path
+       d="m176 100v32c10.66667-5.33333 21.33333-10.66667 32-16-10.66667-5.33333-21.33333-10.66667-32-16z"
+       fill="#000"
+       fill-rule="evenodd"
+       id="path5"
+       style="stroke:#ffffff;stroke-opacity:1;fill:#ffffff;fill-opacity:1" />
+    <path
+       d="m140.20142 116h35.79858"
+       fill="none"
+       stroke="#000"
+       stroke-width="8"
+       id="path6"
+       style="stroke:#ffffff;stroke-opacity:1;fill:#ffffff;fill-opacity:1" />
+  </g>
+</svg>

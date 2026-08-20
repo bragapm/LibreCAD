@@ -1,1 +1,109 @@
-<svg height="256" viewBox="0 0 72.248892 72.248892" width="256" xmlns="http://www.w3.org/2000/svg"><g stroke="#000"><g stroke-width="2.257778"><g fill-rule="evenodd"><path d="m10.160001 53.057781v-42.89778h51.928892v47.413336l-4.515556 4.515556h-38.382225z" fill="#fff"/><path d="m19.191112 11.28889v19.191112l4.515556 4.515556h24.835557l4.515556-4.515556v-19.191112" fill="#00ff7f"/><path d="m23.706668 60.960004v-14.675557l2.257778-2.257778h20.320001l2.257778 2.257778v14.675557" fill="#00ff7f"/><path d="m28.222224 57.573337v-9.031112h4.515556v9.031112z" fill="#fff"/></g><path d="m56.880353 43.248205-19.157878-19.157873-12.771919-6.385959 6.385959 12.771918 19.95612 19.956124 6.38596-6.385961" fill="none" stroke-linecap="square"/></g><g fill-rule="evenodd"><path d="m31.336515 24.090333-3.991224-3.991224" stroke-width="4.515556"/><g stroke-width="2.257778"><path d="m32.933005 28.879801 19.188872 19.188879"/><path d="m34.529496 27.283311 19.188872 19.188879"/></g></g></g><g fill-rule="evenodd"><path d="m36.125986 25.68682 19.188872 19.188879" stroke="#fff" stroke-width="2.257778"/><path d="m30.03601 25.400002 2.137325 4.233333 4.707291-4.692333-4.261225-2.187975z" fill="#fff"/></g></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   height="256"
+   viewBox="0 0 72.248892 72.248892"
+   width="256"
+   version="1.1"
+   id="svg11"
+   sodipodi:docname="save_as.svg"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs11" />
+  <sodipodi:namedview
+     id="namedview11"
+     pagecolor="#6f6f6f"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="2.3616262"
+     inkscape:cx="116.44519"
+     inkscape:cy="162.81154"
+     inkscape:window-width="1920"
+     inkscape:window-height="1057"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g10" />
+  <g
+     stroke="#000"
+     id="g10">
+    <g
+       stroke-width="2.257778"
+       id="g5">
+      <g
+         fill-rule="evenodd"
+         id="g4">
+        <path
+           d="m10.160001 53.057781v-42.89778h51.928892v47.413336l-4.515556 4.515556h-38.382225z"
+           fill="#fff"
+           id="path1"
+           style="fill:#000000;fill-opacity:1;stroke:#ffffff;stroke-opacity:1" />
+        <path
+           d="m19.191112 11.28889v19.191112l4.515556 4.515556h24.835557l4.515556-4.515556v-19.191112"
+           fill="#00ff7f"
+           id="path2"
+           style="stroke:#ffffff;stroke-opacity:1" />
+        <path
+           d="m23.706668 60.960004v-14.675557l2.257778-2.257778h20.320001l2.257778 2.257778v14.675557"
+           fill="#00ff7f"
+           id="path3" />
+        <path
+           d="m28.222224 57.573337v-9.031112h4.515556v9.031112z"
+           fill="#fff"
+           id="path4" />
+      </g>
+      <path
+         d="m56.880353 43.248205-19.157878-19.157873-12.771919-6.385959 6.385959 12.771918 19.95612 19.956124 6.38596-6.385961"
+         fill="none"
+         stroke-linecap="square"
+         id="path5"
+         style="stroke:#ffffff;stroke-opacity:1" />
+    </g>
+    <g
+       fill-rule="evenodd"
+       id="g9"
+       style="stroke:#000000;stroke-opacity:1">
+      <path
+         d="m31.336515 24.090333-3.991224-3.991224"
+         stroke-width="4.515556"
+         id="path6"
+         style="stroke:#ffffff;stroke-opacity:1;fill:#00ff7f;fill-opacity:1" />
+      <g
+         stroke-width="2.257778"
+         id="g8"
+         style="fill:#00ff7f;fill-opacity:1;stroke:#ffffff;stroke-opacity:1">
+        <path
+           d="m32.933005 28.879801 19.188872 19.188879"
+           id="path7"
+           style="fill:#00ff7f;fill-opacity:1;stroke:#ffffff;stroke-opacity:1" />
+        <path
+           d="m34.529496 27.283311 19.188872 19.188879"
+           id="path8"
+           style="fill:#00ff7f;fill-opacity:1;stroke:#ffffff;stroke-opacity:1" />
+      </g>
+    </g>
+  </g>
+  <g
+     fill-rule="evenodd"
+     id="g11"
+     style="stroke:#ffffff;stroke-opacity:1">
+    <path
+       d="m36.125986 25.68682 19.188872 19.188879"
+       stroke="#fff"
+       stroke-width="2.257778"
+       id="path10"
+       style="stroke:#000000;stroke-opacity:1" />
+    <path
+       d="m30.03601 25.400002 2.137325 4.233333 4.707291-4.692333-4.261225-2.187975z"
+       fill="#fff"
+       id="path11"
+       style="stroke:#000000;stroke-opacity:1" />
+  </g>
+</svg>

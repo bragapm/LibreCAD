@@ -63,6 +63,7 @@
 #include "rs_graphic.h"
 #include "rs_insert.h"
 #include "rs_settings.h"
+#include "tracy/Tracy.hpp"  // Tracy Profiler
 
 #ifdef EMU_C99
 #include "emu_c99.h"
@@ -1228,7 +1229,9 @@ void QG_GraphicView::layerActivated(RS_Layer *layer) {
  * have from the last call..
  */
 void QG_GraphicView::paintEvent(QPaintEvent *){
+    ZoneScopedN("QG_GraphicView::paintEvent");  // Tracy: profile full paint
     getRenderer()->render();
+    FrameMark;  // Tracy: mark end of frame (enables Frame Graph + FPS tracking)
 }
 
 

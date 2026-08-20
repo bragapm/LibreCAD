@@ -75,6 +75,13 @@ QG_CommandWidget::QG_CommandWidget(QG_ActionHandler *action_handler, QWidget* pa
 
     options_button->setStyleSheet("QToolButton::menu-indicator { image: none; }");
 
+    // Sembunyikan label 'Command:' — gunakan placeholder teks seperti mockup
+    lCommand->setVisible(false);
+    leCommand->setPlaceholderText(tr("Type a command"));
+
+    // Style history area agar menyerupai mockup (menggunakan stylesheet global modern_dark.qss)
+    teHistory->setFrameShape(QFrame::NoFrame);
+
     // For convenience of re-docking a floating command widget. Without this button,
     // the title bar may not have a "dock" button.
     // The m_docking button allows user to re-dock the command widget

@@ -26,6 +26,21 @@
 #include <QSize>
 #include <QToolButton>
 #include <QWidget>
+#include <QComboBox>
+#include <QDockWidget>
+#include <QFrame>
+#include <QGridLayout>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QAction>
+#include <QDockWidget>
+#include <QFrame>
+#include <QGridLayout>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QAction>
 
 #include "lc_actionfactory.h"
 #include "lc_actiongroupmanager.h"
@@ -193,28 +208,31 @@ void LC_ToolbarFactory::createStandardToolbars(){
     auto *creators = createCreatorsToolbar(tbPolicy);
     auto *preferences = createPreferencesToolbar(tbPolicy);
 
-    // === BARIS 1: Toolbar utama ===
+    // Create Ribbon HERE so it is the absolute first toolbar at the top!
+    // It will consume pen, ucs, and snap.
+    createAccurateRibbon();
+
+    // === BARIS 2: Toolbar standar kecil diletakkan di BAWAH Ribbon ===
     addToTop(file);
     addToTop(edit);
     addToTop(view);
-    addToTop(pen);
-    addToTop(entityLayers);
+    // pen is in ribbon
+    // entityLayers is optional, maybe keep it?
+    // ucs is in ribbon
 
-    // === BARIS 2: Toolbar tambahan ===
     m_appWin->addToolBarBreak(Qt::TopToolBarArea);
-    addToTop(perspectivesToolbar, true);
-    addToTop(viewsList, true);
-    addToTop(ucsList, true);
-    addToTop(preferences, true);
-    addToTop(infoCursor, true);
+    // addToTop(perspectivesToolbar, true);
+    // addToTop(viewsList, true);
+    // addToTop(preferences, true);
+    // addToTop(infoCursor, true);
 
-    // === BARIS 3: Tool Options (Butuh space panjang, sendirikan agar tidak melar) ===
+    // === BARIS 3: Tool Options ===
     m_appWin->addToolBarBreak(Qt::TopToolBarArea);
     addToTop(m_appWin->m_toolOptionsToolbar, true);
 
     addToLeft(order);
 
-    addToBottom(snap);
+    // snap is in ribbon
     addToBottom(dockareas);
     addToBottom(creators);
 }
@@ -422,12 +440,16 @@ QToolButton* LC_ToolbarFactory::toolButton(QToolBar* toolbar, const QString &too
 }
 
 auto LC_ToolbarFactory::addToTop(QToolBar* toolbar, bool secondRow) const -> void {
-    toolbar->setMovable(true);
-    toolbar->setFloatable(true);
-    toolbar->setIconSize(QSize(16, 16));
+    toolbar->setMovable(false);
+    toolbar->setFloatable(false);
+    toolbar->setIconSize(QSize(24, 24));
     m_appWin->addToolBar(Qt::TopToolBarArea, toolbar);
 }
-void LC_ToolbarFactory::addToBottom(QToolBar *toolbar) const { m_appWin->addToolBar(Qt::BottomToolBarArea, toolbar); }
+void LC_ToolbarFactory::addToBottom(QToolBar *toolbar) const {
+    toolbar->setMovable(false);
+    toolbar->setFloatable(false);
+    m_appWin->addToolBar(Qt::BottomToolBarArea, toolbar);
+}
 void LC_ToolbarFactory::addToLeft(QToolBar *toolbar) const { m_appWin->addToolBar(Qt::LeftToolBarArea, toolbar); }
 
 void LC_ToolbarFactory::createCustomToolbars(){
@@ -456,3 +478,145 @@ void LC_ToolbarFactory::createCustomToolbars(){
         settings.setValue("CustomToolbars/DefaultCustom", list);
     }
 }
+
+
+
+
+void LC_ToolbarFactory::createAccurateRibbon() const {
+    auto ribbonWidget = new QWidget(m_appWin);
+    ribbonWidget->setObjectName("AccurateRibbonWidget");
+    auto ribbonLayout = new QHBoxLayout(ribbonWidget);
+    ribbonLayout->setContentsMargins(4, 2, 4, 0);
+    ribbonLayout->setSpacing(8);
+
+    // Helper for large buttons (TextUnderIcon)
+    auto addLargeButton = [&](QLayout* layout, const QString& actName) {
+        QAction* act = m_appWin->getAction(actName);
+        if (act) {
+            auto btn = new QToolButton();
+            btn->setDefaultAction(act);
+            btn->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+            QFont font = btn->font();
+            font.setPointSize(8);
+            btn->setFont(font);
+            btn->setIconSize(QSize(24, 24));
+            layout->addWidget(btn);
+        }
+    };
+
+    // Helper for small buttons (IconOnly or TextBesideIcon)
+    auto createSmallButton = [&](const QString& actName, bool textBeside = false) -> QToolButton* {
+        QAction* act = m_appWin->getAction(actName);
+        if (!act) return nullptr;
+        auto btn = new QToolButton();
+        btn->setDefaultAction(act);
+        btn->setToolButtonStyle(textBeside ? Qt::ToolButtonTextBesideIcon : Qt::ToolButtonIconOnly);
+        QFont font = btn->font();
+        font.setPointSize(8);
+        btn->setFont(font);
+        btn->setIconSize(QSize(16, 16));
+        return btn;
+    };
+
+    auto addSeparator = [&]() {
+        auto line = new QFrame();
+        line->setFrameShape(QFrame::VLine);
+        line->setStyleSheet("color: #383D48;");
+        ribbonLayout->addWidget(line);
+    };
+
+    auto createGroup = [&](const QString& name, QWidget* content) {
+        auto groupWidget = new QWidget();
+        auto groupLayout = new QVBoxLayout(groupWidget);
+        groupLayout->setContentsMargins(0, 0, 0, 0);
+        groupLayout->setSpacing(2);
+        
+        groupLayout->addWidget(content, 1, Qt::AlignTop | Qt::AlignHCenter);
+        
+        auto label = new QLabel(name);
+        label->setAlignment(Qt::AlignCenter);
+        QFont labelFont = label->font();
+        labelFont.setPointSize(7);
+        label->setFont(labelFont);
+        label->setStyleSheet("color: #7A8899;");
+        groupLayout->addWidget(label, 0, Qt::AlignBottom | Qt::AlignHCenter);
+        
+        ribbonLayout->addWidget(groupWidget);
+        addSeparator();
+    };
+
+    // 1. Draw Group
+    auto drawWidget = new QWidget();
+    auto drawLayout = new QHBoxLayout(drawWidget);
+    drawLayout->setContentsMargins(0, 0, 0, 0);
+    drawLayout->setSpacing(2);
+    addLargeButton(drawLayout, "DrawLine");
+    addLargeButton(drawLayout, "DrawPolyline"); // If exists, otherwise another line tool
+    addLargeButton(drawLayout, "DrawCircle");
+    addLargeButton(drawLayout, "DrawArc");
+    createGroup(tr("Draw"), drawWidget);
+
+    // 2. Modify Group
+    auto modWidget = new QWidget();
+    auto modLayout = new QHBoxLayout(modWidget);
+    modLayout->setContentsMargins(0, 0, 0, 0);
+    modLayout->setSpacing(2);
+    addLargeButton(modLayout, "ModifyMove");
+    addLargeButton(modLayout, "ModifyCopy"); // Actually might be combined in LibreCAD, let us use ModifyScale
+    
+    // Subgrid for small buttons
+    auto modGridWidget = new QWidget();
+    auto modGrid = new QGridLayout(modGridWidget);
+    modGrid->setContentsMargins(0, 0, 0, 0);
+    modGrid->setSpacing(2);
+    if(auto btn = createSmallButton("ModifyRotate", true)) modGrid->addWidget(btn, 0, 0);
+    if(auto btn = createSmallButton("ModifyMirror", true)) modGrid->addWidget(btn, 1, 0);
+    if(auto btn = createSmallButton("ModifyTrim", true)) modGrid->addWidget(btn, 0, 1);
+    if(auto btn = createSmallButton("ModifyBevel", true)) modGrid->addWidget(btn, 1, 1);
+    modLayout->addWidget(modGridWidget);
+    createGroup(tr("Modify"), modWidget);
+
+    // 3. Annotation Group
+    auto annoWidget = new QWidget();
+    auto annoLayout = new QHBoxLayout(annoWidget);
+    annoLayout->setContentsMargins(0, 0, 0, 0);
+    annoLayout->setSpacing(2);
+    addLargeButton(annoLayout, "DrawText");
+    addLargeButton(annoLayout, "DimAligned");
+    addLargeButton(annoLayout, "DimLeader");
+    createGroup(tr("Annotation"), annoWidget);
+
+    // 4. Layers & Properties (Using real Pen Toolbar)
+    if (m_appWin->m_penToolBar) {
+        m_appWin->m_penToolBar->setOrientation(Qt::Horizontal);
+        m_appWin->m_penToolBar->setStyleSheet("QToolBar { border: none; background: transparent; margin: 0px; padding: 0px; spacing: 2px; }");
+        createGroup(tr("Properties"), m_appWin->m_penToolBar);
+    }
+
+    // 5. Coordinate System
+    auto ucsToolbar = m_appWin->findChild<QToolBar*>("ucs_toolbar");
+    if (ucsToolbar) {
+        ucsToolbar->setOrientation(Qt::Horizontal);
+        ucsToolbar->setStyleSheet("QToolBar { border: none; background: transparent; margin: 0px; padding: 0px; spacing: 2px; }");
+        createGroup(tr("Coordinate System"), ucsToolbar);
+    }
+
+    // 6. Snap Options
+    if (m_appWin->m_snapToolBar) {
+        m_appWin->m_snapToolBar->setOrientation(Qt::Horizontal);
+        m_appWin->m_snapToolBar->setStyleSheet("QToolBar { border: none; background: transparent; margin: 0px; padding: 0px; spacing: 2px; }");
+        createGroup(tr("Snap"), m_appWin->m_snapToolBar);
+    }
+
+    ribbonLayout->addStretch(1);
+
+    auto ribbonToolBar = new QToolBar(tr("Ribbon"), m_appWin);
+    ribbonToolBar->setObjectName("accurate_ribbon_toolbar");
+    ribbonToolBar->addWidget(ribbonWidget);
+    ribbonToolBar->setMovable(false); // Ribbon usually fixed
+    
+    // Insert at the very top
+    m_appWin->addToolBar(Qt::TopToolBarArea, ribbonToolBar);
+    m_appWin->addToolBarBreak(Qt::TopToolBarArea);
+}
+

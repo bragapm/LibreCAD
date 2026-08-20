@@ -265,7 +265,7 @@ protected:
     long rememberY = 0;
 
     Qt::PenJoinStyle penJoinStyle = Qt::RoundJoin;
-    Qt::PenCapStyle penCapStyle = Qt::RoundCap;
+    Qt::PenCapStyle penCapStyle = Qt::FlatCap;
     QPen lastUsedPen;
     double cachedDpmm = 0.;
     double minCircleDrawingRadius = 2.0;

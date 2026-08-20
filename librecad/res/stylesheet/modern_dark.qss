@@ -1,62 +1,67 @@
 /* AutoCAD Dark Theme for LibreCAD */
-/* Window Background: #1E2229 (Hitam kebiruan) */
-/* Darker Areas (Inactive tabs, status bar): #15181D */
-/* Borders: #111418 */
-/* Text: #E0E6ED */
-/* Accent/Selected: #184F8D (Blue) */
-/* Hover: #2D333B */
-/* Canvas: #212830 */
-/* Inputs: #111418 */
+/* Window Background:  #1B2027 */
+/* Toolbar Area:       #292D35  ← medium gray seperti mockup */
+/* Toolbar Box:        #22262E  ← sedikit lebih gelap dari area */
+/* Borders:            #383D48  ← abu-abu visible */
+/* Text:               #CDD3DE */
+/* Accent/Selected:    #184F8D (Blue) */
+/* Canvas:             #1A1D24 */
 
 QMainWindow, QDialog {
-    background-color: #1E2229;
-    color: #E0E6ED;
+    background-color: #1B2027;
+    color: #CDD3DE;
 }
 
 QWidget {
-    background-color: #1E2229;
-    color: #E0E6ED;
+    background-color: #1B2027;
+    color: #CDD3DE;
     font-family: "Segoe UI", "Inter", Arial, sans-serif;
     font-size: 11px;
 }
 
-/* Toolbars */
+/* Area Toolbar Atas */
 QToolBar {
-    background-color: #1E2229;
+    background-color: #1B2027;
     border: none;
-    border-bottom: 1px solid #111418;
-    spacing: 1px;
-    padding: 2px 1px;
+    spacing: 2px;
+    padding: 2px;
+    margin: 0px;
 }
 
+/* Khusus untuk toolbar vertikal (sebelah kiri), hilangkan kotaknya agar langsung icon saja */
+QToolBar:vertical {
+    background-color: transparent;
+    border: none;
+}
+
+/* Separator di dalam satu group */
 QToolBar::separator {
-    background-color: #111418;
+    background-color: #383D48;
     width: 1px;
-    margin: 4px 8px;
+    margin: 4px 6px;
 }
 
+/* Handle untuk drag n drop toolbar (berupa titik-titik halus) */
 QToolBar::handle {
-    background-color: #2D333B;
-    background-image: url(none);
-    border-radius: 2px;
+    background-color: transparent;
     width: 6px;
-    height: 20px;
-    margin: 2px 1px;
-    subcontrol-origin: content;
+    border-left: 2px dotted #4A5260;
+    margin: 4px 6px;
 }
 
+/* Tombol icon di dalam toolbar */
 QToolButton {
     background-color: transparent;
-    color: #E0E6ED;
+    color: #CDD3DE;
     border: 1px solid transparent;
-    border-radius: 2px;
-    padding: 5px;
+    border-radius: 4px; /* Sudut halus pada saat dihover */
+    padding: 4px;
     margin: 1px;
 }
 
 QToolButton:hover {
-    background-color: #2D333B;
-    border: 1px solid #636A73;
+    background-color: #363C47;
+    border: 1px solid #4A5260;
 }
 
 QToolButton:pressed, QToolButton:checked {
@@ -67,36 +72,65 @@ QToolButton:pressed, QToolButton:checked {
 
 /* Dock Widgets (Panels) */
 QDockWidget {
-    background-color: #1E2229;
-    color: #E0E6ED;
+    background-color: #1B2027;
+    color: #CDD3DE;
     titlebar-close-icon: url();
     titlebar-normal-icon: url();
-    border: 1px solid #111418;
+    border: 1px solid #383D48;
+    font-size: 11px;
 }
 
 QDockWidget::title {
-    background-color: #15181D;
-    color: #E0E6ED;
+    background-color: #222730; /* Dibedakan sedikit lebih terang dari background panel (#1B2027) */
+    color: #CDD3DE;
     padding: 6px 8px;
     text-align: left;
-    border-bottom: 1px solid #111418;
-    font-weight: bold;
+    border-bottom: none;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.3px;
 }
 
 QDockWidget > QWidget {
-    background-color: #1E2229;
+    background-color: #1B2027;
+}
+
+/* Group section header di dalam dock (QLabel bold seperti 'User Coordinate Systems') */
+QDockWidget QLabel[objectName="section_header"] {
+    color: #8A9BB0;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 4px 6px 2px 6px;
+    background-color: transparent;
+    border-bottom: 1px solid #2C303A;
+}
+
+/* Filter / search input di dalam dock */
+QDockWidget QLineEdit {
+    background-color: #12151A;
+    color: #CDD3DE;
+    border: 1px solid #2C303A;
+    border-radius: 2px;
+    padding: 3px 6px;
+    font-size: 11px;
+    selection-background-color: #184F8D;
+}
+
+QDockWidget QLineEdit:focus {
+    border: 1px solid #3A6EA8;
 }
 
 /* Menus */
 QMenuBar {
-    background-color: #15181D;
-    color: #E0E6ED;
-    border-bottom: 1px solid #111418;
+    background-color: #1B2027;
+    color: #CDD3DE;
+    border-bottom: 1px solid #2C303A;
+    font-size: 11px;
 }
 
 QMenuBar::item {
     background-color: transparent;
-    padding: 6px 12px;
+    padding: 4px 10px;
 }
 
 QMenuBar::item:selected {
@@ -104,13 +138,14 @@ QMenuBar::item:selected {
 }
 
 QMenu {
-    background-color: #1E2229;
-    color: #E0E6ED;
-    border: 1px solid #111418;
+    background-color: #1B2027;
+    color: #CDD3DE;
+    border: 1px solid #2C303A;
+    font-size: 11px;
 }
 
 QMenu::item {
-    padding: 6px 24px 6px 12px;
+    padding: 4px 20px 4px 10px;
 }
 
 QMenu::item:selected {
@@ -120,49 +155,67 @@ QMenu::item:selected {
 
 /* Status Bar */
 QStatusBar {
-    background-color: #15181D;
-    color: #E0E6ED;
-    border-top: 1px solid #111418;
+    background-color: #1B2027;
+    color: #CDD3DE;
+    border-top: 1px solid #2C303A;
 }
 
 QStatusBar::item {
     border: none;
-    border-right: 1px solid #111418;
+    border-right: 1px solid #2C303A;
 }
 
 QStatusBar QLabel {
-    color: #E0E6ED;
+    color: #CDD3DE;
     padding: 0 8px;
     background-color: transparent;
 }
 
+/* Command Line — history area */
+QTextEdit {
+    background-color: #1B2027;
+    color: #CDD3DE;
+    border: none;
+    padding: 4px 6px;
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 11px;
+    selection-background-color: #184F8D;
+}
+
 /* Tabs */
 QTabWidget::pane {
-    border: 1px solid #111418;
-    border-top: 1px solid #4A8CDA; /* Accent line for active tab */
-    background-color: #1E2229;
+    border: 1px solid #2C303A;
+    border-top: none;
+    background-color: #1B2027;
+}
+
+QTabWidget::tab-bar {
+    alignment: left;
 }
 
 QTabBar::tab {
-    background-color: #15181D;
-    color: #A0AAB5;
-    padding: 6px 16px;
-    border: 1px solid #111418;
+    background-color: #12151A;
+    color: #7A8899;
+    padding: 5px 12px;
+    border: 1px solid #2C303A;
     border-bottom: none;
-    margin: 1px 1px 0 0;
+    border-radius: 0px;
+    margin: 0px 1px 0 0;
+    font-size: 11px;
 }
 
 QTabBar::tab:selected {
-    background-color: #1E2229;
-    color: #FFFFFF;
-    border-top: 2px solid #4A8CDA; /* AutoCAD blue accent */
-    border-left: 1px solid #111418;
-    border-right: 1px solid #111418;
+    background-color: #1B2027;
+    color: #E0E6ED;
+    border-top: 2px solid #4A8CDA;
+    border-left: 1px solid #2C303A;
+    border-right: 1px solid #2C303A;
+    border-bottom: none;
 }
 
 QTabBar::tab:hover:!selected {
-    background-color: #42474E;
-    color: #E0E6ED;
+    background-color: #22262E;
+    color: #CDD3DE;
 }
 
 QTabBar::close-button {
@@ -177,7 +230,7 @@ QTabBar::close-button:hover {
 
 /* Scrollbars */
 QScrollBar:vertical {
-    background-color: #15181D;
+    background-color: #1B2027;
     width: 12px;
     margin: 0px;
     border-left: 1px solid #111418;
@@ -197,7 +250,7 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
 }
 
 QScrollBar:horizontal {
-    background-color: #15181D;
+    background-color: #1B2027;
     height: 12px;
     margin: 0px;
     border-top: 1px solid #111418;
@@ -218,21 +271,22 @@ QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
 
 /* Tables / Trees */
 QTableView, QTreeView, QListView {
-    background-color: #111418;
+    background-color: #1B2027;
     color: #E0E6ED;
-    border: 1px solid #111418;
-    gridline-color: #1E2229;
+    border: 1px solid #1B2027;
+    gridline-color: #2C303A;
     selection-background-color: #184F8D;
     selection-color: #FFFFFF;
 }
 
 QHeaderView::section {
-    background-color: #15181D;
+    background-color: #222730; /* Di-highlight sedikit lebih terang dari isi tabel */
     color: #E0E6ED;
     padding: 6px;
     border: none;
-    border-right: 1px solid #111418;
-    border-bottom: 1px solid #111418;
+    border-right: 1px solid #2C303A;
+    border-bottom: 1px solid #2C303A;
+    font-weight: bold; /* Ditambahkan agar teks header lebih tegas */
 }
 
 QTableView::item:selected, QTreeView::item:selected {
@@ -242,11 +296,11 @@ QTableView::item:selected, QTreeView::item:selected {
 
 /* Input fields */
 QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox {
-    background-color: #111418;
+    background-color: #222730; /* Sedikit lebih terang dari panel agar terlihat halus */
     color: #E0E6ED;
-    border: 1px solid #1A1D21;
-    padding: 4px;
-    border-radius: 2px;
+    border: 1px solid #2C303A; /* Border lebih soft */
+    padding: 6px 8px;
+    border-radius: 4px; /* Sudut sedikit membulat seperti mockup */
     selection-background-color: #184F8D;
 }
 
@@ -264,7 +318,213 @@ QPushButton {
     color: #E0E6ED;
     border: 1px solid #111418;
     padding: 5px 16px;
+    border-radius: 4px;
+}
+
+/* Hilangkan kotak abu-abu tebal pada tombol di dalam panel tapi tetap beri garis batas (boundaries) tipis */
+QDockWidget QPushButton {
+    background-color: transparent;
+    border: 1px solid #383D48; /* Garis tipis pembatas icon */
+    border-radius: 4px; /* Sudut sedikit membulat */
+    padding: 4px;
+}
+
+QDockWidget QPushButton:hover {
+    background-color: #2D333B;
+    border-radius: 4px;
+}
+
+QPushButton:hover {
+    background-color: #2D333B;
+    border: 1px solid #636A73;
+}
+
+QPushButton:pressed {
+    background-color: #184F8D;
+    border: 1px solid #306BB5;
+}
+
+
+
+/* Status Bar */
+QStatusBar {
+    background-color: #1B2027;
+    color: #CDD3DE;
+    border-top: 1px solid #2C303A;
+}
+
+QStatusBar::item {
+    border: none;
+    border-right: 1px solid #2C303A;
+}
+
+QStatusBar QLabel {
+    color: #CDD3DE;
+    padding: 0 8px;
+    background-color: transparent;
+}
+
+/* Command Line — history area */
+QTextEdit {
+    background-color: #1B2027;
+    color: #CDD3DE;
+    border: none;
+    padding: 4px 6px;
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 11px;
+    selection-background-color: #184F8D;
+}
+
+/* Tabs */
+QTabWidget::pane {
+    border: 1px solid #2C303A;
+    border-top: none;
+    background-color: #1B2027;
+}
+
+QTabWidget::tab-bar {
+    alignment: left;
+}
+
+QTabBar::tab {
+    background-color: #12151A;
+    color: #7A8899;
+    padding: 5px 12px;
+    border: 1px solid #2C303A;
+    border-bottom: none;
+    border-radius: 0px;
+    margin: 0px 1px 0 0;
+    font-size: 11px;
+}
+
+QTabBar::tab:selected {
+    background-color: #1B2027;
+    color: #E0E6ED;
+    border-top: 2px solid #4A8CDA;
+    border-left: 1px solid #2C303A;
+    border-right: 1px solid #2C303A;
+    border-bottom: none;
+}
+
+QTabBar::tab:hover:!selected {
+    background-color: #22262E;
+    color: #CDD3DE;
+}
+
+QTabBar::close-button {
+    subcontrol-position: right;
+    margin: 2px;
+}
+
+QTabBar::close-button:hover {
+    background-color: #E81123;
     border-radius: 2px;
+}
+
+/* Scrollbars */
+QScrollBar:vertical {
+    background-color: #1B2027;
+    width: 12px;
+    margin: 0px;
+    border-left: 1px solid #111418;
+}
+
+QScrollBar::handle:vertical {
+    background-color: #2D333B;
+    min-height: 20px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: #636A73;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+QScrollBar:horizontal {
+    background-color: #1B2027;
+    height: 12px;
+    margin: 0px;
+    border-top: 1px solid #111418;
+}
+
+QScrollBar::handle:horizontal {
+    background-color: #2D333B;
+    min-width: 20px;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background-color: #636A73;
+}
+
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    width: 0px;
+}
+
+/* Tables / Trees */
+QTableView, QTreeView, QListView {
+    background-color: #1B2027;
+    color: #E0E6ED;
+    border: 1px solid #1B2027;
+    gridline-color: #2C303A;
+    selection-background-color: #184F8D;
+    selection-color: #FFFFFF;
+}
+
+QHeaderView::section {
+    background-color: #222730; /* Di-highlight sedikit lebih terang dari isi tabel */
+    color: #E0E6ED;
+    padding: 6px;
+    border: none;
+    border-right: 1px solid #2C303A;
+    border-bottom: 1px solid #2C303A;
+    font-weight: bold; /* Ditambahkan agar teks header lebih tegas */
+}
+
+QTableView::item:selected, QTreeView::item:selected {
+    background-color: #184F8D;
+    color: white;
+}
+
+/* Input fields */
+QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox {
+    background-color: #222730; /* Sedikit lebih terang dari panel agar terlihat halus */
+    color: #E0E6ED;
+    border: 1px solid #2C303A; /* Border lebih soft */
+    padding: 6px 8px;
+    border-radius: 4px; /* Sudut sedikit membulat seperti mockup */
+    selection-background-color: #184F8D;
+}
+
+QLineEdit:focus, QComboBox:focus, QSpinBox:focus {
+    border: 1px solid #4A8CDA; /* Blue highlight on focus */
+}
+
+QComboBox::drop-down {
+    border: none;
+    width: 20px;
+}
+
+QPushButton {
+    background-color: #42474E;
+    color: #E0E6ED;
+    border: 1px solid #111418;
+    padding: 5px 16px;
+    border-radius: 4px;
+}
+
+/* Hilangkan kotak abu-abu tebal pada tombol di dalam panel tapi tetap beri garis batas (boundaries) tipis */
+QDockWidget QPushButton {
+    background-color: transparent;
+    border: 1px solid #383D48; /* Garis tipis pembatas icon */
+    border-radius: 4px; /* Sudut sedikit membulat */
+    padding: 4px;
+}
+
+QDockWidget QPushButton:hover {
+    background-color: #2D333B;
+    border-radius: 4px;
 }
 
 QPushButton:hover {
@@ -280,5 +540,29 @@ QPushButton:pressed {
 /* MDI Area / Canvas Background */
 QMdiArea {
     background-color: #212830;
+}
+
+/* Accurate Ribbon Styling */
+#AccurateRibbonWidget {
+    background-color: #1B2027;
+}
+#accurate_ribbon_toolbar QToolButton {
+    background-color: transparent;
+    border: none;
+    color: #CDD3DE;
+    padding: 4px;
+    border-radius: 4px;
+}
+#accurate_ribbon_toolbar QToolButton:hover {
+    background-color: #2D333B;
+    border: 1px solid #4A5260;
+}
+#accurate_ribbon_toolbar QToolButton:pressed {
+    background-color: #184F8D;
+}
+
+
+#accurate_ribbon_toolbar QComboBox {
+    padding: 2px 4px;
 }
 

@@ -39,6 +39,7 @@
 #include "rs_filterlff.h"
 #include "rs_filterdxfrw.h"
 #include "rs_debug.h"
+#include "tracy/Tracy.hpp"  // Tracy Profiler
 
 /**
  * Calls the import method of the filter responsible for the format
@@ -51,6 +52,8 @@
  */
 bool RS_FileIO::fileImport(RS_Graphic& graphic, const QString& file,
                            RS2::FormatType type) {
+    ZoneScoped;  // Tracy: entry point buka file (sebelum filter dipilih)
+    ZoneText(file.toUtf8().constData(), file.toUtf8().size());
 
     RS_DEBUG->print("Trying to import file '%s'...", file.toLatin1().data());
 
@@ -214,6 +217,8 @@ RS2::FormatType RS_FileIO::detectFormat(QString const& file, bool forRead)
  */
 bool RS_FileIO::fileExport(RS_Graphic& graphic, const QString& file,
                            RS2::FormatType type) {
+    ZoneScopedN("RS_FileIO::fileExport");  // Tracy: ukur waktu export/save
+    ZoneText(file.toUtf8().constData(), file.toUtf8().size());
 
     RS_DEBUG->print("RS_FileIO::fileExport");
     //RS_DEBUG->print("Trying to export file '%s'...", file.latin1());

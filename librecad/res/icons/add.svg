@@ -1,1 +1,53 @@
-<svg height="256" viewBox="0 0 72.248892 72.248892" width="256" xmlns="http://www.w3.org/2000/svg"><g stroke="#000" stroke-linecap="square"><path d="m0 .282222h71.966667v71.966675h-71.966667z" fill="none" opacity="0" stroke-width=".532929"/><path d="m10.16 46.284448.000001-20.320002 15.804446-.000001-.000001-15.804444h20.320001l.000001 15.804444 15.804445.000001-.000001 20.320002-15.804445-.000001.000001 15.804446h-20.320001l-.000001-15.804446z" fill="#00ff7f" fill-rule="evenodd" stroke-width="1.693333"/></g></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   height="256"
+   viewBox="0 0 72.248892 72.248892"
+   width="256"
+   version="1.1"
+   id="svg2"
+   sodipodi:docname="add.svg"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="namedview2"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="3.3398438"
+     inkscape:cx="128"
+     inkscape:cy="146.56374"
+     inkscape:window-width="1920"
+     inkscape:window-height="1057"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g2" />
+  <g
+     stroke="#000"
+     stroke-linecap="square"
+     id="g2">
+    <path
+       d="m0 .282222h71.966667v71.966675h-71.966667z"
+       fill="none"
+       opacity="0"
+       stroke-width=".532929"
+       id="path1" />
+    <path
+       d="m 10.16,46.284448 10e-7,-20.320002 15.804446,-10e-7 -1e-6,-15.804444 h 20.320001 l 10e-7,15.804444 15.804445,10e-7 -10e-7,20.320002 -15.804445,-10e-7 10e-7,15.804446 H 25.964447 l -1e-6,-15.804446 z"
+       fill="#00ff7f"
+       fill-rule="evenodd"
+       stroke-width="1.693333"
+       id="path2"
+       style="stroke-width:1.69333;stroke-dasharray:none;stroke:#ffffff;stroke-opacity:1"
+       sodipodi:nodetypes="ccccccccccccc" />
+  </g>
+</svg>

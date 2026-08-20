@@ -47,6 +47,7 @@ private:
     void initCADToolbars() const;
     void createCADToolbars() const;
     void createCustomToolbars();
+    void createAccurateRibbon() const;
 
     QToolBar *createPenToolbar(const QSizePolicy &tbPolicy) const;
     QToolBar *createSnapToolbar(const QSizePolicy &tbPolicy) const;

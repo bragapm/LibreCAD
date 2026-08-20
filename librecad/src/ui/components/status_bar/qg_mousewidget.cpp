@@ -43,16 +43,16 @@ QG_MouseWidget::QG_MouseWidget(QWidget* parent, const char* name, Qt::WindowFlag
     {
         bool custom_size = LC_GET_BOOL("AllowToolbarIconSize", false);
         iconSize = custom_size ? LC_GET_INT("ToolbarIconSize", 24) : 24;
-        int height{64};
+        int height{28};
 
         if (useClassicalStatusBar) {
             int allow_statusbar_height = LC_GET_BOOL("AllowStatusbarHeight", false);
             if (allow_statusbar_height) {
-                height = LC_GET_INT("StatusbarHeight", 64);
+                height = LC_GET_INT("StatusbarHeight", 28);
             }
 
-            setMinimumHeight(height);
-            setMaximumHeight(height);
+            setMinimumHeight(24);
+            setMaximumHeight(36);
 
             int halfHeight = height / 2 - 2;
 
