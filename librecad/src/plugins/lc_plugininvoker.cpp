@@ -73,6 +73,20 @@ void LC_PluginInvoker::loadPlugins(){
             if (plugin) {
                 QC_PluginInterface *pluginInterface = qobject_cast<QC_PluginInterface *>(plugin);
                 if (pluginInterface) {
+                    // Check if a plugin with the same internal name was already loaded
+                    QString pluginName = pluginInterface->name();
+                    bool alreadyLoaded = false;
+                    for (QC_PluginInterface* loadedPlugin : m_loadedPluginList) {
+                        if (loadedPlugin->name() == pluginName) {
+                            alreadyLoaded = true;
+                            break;
+                        }
+                    }
+                    if (alreadyLoaded) {
+                        pluginLoader.unload();
+                        continue;
+                    }
+
                     m_loadedPluginList.push_back(pluginInterface);
                     loadedPluginFileNames.push_back(fileName);
 
