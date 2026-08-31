@@ -34,6 +34,20 @@ QToolBar:vertical {
     border: none;
 }
 
+/* Tombol ekstensi (>>) pada toolbar */
+QToolBar::extension-button {
+    background-color: #bed1ca;
+    image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAA+SURBVDhP3cvBDQAwDAKx7L80WcBCfUb18wQz/0mSl1bpoFbpoFbpoFbpoFbpoEYaqpGGaqShGmmoRhqq3bE751ep/XjovAAAAABJRU5ErkJggg==");
+    width: 8px;
+    border: 1px solid #4A5260;
+    border-radius: 3px;
+}
+
+QToolBar::extension-button:hover {
+    background-color: #363C47;
+    border: 1px solid #4A5260;
+}
+
 /* Separator di dalam satu group */
 QToolBar::separator {
     background-color: #383D48;
@@ -70,7 +84,41 @@ QToolButton:pressed, QToolButton:checked {
     color: #FFFFFF;
 }
 
-/* Dock Widgets (Panels) */
+/* Bagian indikator menu (dropdown arrow) di QToolButton untuk menu terpisah */
+QToolButton::menu-button {
+    border-left: 1px solid transparent;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+    width: 12px;
+}
+
+QToolButton::menu-button:hover {
+    border-left: 1px solid #4A5260;
+    background-color: #434B57;
+}
+
+QToolButton::menu-arrow {
+    image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAlSURBVChTY2AYePD/////6GIggFUcXRCdjwJgkngVwQBRiugHABXJG+Ut0cqDAAAAAElFTkSuQmCC");
+}
+
+/* Indikator visual permanen untuk tombol InstantPopup (grouping) */
+QToolButton[popupMode="2"] {
+    padding-right: 6px;
+    border-right: 2px solid #383D48;
+}
+
+QToolButton[popupMode="2"]:hover {
+    border-right: 2px solid #4A8CDA;
+}
+
+/* Indikator panah bawah untuk tombol InstantPopup */
+QToolButton::menu-indicator {
+    image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAlSURBVChTY2AYePD/////6GIggFUcXRCdjwJgkngVwQBRiugHABXJG+Ut0cqDAAAAAElFTkSuQmCC");
+    subcontrol-origin: padding;
+    subcontrol-position: bottom right;
+    bottom: 2px;
+    right: 2px;
+}
 QDockWidget {
     background-color: #1B2027;
     color: #CDD3DE;

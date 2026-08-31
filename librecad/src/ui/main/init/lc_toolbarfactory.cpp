@@ -480,8 +480,6 @@ void LC_ToolbarFactory::createCustomToolbars(){
 }
 
 
-
-
 void LC_ToolbarFactory::createAccurateRibbon() const {
     auto ribbonWidget = new QWidget(m_appWin);
     ribbonWidget->setObjectName("AccurateRibbonWidget");
@@ -604,7 +602,8 @@ void LC_ToolbarFactory::createAccurateRibbon() const {
     // 6. Snap Options
     if (m_appWin->m_snapToolBar) {
         m_appWin->m_snapToolBar->setOrientation(Qt::Horizontal);
-        m_appWin->m_snapToolBar->setStyleSheet("QToolBar { border: none; background: transparent; margin: 0px; padding: 0px; spacing: 2px; }");
+        m_appWin->m_snapToolBar->setStyleSheet("QToolBar { border: none; background: transparent; margin: 0px; padding: 0px; spacing: 0px; }"
+                                               "QToolBar::separator{ width: 1px; }"); // testing
         createGroup(tr("Snap"), m_appWin->m_snapToolBar);
     }
 
@@ -613,9 +612,8 @@ void LC_ToolbarFactory::createAccurateRibbon() const {
     auto ribbonToolBar = new QToolBar(tr("Ribbon"), m_appWin);
     ribbonToolBar->setObjectName("accurate_ribbon_toolbar");
     ribbonToolBar->addWidget(ribbonWidget);
-    ribbonToolBar->setMovable(false); // Ribbon usually fixed
-    
-    // Insert at the very top
+    ribbonToolBar->setMovable(false);
+
     m_appWin->addToolBar(Qt::TopToolBarArea, ribbonToolBar);
     m_appWin->addToolBarBreak(Qt::TopToolBarArea);
 }
