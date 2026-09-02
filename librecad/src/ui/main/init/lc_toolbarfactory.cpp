@@ -405,6 +405,7 @@ QToolBar *LC_ToolbarFactory::doCreateToolBar(const QString &title, const QString
     // Allow toolbar to shrink (use >> extension button) instead of forcing window to grow beyond screen
     result->setMinimumWidth(0);
     result->setMinimumSize(QSize(0, 0));
+    result->setIconSize(QSize(24, 24));
     return result;
 }
 
@@ -442,9 +443,11 @@ auto LC_ToolbarFactory::addToTop(QToolBar* toolbar, bool secondRow) const -> voi
 void LC_ToolbarFactory::addToBottom(QToolBar *toolbar) const {
     toolbar->setMovable(true);
     toolbar->setFloatable(true);
+    toolbar->setIconSize(QSize(24, 24));
     m_appWin->addToolBar(Qt::BottomToolBarArea, toolbar);
 }
 void LC_ToolbarFactory::addToLeft(QToolBar *toolbar) const {
+    toolbar->setIconSize(QSize(24, 24));
     m_appWin->addToolBar(Qt::LeftToolBarArea, toolbar);
 }
 
@@ -510,7 +513,7 @@ void LC_ToolbarFactory::createAccurateRibbon() const {
         QFont font = btn->font();
         font.setPointSize(8);
         btn->setFont(font);
-        btn->setIconSize(QSize(16, 16));
+        btn->setIconSize(QSize(24, 24));
         return btn;
     };
 
