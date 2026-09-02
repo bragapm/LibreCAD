@@ -53,6 +53,10 @@ QG_PenToolBar::QG_PenToolBar( const QString & title, QWidget * parent )
     m_currentPen->setWidth(m_widthBox->getWidth());
     m_currentPen->setLineType(m_lineTypeBox->getLineType());
 
+    m_colorBox->setMaximumWidth(115);
+    m_widthBox->setMaximumWidth(115);
+    m_lineTypeBox->setMaximumWidth(115);
+
     addWidget(m_colorBox.get());
     addWidget(m_widthBox.get());
     addWidget(m_lineTypeBox.get());

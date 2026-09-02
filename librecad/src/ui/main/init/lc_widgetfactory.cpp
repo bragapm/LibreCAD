@@ -464,13 +464,17 @@ void LC_WidgetFactory::initStatusBar() {
         QSizePolicy tbPolicy(QSizePolicy::Preferred, QSizePolicy::Minimum);
 
         createStatusBarToolbar(tbPolicy, m_appWin->m_coordinateWidget, tr("Coordinates"), "TBCoordinates");
-        //createStatusBarToolbar(tbPolicy, m_appWin->m_relativeZeroCoordinatesWidget, tr("Relative Zero"), "TBRelZero");
-        //createStatusBarToolbar(tbPolicy, m_appWin->m_mouseWidget, tr("Mouse"), "TBMouse");
+        
+        // Hide unused widgets so they don't draw over the status bar at (0,0)
+        m_appWin->m_relativeZeroCoordinatesWidget->hide();
+        m_appWin->m_mouseWidget->hide();
+        
         createStatusBarToolbar(tbPolicy, m_appWin->m_selectionWidget, tr("Selection Info"), "TBSelection");
         createStatusBarToolbar(tbPolicy, m_appWin->m_activeLayerNameWidget, tr("Active Layer"), "TBActiveLayer");
         createStatusBarToolbar(tbPolicy, m_appWin->m_gridStatusWidget, tr("Grid Status"), "TBGridStatus");
-        //createStatusBarToolbar(tbPolicy, m_appWin->m_ucsStateWidget, tr("UCS Status"), "TBUCSStatus");
-        //createStatusBarToolbar(tbPolicy, m_appWin->m_anglesBasisWidget, tr("Angles Basis"), "TBAnglesBasis");
+        
+        m_appWin->m_ucsStateWidget->hide();
+        m_appWin->m_anglesBasisWidget->hide();
 
         m_appWin->m_statusbarManager->setup();
 

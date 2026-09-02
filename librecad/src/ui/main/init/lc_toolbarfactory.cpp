@@ -71,6 +71,8 @@ QToolBar* LC_ToolbarFactory::createPenToolbar(const QSizePolicy &tbPolicy) const
     result->setObjectName("pen_toolbar");
     result->addActions(m_actionFactory->pen_actions);
     result->setProperty("_group", 1);
+    result->setMinimumWidth(0);
+    result->setMinimumSize(QSize(0, 0));
 
     m_appWin->m_penToolBar = result;
 
@@ -85,6 +87,8 @@ QToolBar * LC_ToolbarFactory::createSnapToolbar(const QSizePolicy &tbPolicy) con
     result->setSizePolicy(tbPolicy);
     result->setObjectName("snap_toolbar" );
     result->setProperty("_group", 3);
+    result->setMinimumWidth(0);
+    result->setMinimumSize(QSize(0, 0));
 
     m_appWin->m_snapToolBar = result;
     return result;
@@ -398,6 +402,9 @@ QToolBar *LC_ToolbarFactory::doCreateToolBar(const QString &title, const QString
     const QString &objectName = nameCleared.toLower() + "_toolbar";
     result->setObjectName(objectName);
     result->setProperty("_group", group);
+    // Allow toolbar to shrink (use >> extension button) instead of forcing window to grow beyond screen
+    result->setMinimumWidth(0);
+    result->setMinimumSize(QSize(0, 0));
     return result;
 }
 
@@ -427,6 +434,9 @@ auto LC_ToolbarFactory::addToTop(QToolBar* toolbar, bool secondRow) const -> voi
     toolbar->setMovable(true);
     toolbar->setFloatable(true);
     toolbar->setIconSize(QSize(24, 24));
+    // Allow toolbar to shrink and use >> extension button instead of forcing window beyond screen width
+    toolbar->setMinimumWidth(0);
+    toolbar->setMinimumSize(QSize(0, 0));
     m_appWin->addToolBar(Qt::TopToolBarArea, toolbar);
 }
 void LC_ToolbarFactory::addToBottom(QToolBar *toolbar) const {
@@ -434,7 +444,9 @@ void LC_ToolbarFactory::addToBottom(QToolBar *toolbar) const {
     toolbar->setFloatable(true);
     m_appWin->addToolBar(Qt::BottomToolBarArea, toolbar);
 }
-void LC_ToolbarFactory::addToLeft(QToolBar *toolbar) const { m_appWin->addToolBar(Qt::LeftToolBarArea, toolbar); }
+void LC_ToolbarFactory::addToLeft(QToolBar *toolbar) const {
+    m_appWin->addToolBar(Qt::LeftToolBarArea, toolbar);
+}
 
 void LC_ToolbarFactory::createCustomToolbars(){
     m_appWin->m_creatorInvoker = std::make_unique<LC_CreatorInvoker>(m_appWin, m_agm);
@@ -469,14 +481,16 @@ void LC_ToolbarFactory::createAccurateRibbon() const {
     ribbonWidget->setObjectName("AccurateRibbonWidget");
     auto ribbonLayout = new QHBoxLayout(ribbonWidget);
     ribbonLayout->setContentsMargins(4, 2, 4, 0);
-    ribbonLayout->setSpacing(8);
+    ribbonLayout->setSpacing(2); // Reduced spacing between groups
 
-    // Helper for large buttons (TextUnderIcon)
-    auto addLargeButton = [&](QLayout* layout, const QString& actName) {
+    auto addLargeButton = [&](QLayout* layout, const QString& actName, const QString& overrideText = "") {
         QAction* act = m_appWin->getAction(actName);
         if (act) {
             auto btn = new QToolButton();
             btn->setDefaultAction(act);
+            if (!overrideText.isEmpty()) {
+                btn->setText(overrideText);
+            }
             btn->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
             QFont font = btn->font();
             font.setPointSize(8);
@@ -507,7 +521,7 @@ void LC_ToolbarFactory::createAccurateRibbon() const {
         ribbonLayout->addWidget(line);
     };
 
-    auto createGroup = [&](const QString& name, QWidget* content) {
+    auto createGroup = [&](const QString& name, QWidget* content, bool isLast = false) {
         auto groupWidget = new QWidget();
         auto groupLayout = new QVBoxLayout(groupWidget);
         groupLayout->setContentsMargins(0, 0, 0, 0);
@@ -524,7 +538,9 @@ void LC_ToolbarFactory::createAccurateRibbon() const {
         groupLayout->addWidget(label, 0, Qt::AlignBottom | Qt::AlignHCenter);
         
         ribbonLayout->addWidget(groupWidget);
-        addSeparator();
+        if (!isLast) {
+            addSeparator();
+        }
     };
 
     // 0. Info Cursor Group (di sebelah kiri File)
@@ -646,9 +662,9 @@ void LC_ToolbarFactory::createAccurateRibbon() const {
     auto prefLayout = new QHBoxLayout(prefWidget);
     prefLayout->setContentsMargins(0, 0, 0, 0);
     prefLayout->setSpacing(2);
-    addLargeButton(prefLayout, "OptionsGeneral");
-    addLargeButton(prefLayout, "OptionsDrawing");
-    createGroup(tr("Preferences"), prefWidget);
+    addLargeButton(prefLayout, "OptionsGeneral", "App Prefs");
+    addLargeButton(prefLayout, "OptionsDrawing", "Drawing Prefs");
+    createGroup(tr("Preferences"), prefWidget, true);
 
 
     ribbonLayout->addStretch(1);
@@ -657,6 +673,9 @@ void LC_ToolbarFactory::createAccurateRibbon() const {
     ribbonToolBar->setObjectName("accurate_ribbon_toolbar");
     ribbonToolBar->addWidget(ribbonWidget);
     ribbonToolBar->setMovable(false);
+    // Allow ribbon to shrink and show >> extension button instead of forcing window to grow
+    ribbonToolBar->setMinimumWidth(0);
+    ribbonToolBar->setMinimumSize(QSize(0, 0));
 
     m_appWin->addToolBar(Qt::TopToolBarArea, ribbonToolBar);
     m_appWin->addToolBarBreak(Qt::TopToolBarArea);

@@ -26,6 +26,8 @@
 #include <QJsonObject>
 #include <QMessageBox>
 #include <QToolBar>
+#include <QApplication>
+#include <QScreen>
 
 #include "lc_workspacesmanager.h"
 

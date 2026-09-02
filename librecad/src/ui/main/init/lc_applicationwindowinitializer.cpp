@@ -24,6 +24,8 @@
 #include <QCoreApplication>
 #include <QMdiArea>
 #include <QMdiSubWindow>
+#include <QApplication>
+#include <QScreen>
 
 #include "lc_actionfactory.h"
 #include "lc_actiongroupmanager.h"
@@ -92,7 +94,32 @@ void LC_ApplicationWindowInitializer::initApplication(){
     updateCommandsAlias();
     initPlugins();
 
+    // Force Pen, Snap, and GeoKKP Base (Coordinate System) to be on the same line
+    QToolBar* penTb = m_appWin->findChild<QToolBar*>("pen_toolbar");
+    QToolBar* snapTb = m_appWin->findChild<QToolBar*>("snap_toolbar");
+    QToolBar* geoTb = m_appWin->findChild<QToolBar*>("GeoKKP Base");
+
+    if (penTb) m_appWin->removeToolBar(penTb);
+    if (snapTb) m_appWin->removeToolBar(snapTb);
+    if (geoTb) m_appWin->removeToolBar(geoTb);
+
+    if (penTb) {
+        m_appWin->addToolBarBreak(Qt::TopToolBarArea); // Force start of new line (Row 2)
+        m_appWin->addToolBar(Qt::TopToolBarArea, penTb);
+        penTb->show();
+    }
+    if (snapTb) {
+        m_appWin->addToolBar(Qt::TopToolBarArea, snapTb);
+        snapTb->show();
+    }
+    if (geoTb) {
+        m_appWin->addToolBar(Qt::TopToolBarArea, geoTb);
+        geoTb->show();
+    }
+
     if (m_appWin->m_toolOptionsToolbar) {
+        m_appWin->m_toolOptionsToolbar->setMinimumWidth(0);
+        m_appWin->m_toolOptionsToolbar->setMinimumSize(QSize(0, 0));
         m_appWin->addToolBarBreak(Qt::TopToolBarArea);
         m_appWin->addToolBar(Qt::TopToolBarArea, m_appWin->m_toolOptionsToolbar);
     }
@@ -139,9 +166,9 @@ void LC_ApplicationWindowInitializer::initDockCorners() const {
     }
     LC_GROUP_END();
 
-    // make TopToolBarArea dominant at the top so right dock widgets/toolbars are never pushed off screen
-    m_appWin->setCorner(Qt::TopLeftCorner, Qt::TopToolBarArea);
-    m_appWin->setCorner(Qt::TopRightCorner, Qt::TopToolBarArea);
+    // make Top area dominant at the top so right dock widgets/toolbars are never pushed off screen
+    m_appWin->setCorner(Qt::TopLeftCorner, Qt::TopDockWidgetArea);
+    m_appWin->setCorner(Qt::TopRightCorner, Qt::TopDockWidgetArea);
     m_appWin->setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
     m_appWin->setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 }

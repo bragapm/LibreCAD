@@ -269,8 +269,8 @@ int main(int argc, char** argv) {
 
     loadIconsStylingOptions();
 
-    bool first_load = LC_GET_ONE_BOOL("Startup", "FirstLoad", true);
-
+    //bool first_load = LC_GET_ONE_BOOL("Startup", "FirstLoad", true);
+    bool first_load = true;
 
     bool allowOptions=true;
     QList<int> argClean;
@@ -410,7 +410,7 @@ int main(int argc, char** argv) {
     }
     settings.endGroup();
 
-    bool maximize = LC_GET_ONE_BOOL("Startup","Maximize", false);
+    bool maximize = LC_GET_ONE_BOOL("Startup","Maximize", true);
 
     if (maximize || first_load) {
         appWin.showMaximized();
