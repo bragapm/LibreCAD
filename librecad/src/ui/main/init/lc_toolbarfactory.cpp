@@ -213,11 +213,17 @@ void LC_ToolbarFactory::createStandardToolbars(){
     auto *preferences = createPreferencesToolbar(tbPolicy);
 
     //RIBBON HERE
-    createAccurateRibbon();
+    //createAccurateRibbon();
 
     // === BARIS 2: [Layer Grup] : [Snap Grup] (Diikuti Coordinate Plugin Tataletak) ===
+    addToTop(infoCursor);
+    addToTop(file);
+    addToTop(edit);
     addToTop(pen);
     addToTop(snap);
+    addToTop(view);
+    addToTop(viewsList);
+    addToTop(perspectivesToolbar);
 
     addToLeft(order);
 

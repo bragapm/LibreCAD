@@ -269,6 +269,7 @@ int main(int argc, char** argv) {
 
     loadIconsStylingOptions();
 
+    // DEBUG DISINI ===== COMMENT SALAH SATU AJA =====
     bool first_load = LC_GET_ONE_BOOL("Startup", "FirstLoad", true);
     //bool first_load = true;
 
