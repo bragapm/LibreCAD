@@ -31,6 +31,7 @@ LC_OptionsWidgetsHolder::LC_OptionsWidgetsHolder(QWidget *parent)
     , ui(new Ui::LC_OptionsWidgetsHolder){
     ui->setupUi(this);
     ui->snapOptionsHolder->setLocatedOnLeft(true);
+    ui->vCurrentActionLine->setVisible(false);
 }
 
 LC_OptionsWidgetsHolder::~LC_OptionsWidgetsHolder(){

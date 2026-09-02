@@ -605,7 +605,7 @@ void QG_DlgOptionsGeneral::init(){
 
     LC_GROUP("Startup"); {
         cbSplash->setChecked(LC_GET_BOOL("ShowSplash", true));
-        tab_mode_check_box->setChecked(LC_GET_BOOL("TabMode"));
+        tab_mode_check_box->setChecked(LC_GET_BOOL("TabMode", true));
         maximize_checkbox->setChecked(LC_GET_BOOL("Maximize"));
         left_sidebar_checkbox->setChecked(LC_GET_BOOL("EnableLeftSidebar", true));
         cad_toolbars_checkbox->setChecked(LC_GET_BOOL("EnableCADToolbars", true));

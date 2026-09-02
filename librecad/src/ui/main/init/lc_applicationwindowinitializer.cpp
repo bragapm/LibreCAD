@@ -91,6 +91,12 @@ void LC_ApplicationWindowInitializer::initApplication(){
     initAutoSaveTimer();
     updateCommandsAlias();
     initPlugins();
+
+    if (m_appWin->m_toolOptionsToolbar) {
+        m_appWin->addToolBarBreak(Qt::TopToolBarArea);
+        m_appWin->addToolBar(Qt::TopToolBarArea, m_appWin->m_toolOptionsToolbar);
+    }
+
     m_appWin->showStatusMessage(qApp->applicationName() + " Ready", 2000);
     initReleaseChecker();
 }
@@ -133,10 +139,10 @@ void LC_ApplicationWindowInitializer::initDockCorners() const {
     }
     LC_GROUP_END();
 
-    // make the left and right dock areas dominant
-    m_appWin->setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
+    // make TopToolBarArea dominant at the top so right dock widgets/toolbars are never pushed off screen
+    m_appWin->setCorner(Qt::TopLeftCorner, Qt::TopToolBarArea);
+    m_appWin->setCorner(Qt::TopRightCorner, Qt::TopToolBarArea);
     m_appWin->setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
-    m_appWin->setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
     m_appWin->setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 }
 
@@ -154,7 +160,7 @@ void LC_ApplicationWindowInitializer::initCentralWidget(){
                            static_cast<RS2::TabPosition>(LC_GET_INT("TabPosition", RS2::North)));
     LC_GROUP_END();
 
-    bool tabMode = LC_GET_ONE_BOOL("Startup", "TabMode", false);
+    bool tabMode = LC_GET_ONE_BOOL("Startup", "TabMode", true);
     if (tabMode) {
         m_appWin->setupCADAreaTabbar();
     }

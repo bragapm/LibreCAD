@@ -260,6 +260,11 @@ void LC_WorkspacesManager::restoreGeometryAndState(const LC_WorkspacesManager::L
         }
     }
 
+    auto toolOptionsTb = appWin.findChild<QToolBar*>("tooloptions_toolbar");
+    if (toolOptionsTb) {
+        appWin.insertToolBarBreak(toolOptionsTb);
+    }
+
     appWin.setUpdatesEnabled(true);
     appWin.fireWidgetSettingsChanged();
 }

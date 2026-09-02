@@ -28,6 +28,12 @@ QToolBar {
     margin: 0px;
 }
 
+QToolBar QComboBox {
+    padding: 2px 4px;
+    min-height: 20px;
+    max-height: 24px;
+}
+
 /* Khusus untuk toolbar vertikal (sebelah kiri), hilangkan kotaknya agar langsung icon saja */
 QToolBar:vertical {
     background-color: transparent;
@@ -35,17 +41,28 @@ QToolBar:vertical {
 }
 
 /* Tombol ekstensi (>>) pada toolbar */
-QToolBar::extension-button {
-    background-color: #bed1ca;
-    image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAA+SURBVDhP3cvBDQAwDAKx7L80WcBCfUb18wQz/0mSl1bpoFbpoFbpoFbpoFbpoEYaqpGGaqShGmmoRhqq3bE751ep/XjovAAAAABJRU5ErkJggg==");
-    width: 8px;
-    border: 1px solid #4A5260;
-    border-radius: 3px;
+QToolBarExtension,
+QToolBar QToolButton#qt_toolbar_ext_button,
+QToolButton#qt_toolbar_ext_button {
+    background-color: #22262E;
+    border: 1px solid #383D48;
+    border-radius: 4px;
+    padding: 2px;
+    margin: 1px;
 }
 
-QToolBar::extension-button:hover {
+QToolBarExtension:hover,
+QToolBar QToolButton#qt_toolbar_ext_button:hover,
+QToolButton#qt_toolbar_ext_button:hover {
     background-color: #363C47;
-    border: 1px solid #4A5260;
+    border: 1px solid #4A8CDA;
+}
+
+QToolBarExtension:pressed,
+QToolBar QToolButton#qt_toolbar_ext_button:pressed,
+QToolButton#qt_toolbar_ext_button:pressed {
+    background-color: #184F8D;
+    border: 1px solid #306BB5;
 }
 
 /* Separator di dalam satu group */
@@ -605,8 +622,12 @@ QMdiArea {
     background-color: #2D333B;
     border: 1px solid #4A5260;
 }
-#accurate_ribbon_toolbar QToolButton:pressed {
+#accurate_ribbon_toolbar QToolButton:pressed,
+#accurate_ribbon_toolbar QToolButton:checked,
+#accurate_ribbon_toolbar QToolButton:checked:hover {
     background-color: #184F8D;
+    border: 1px solid #306BB5;
+    color: #FFFFFF;
 }
 
 

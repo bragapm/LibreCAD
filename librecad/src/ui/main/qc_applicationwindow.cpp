@@ -461,7 +461,9 @@ void QC_ApplicationWindow::slotUpdateActiveLayer() {
 void QC_ApplicationWindow::initSettings() {
     RS_DEBUG->print("QC_ApplicationWindow::initSettings()");
 
-    bool first_load = LC_GET_ONE_BOOL("Startup","FirstLoad", true);
+    // JANGAN LUPA DIUBAH LAGI UNTUK PUSH !!!!!!!!!!!!!!!!!!!!!
+    //bool first_load = LC_GET_ONE_BOOL("Startup","FirstLoad", true);
+    bool first_load = true;
     if (!first_load) {
         m_workspacesInvoker->init();
     }

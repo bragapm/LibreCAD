@@ -62,7 +62,7 @@ void LC_ToolbarFactory::initToolBars(){
     initCADToolbars();
     createCategoriesToolbar();
     createStandardToolbars();
-    createCustomToolbars();
+    //createCustomToolbars();
 }
 
 QToolBar* LC_ToolbarFactory::createPenToolbar(const QSizePolicy &tbPolicy) const{
@@ -208,31 +208,15 @@ void LC_ToolbarFactory::createStandardToolbars(){
     auto *creators = createCreatorsToolbar(tbPolicy);
     auto *preferences = createPreferencesToolbar(tbPolicy);
 
-    // Create Ribbon HERE so it is the absolute first toolbar at the top!
-    // It will consume pen, ucs, and snap.
+    //RIBBON HERE
     createAccurateRibbon();
 
-    // === BARIS 2: Toolbar standar kecil diletakkan di BAWAH Ribbon ===
-    addToTop(file);
-    addToTop(edit);
-    addToTop(view);
-    // pen is in ribbon
-    // entityLayers is optional, maybe keep it?
-    // ucs is in ribbon
-
-    m_appWin->addToolBarBreak(Qt::TopToolBarArea);
-    // addToTop(perspectivesToolbar, true);
-    // addToTop(viewsList, true);
-    // addToTop(preferences, true);
-    // addToTop(infoCursor, true);
-
-    // === BARIS 3: Tool Options ===
-    m_appWin->addToolBarBreak(Qt::TopToolBarArea);
-    addToTop(m_appWin->m_toolOptionsToolbar, true);
+    // === BARIS 2: [Layer Grup] : [Snap Grup] (Diikuti Coordinate Plugin Tataletak) ===
+    addToTop(pen);
+    addToTop(snap);
 
     addToLeft(order);
 
-    // snap is in ribbon
     addToBottom(dockareas);
     addToBottom(creators);
 }
@@ -440,14 +424,14 @@ QToolButton* LC_ToolbarFactory::toolButton(QToolBar* toolbar, const QString &too
 }
 
 auto LC_ToolbarFactory::addToTop(QToolBar* toolbar, bool secondRow) const -> void {
-    toolbar->setMovable(false);
-    toolbar->setFloatable(false);
+    toolbar->setMovable(true);
+    toolbar->setFloatable(true);
     toolbar->setIconSize(QSize(24, 24));
     m_appWin->addToolBar(Qt::TopToolBarArea, toolbar);
 }
 void LC_ToolbarFactory::addToBottom(QToolBar *toolbar) const {
-    toolbar->setMovable(false);
-    toolbar->setFloatable(false);
+    toolbar->setMovable(true);
+    toolbar->setFloatable(true);
     m_appWin->addToolBar(Qt::BottomToolBarArea, toolbar);
 }
 void LC_ToolbarFactory::addToLeft(QToolBar *toolbar) const { m_appWin->addToolBar(Qt::LeftToolBarArea, toolbar); }
@@ -543,7 +527,58 @@ void LC_ToolbarFactory::createAccurateRibbon() const {
         addSeparator();
     };
 
-    // 1. Draw Group
+    // 0. Info Cursor Group (di sebelah kiri File)
+    auto infoCursorWidget = new QWidget();
+    auto infoCursorLayout = new QHBoxLayout(infoCursorWidget);
+    infoCursorLayout->setContentsMargins(0, 0, 0, 0);
+    infoCursorLayout->setSpacing(2);
+
+    QAction* infoCursorAction = m_agm->getActionByName("InfoCursorEnable");
+    if (infoCursorAction) {
+        infoCursorAction->setProperty("InfoCursorActionTag", 0);
+        connect(infoCursorAction, &QAction::triggered, m_appWin->m_infoCursorSettingsManager.get(), &LC_InfoCursorSettingsManager::slotInfoCursorSetting);
+
+        auto btn = new QToolButton();
+        btn->setDefaultAction(infoCursorAction);
+        btn->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        QFont font = btn->font();
+        font.setPointSize(8);
+        btn->setFont(font);
+        btn->setIconSize(QSize(24, 24));
+        btn->setPopupMode(QToolButton::MenuButtonPopup);
+
+        auto menu = new QMenu(btn);
+        addInfoCursorOptionAction(menu, "InfoCursorAbs", 1);
+        addInfoCursorOptionAction(menu, "InfoCursorSnap", 2);
+        addInfoCursorOptionAction(menu, "InfoCursorRel", 3);
+        addInfoCursorOptionAction(menu, "InfoCursorPrompt", 4);
+        addInfoCursorOptionAction(menu, "InfoCursorCatchedEntity", 5);
+        btn->setMenu(menu);
+
+        infoCursorLayout->addWidget(btn);
+    }
+    createGroup(tr("Info Cursor"), infoCursorWidget);
+
+    // 1. File Group
+    auto fileWidget = new QWidget();
+    auto fileLayout = new QHBoxLayout(fileWidget);
+    fileLayout->setContentsMargins(0,0,0,0);
+    fileLayout->setSpacing(2);
+    addLargeButton(fileLayout, "FileNew");
+    addLargeButton(fileLayout, "FileNewTemplate");
+    // subgrid
+    auto fileGridWidget = new QWidget();
+    auto fileGrid = new QGridLayout(fileGridWidget);
+    fileGrid->setContentsMargins(0,0,0,0);
+    fileGrid->setSpacing(2);
+    if (auto btn = createSmallButton("FileExport", true)) fileGrid->addWidget(btn, 0,0);
+    if (auto btn = createSmallButton("FilePrintPDF", true)) fileGrid->addWidget(btn , 1,0);
+    if (auto btn = createSmallButton("FileOpen", true)) fileGrid->addWidget(btn,0,1);
+    if (auto btn = createSmallButton("FileSaveAs", true)) fileGrid->addWidget(btn,1,1);
+    fileLayout->addWidget(fileGridWidget);
+    createGroup(tr("File"), fileWidget);
+
+    // 2. Draw Group
     auto drawWidget = new QWidget();
     auto drawLayout = new QHBoxLayout(drawWidget);
     drawLayout->setContentsMargins(0, 0, 0, 0);
@@ -554,14 +589,13 @@ void LC_ToolbarFactory::createAccurateRibbon() const {
     addLargeButton(drawLayout, "DrawArc");
     createGroup(tr("Draw"), drawWidget);
 
-    // 2. Modify Group
+    // 3. Modify Group
     auto modWidget = new QWidget();
     auto modLayout = new QHBoxLayout(modWidget);
     modLayout->setContentsMargins(0, 0, 0, 0);
     modLayout->setSpacing(2);
     addLargeButton(modLayout, "ModifyMove");
     addLargeButton(modLayout, "ModifyCopy"); // Actually might be combined in LibreCAD, let us use ModifyScale
-    
     // Subgrid for small buttons
     auto modGridWidget = new QWidget();
     auto modGrid = new QGridLayout(modGridWidget);
@@ -574,38 +608,48 @@ void LC_ToolbarFactory::createAccurateRibbon() const {
     modLayout->addWidget(modGridWidget);
     createGroup(tr("Modify"), modWidget);
 
-    // 3. Annotation Group
-    auto annoWidget = new QWidget();
-    auto annoLayout = new QHBoxLayout(annoWidget);
-    annoLayout->setContentsMargins(0, 0, 0, 0);
-    annoLayout->setSpacing(2);
-    addLargeButton(annoLayout, "DrawText");
-    addLargeButton(annoLayout, "DimAligned");
-    addLargeButton(annoLayout, "DimLeader");
-    createGroup(tr("Annotation"), annoWidget);
+    // 4. View Group
+    auto viewWidget = new QWidget();
+    auto viewLayout = new QHBoxLayout(viewWidget);
+    viewLayout->setContentsMargins(0, 0, 0, 0);
+    viewLayout->setSpacing(2);
+    addLargeButton(viewLayout, "ViewGrid");
+    addLargeButton(viewLayout, "ViewDraft");
 
-    // 4. Layers & Properties (Using real Pen Toolbar)
-    if (m_appWin->m_penToolBar) {
-        m_appWin->m_penToolBar->setOrientation(Qt::Horizontal);
-        m_appWin->m_penToolBar->setStyleSheet("QToolBar { border: none; background: transparent; margin: 0px; padding: 0px; spacing: 2px; }");
-        createGroup(tr("Properties"), m_appWin->m_penToolBar);
-    }
+    // Subgrid untuk opsi tampilan (Lines Draft & Antialiasing)
+    auto viewOptGridWidget = new QWidget();
+    auto viewOptGrid = new QGridLayout(viewOptGridWidget);
+    viewOptGrid->setContentsMargins(0, 0, 0, 0);
+    viewOptGrid->setSpacing(2);
+    if (auto btn = createSmallButton("ViewLinesDraft", true)) viewOptGrid->addWidget(btn, 0, 0);
+    if (auto btn = createSmallButton("ViewAntialiasing", true)) viewOptGrid->addWidget(btn, 1, 0);
+    viewLayout->addWidget(viewOptGridWidget);
 
-    // 5. Coordinate System
-    auto ucsToolbar = m_appWin->findChild<QToolBar*>("ucs_toolbar");
-    if (ucsToolbar) {
-        ucsToolbar->setOrientation(Qt::Horizontal);
-        ucsToolbar->setStyleSheet("QToolBar { border: none; background: transparent; margin: 0px; padding: 0px; spacing: 2px; }");
-        createGroup(tr("Coordinate System"), ucsToolbar);
-    }
+    // Tombol besar Zoom Redraw di tengah
+    addLargeButton(viewLayout, "ZoomRedraw");
 
-    // 6. Snap Options
-    if (m_appWin->m_snapToolBar) {
-        m_appWin->m_snapToolBar->setOrientation(Qt::Horizontal);
-        m_appWin->m_snapToolBar->setStyleSheet("QToolBar { border: none; background: transparent; margin: 0px; padding: 0px; spacing: 0px; }"
-                                               "QToolBar::separator{ width: 1px; }"); // testing
-        createGroup(tr("Snap"), m_appWin->m_snapToolBar);
-    }
+    // Subgrid 2x2 untuk navigasi Zoom
+    auto zoomGridWidget = new QWidget();
+    auto zoomGrid = new QGridLayout(zoomGridWidget);
+    zoomGrid->setContentsMargins(0, 0, 0, 0);
+    zoomGrid->setSpacing(2);
+    if (auto btn = createSmallButton("ZoomIn", true)) zoomGrid->addWidget(btn, 0, 0);
+    if (auto btn = createSmallButton("ZoomOut", true)) zoomGrid->addWidget(btn, 0, 1);
+    if (auto btn = createSmallButton("ZoomAuto", true)) zoomGrid->addWidget(btn, 1, 0);
+    if (auto btn = createSmallButton("ZoomPrevious", true)) zoomGrid->addWidget(btn, 1, 1);
+    viewLayout->addWidget(zoomGridWidget);
+
+    createGroup(tr("View"), viewWidget);
+
+    // 5. Preferences Group (di sebelah kanan View)
+    auto prefWidget = new QWidget();
+    auto prefLayout = new QHBoxLayout(prefWidget);
+    prefLayout->setContentsMargins(0, 0, 0, 0);
+    prefLayout->setSpacing(2);
+    addLargeButton(prefLayout, "OptionsGeneral");
+    addLargeButton(prefLayout, "OptionsDrawing");
+    createGroup(tr("Preferences"), prefWidget);
+
 
     ribbonLayout->addStretch(1);
 
