@@ -26,7 +26,7 @@ QToolBar {
     spacing: 2px;
     padding: 2px;
     margin: 0px;
-    qproperty-iconSize: 24px 24px;
+    qproperty-iconSize: 20px 20px;
 }
 
 QToolBar QComboBox {
@@ -39,25 +39,27 @@ QToolBar QComboBox {
 QToolBar:vertical {
     background-color: transparent;
     border: none;
-    qproperty-iconSize: 24px 24px;
+    qproperty-iconSize: 20px 20px;
 }
 
-/* Tombol ekstensi (>>) pada toolbar */
+/* Tombol ekstensi (>> / toolbar overflow) — selalu terlihat cerah */
 QToolBarExtension,
 QToolBar QToolButton#qt_toolbar_ext_button,
 QToolButton#qt_toolbar_ext_button {
-    background-color: #22262E;
-    border: 1px solid #383D48;
+    background-color: #3A4455;
+    border: 1px solid #6B7A94;
     border-radius: 4px;
-    padding: 2px;
+    padding: 2px 4px;
     margin: 1px;
+    color: #CDD3DE;
 }
 
 QToolBarExtension:hover,
 QToolBar QToolButton#qt_toolbar_ext_button:hover,
 QToolButton#qt_toolbar_ext_button:hover {
-    background-color: #363C47;
-    border: 1px solid #4A8CDA;
+    background-color: #4A5568;
+    border: 1px solid #5B9DF5;
+    color: #FFFFFF;
 }
 
 QToolBarExtension:pressed,
@@ -65,6 +67,7 @@ QToolBar QToolButton#qt_toolbar_ext_button:pressed,
 QToolButton#qt_toolbar_ext_button:pressed {
     background-color: #184F8D;
     border: 1px solid #306BB5;
+    color: #FFFFFF;
 }
 
 /* Separator di dalam satu group */
@@ -90,7 +93,7 @@ QToolButton {
     border-radius: 4px; /* Sudut halus pada saat dihover */
     padding: 3px;
     margin: 1px;
-    qproperty-iconSize: 24px 24px;
+    qproperty-iconSize: 20px 20px;
 }
 
 QToolButton:hover {
@@ -107,7 +110,19 @@ QToolButton:pressed, QToolButton:checked {
 #snap_toolbar QToolButton,
 #pen_toolbar QToolButton,
 QToolBar[objectName="GeoKKP Base"] QToolButton {
-    qproperty-iconSize: 24px 24px;
+    qproperty-iconSize: 20px 20px;
+}
+
+/* Toolbar Bawah / Bottom Toolbars berukuran 28px agar lebih jelas dan proporsional */
+#survey_toolbar QToolButton,
+#pemetaan_toolbar QToolButton,
+#invent_toolbar QToolButton,
+#topology_toolbar QToolButton,
+QToolBar[objectName="GeoKKP Survey"] QToolButton,
+QToolBar[objectName="GeoKKP Pemetaan"] QToolButton,
+QToolBar[objectName="GeoKKP Invent"] QToolButton,
+QToolBar[objectName="GeoKKP Topology"] QToolButton {
+    qproperty-iconSize: 28px 28px;
 }
 
 /* Bagian indikator menu (dropdown arrow) di QToolButton untuk menu terpisah */
@@ -447,7 +462,7 @@ QDockWidget QPushButton, QDockWidget QToolButton {
     border: 1px solid #383D48;
     border-radius: 4px;
     padding: 4px;
-    qproperty-iconSize: 24px 24px;
+    qproperty-iconSize: 20px 20px;
 }
 
 QDockWidget QPushButton:hover, QDockWidget QToolButton:hover {
@@ -480,7 +495,7 @@ QMdiArea {
     color: #CDD3DE;
     padding: 4px;
     border-radius: 4px;
-    qproperty-iconSize: 24px 24px;
+    qproperty-iconSize: 20px 20px;
 }
 #accurate_ribbon_toolbar QToolButton:hover {
     background-color: #2D333B;
