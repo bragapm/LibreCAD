@@ -262,9 +262,29 @@ void LC_WorkspacesManager::restoreGeometryAndState(const LC_WorkspacesManager::L
         }
     }
 
+    auto penTb = appWin.findChild<QToolBar*>("pen_toolbar");
+    auto snapTb = appWin.findChild<QToolBar*>("snap_toolbar");
+    auto geoTb = appWin.findChild<QToolBar*>("GeoKKP Base");
     auto toolOptionsTb = appWin.findChild<QToolBar*>("tooloptions_toolbar");
+
+    if (penTb) {
+        appWin.insertToolBarBreak(penTb);
+    }
+    if (snapTb) {
+        appWin.removeToolBarBreak(snapTb);
+    }
+    if (geoTb) {
+        appWin.removeToolBarBreak(geoTb);
+    }
+
     if (toolOptionsTb) {
-        appWin.insertToolBarBreak(toolOptionsTb);
+        appWin.removeToolBarBreak(toolOptionsTb);
+        if (penTb) {
+            appWin.removeToolBar(toolOptionsTb);
+            appWin.insertToolBar(penTb, toolOptionsTb);
+            appWin.insertToolBarBreak(penTb);
+        }
+        toolOptionsTb->show();
     }
 
     appWin.setUpdatesEnabled(true);

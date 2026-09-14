@@ -94,34 +94,40 @@ void LC_ApplicationWindowInitializer::initApplication(){
     updateCommandsAlias();
     initPlugins();
 
-    // Force Pen, Snap, and GeoKKP Base (Coordinate System) to be on the same line
     QToolBar* penTb = m_appWin->findChild<QToolBar*>("pen_toolbar");
     QToolBar* snapTb = m_appWin->findChild<QToolBar*>("snap_toolbar");
     QToolBar* geoTb = m_appWin->findChild<QToolBar*>("GeoKKP Base");
+    QToolBar* toolOptionsTb = m_appWin->m_toolOptionsToolbar;
 
     if (penTb) m_appWin->removeToolBar(penTb);
     if (snapTb) m_appWin->removeToolBar(snapTb);
     if (geoTb) m_appWin->removeToolBar(geoTb);
+    if (toolOptionsTb) m_appWin->removeToolBar(toolOptionsTb);
 
+    // 1. Baris 1 paling kanan: Tool Options
+    if (toolOptionsTb) {
+        toolOptionsTb->setMinimumWidth(0);
+        toolOptionsTb->setMinimumSize(QSize(0, 0));
+        m_appWin->removeToolBarBreak(toolOptionsTb);
+        m_appWin->addToolBar(Qt::TopToolBarArea, toolOptionsTb);
+        toolOptionsTb->show();
+    }
+
+    // 2. Baris 2: Pen (mulai baris baru), Snap, dan GeoKKP Base (Coordinate System)
     if (penTb) {
-        m_appWin->addToolBarBreak(Qt::TopToolBarArea); // Force start of new line (Row 2)
+        m_appWin->addToolBarBreak(Qt::TopToolBarArea); // Mulai baris ke-2
         m_appWin->addToolBar(Qt::TopToolBarArea, penTb);
         penTb->show();
     }
     if (snapTb) {
+        m_appWin->removeToolBarBreak(snapTb);
         m_appWin->addToolBar(Qt::TopToolBarArea, snapTb);
         snapTb->show();
     }
     if (geoTb) {
+        m_appWin->removeToolBarBreak(geoTb);
         m_appWin->addToolBar(Qt::TopToolBarArea, geoTb);
         geoTb->show();
-    }
-
-    if (m_appWin->m_toolOptionsToolbar) {
-        m_appWin->m_toolOptionsToolbar->setMinimumWidth(0);
-        m_appWin->m_toolOptionsToolbar->setMinimumSize(QSize(0, 0));
-        m_appWin->addToolBarBreak(Qt::TopToolBarArea);
-        m_appWin->addToolBar(Qt::TopToolBarArea, m_appWin->m_toolOptionsToolbar);
     }
 
     m_appWin->showStatusMessage(qApp->applicationName() + " Ready", 2000);

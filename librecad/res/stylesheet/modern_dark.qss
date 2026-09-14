@@ -448,6 +448,86 @@ QComboBox::drop-down {
     width: 20px;
 }
 
+/* Checkbox & Radio Button Styling */
+QCheckBox, QRadioButton {
+    color: #CDD3DE;
+    spacing: 6px;
+    background-color: transparent;
+}
+
+QCheckBox:hover, QRadioButton:hover {
+    color: #FFFFFF;
+}
+
+QCheckBox:disabled, QRadioButton:disabled {
+    color: #555E6D;
+}
+
+/* Kotak Checkbox (Indicator) */
+QCheckBox::indicator {
+    width: 14px;
+    height: 14px;
+    background-color: #222730;
+    border: 1.5px solid #636A73;
+    border-radius: 3px;
+}
+
+QCheckBox::indicator:hover {
+    background-color: #2A313C;
+    border: 1.5px solid #4A8CDA;
+}
+
+QCheckBox::indicator:checked {
+    background-color: #184F8D;
+    border: 1.5px solid #4A8CDA;
+    image: url(:/stylesheet/checkmark.svg);
+}
+
+QCheckBox::indicator:checked:hover {
+    background-color: #205FA6;
+    border: 1.5px solid #6BA8F2;
+}
+
+QCheckBox::indicator:disabled {
+    background-color: #181C22;
+    border: 1.5px solid #383D48;
+}
+
+/* Radio Button (Indicator Bulat) */
+QRadioButton::indicator {
+    width: 14px;
+    height: 14px;
+    background-color: #222730;
+    border: 1.5px solid #636A73;
+    border-radius: 8px;
+}
+
+QRadioButton::indicator:hover {
+    background-color: #2A313C;
+    border: 1.5px solid #4A8CDA;
+}
+
+QRadioButton::indicator:checked {
+    background-color: #184F8D;
+    border: 1.5px solid #4A8CDA;
+    image: url(:/stylesheet/radio_checked.svg);
+}
+
+QRadioButton::indicator:checked:hover {
+    background-color: #205FA6;
+    border: 1.5px solid #6BA8F2;
+}
+
+QRadioButton::indicator:disabled {
+    background-color: #181C22;
+    border: 1.5px solid #383D48;
+}
+
+QRadioButton::indicator:checked:disabled {
+    background-color: #2D333B;
+    border: 1.5px solid #383D48;
+}
+
 QPushButton {
     background-color: #42474E;
     color: #E0E6ED;

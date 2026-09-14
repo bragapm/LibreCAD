@@ -1,5 +1,9 @@
 <RCC>
     <qresource prefix="/stylesheet">
         <file>modern_dark.qss</file>
+        <file>checkmark.svg</file>
+        <file>checkmark.png</file>
+        <file>radio_checked.svg</file>
+        <file>radio_checked.png</file>
     </qresource>
 </RCC>
