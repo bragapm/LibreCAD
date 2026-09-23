@@ -79,6 +79,54 @@ void MainWindowX::sortWidgetsByGroupAndTitle(QList<QToolBar*>& list) {
     std::sort(list.begin(), list.end(), Sorting::byGroupAndWindowTitle);
 }
 
+void MainWindowX::addDockWidget(Qt::DockWidgetArea area, QDockWidget *dockwidget) {
+    QMainWindow::addDockWidget(area, dockwidget);
+    setupDockWidget(dockwidget);
+}
+
+void MainWindowX::addDockWidget(Qt::DockWidgetArea area, QDockWidget *dockwidget, Qt::Orientation orientation) {
+    QMainWindow::addDockWidget(area, dockwidget, orientation);
+    setupDockWidget(dockwidget);
+}
+
+void MainWindowX::setupDockWidget(QDockWidget* dw) {
+    if (!dw) return;
+    if (dw->property("_lc_auto_redock_installed").toBool()) {
+        return;
+    }
+    dw->setProperty("_lc_auto_redock_installed", true);
+
+    connect(dw, &QDockWidget::visibilityChanged, dw, [this, dw](bool visible) {
+        if (!visible && dw->isFloating()) {
+            redockWidget(dw);
+        }
+    });
+}
+
+void MainWindowX::setupAllDockWidgets() {
+    for (QDockWidget* dw : findChildren<QDockWidget*>()) {
+        setupDockWidget(dw);
+    }
+}
+
+void MainWindowX::redockWidget(QDockWidget* dw) {
+    if (!dw) return;
+    if (dw->property("_lc_dock_resetting").toBool()) return;
+    if (property("_lc_restoring_state").toBool()) return;
+
+    dw->setProperty("_lc_dock_resetting", true);
+    dw->setFloating(false);
+    if (dockWidgetArea(dw) == Qt::NoDockWidgetArea) {
+        Qt::DockWidgetArea defaultArea = Qt::RightDockWidgetArea;
+        if (dw->objectName().startsWith("dock_")) {
+            defaultArea = Qt::LeftDockWidgetArea;
+        }
+        QMainWindow::addDockWidget(defaultArea, dw);
+    }
+    dw->hide();
+    dw->setProperty("_lc_dock_resetting", false);
+}
+
 void MainWindowX::toggleLeftDockArea(bool state) {
     foreach(QDockWidget* dw, findChildren<QDockWidget*>()) {
         if (dockWidgetArea(dw) == Qt::LeftDockWidgetArea && !dw->isFloating())
@@ -109,7 +157,13 @@ void MainWindowX::toggleBottomDockArea(bool state) {
 
 void MainWindowX::toggleFloatingDockwidgets(bool state) {
     foreach(QDockWidget* dw, findChildren<QDockWidget*>()) {
-        if (dw->isFloating())
-            dw->setVisible(state);
+        if (dw->isFloating()) {
+            if (!state) {
+                redockWidget(dw);
+            } else {
+                dw->setVisible(true);
+            }
+        }
     }
 }
+

@@ -233,8 +233,10 @@ void LC_WorkspacesManager::restoreGeometryAndState(const LC_Workspace &workspace
 }
 
 void LC_WorkspacesManager::restoreGeometryAndState(const LC_WorkspacesManager::LC_Workspace &workspace, QC_ApplicationWindow &appWin) const {
+    appWin.setProperty("_lc_restoring_state", true);
     auto widgetsState = QByteArray::fromBase64(workspace.widgetsState.toUtf8(), QByteArray::Base64Encoding);
     appWin.restoreState(widgetsState);
+    appWin.setProperty("_lc_restoring_state", false);
 
     auto setActionCheckedSilently = [](QAction* action, bool checked) {
         if (action) {
@@ -304,10 +306,14 @@ void LC_WorkspacesManager::restoreGeometryAndState(const LC_WorkspacesManager::L
     }
 
     appWin.setUpdatesEnabled(true);
+    appWin.setupAllDockWidgets();
 
-    // restore paint update
+    // restore paint update and ensure closed floating dock widgets are safely docked
     const auto dockWidgets = appWin.findChildren<QDockWidget*>();
     for (QDockWidget* dw : dockWidgets) {
+        if (!dw->isVisible() && dw->isFloating()) {
+            appWin.redockWidget(dw);
+        }
         dw->setUpdatesEnabled(true);
         if (dw->widget()) {
             dw->widget()->setUpdatesEnabled(true);
