@@ -5,5 +5,14 @@
         <file>checkmark.png</file>
         <file>radio_checked.svg</file>
         <file>radio_checked.png</file>
+        <file>dropdown_arrow.svg</file>
+        <file>spin_up.svg</file>
+        <file>spin_up_hover.svg</file>
+        <file>spin_up_disabled.svg</file>
+        <file>spin_up.png</file>
+        <file>spin_down.svg</file>
+        <file>spin_down_hover.svg</file>
+        <file>spin_down_disabled.svg</file>
+        <file>spin_down.png</file>
     </qresource>
 </RCC>

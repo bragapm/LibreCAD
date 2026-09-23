@@ -430,7 +430,7 @@ QTableView::item:selected, QTreeView::item:selected {
 }
 
 /* Input fields */
-QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox {
+QLineEdit, QComboBox {
     background-color: #222730;
     color: #E0E6ED;
     border: 1px solid #383D48;
@@ -439,13 +439,121 @@ QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox {
     selection-background-color: #184F8D;
 }
 
-QLineEdit:focus, QComboBox:focus, QSpinBox:focus {
+QLineEdit:focus, QComboBox:focus {
     border: 1px solid #4A8CDA;
 }
 
 QComboBox::drop-down {
     border: none;
     width: 20px;
+}
+
+QComboBox::down-arrow {
+    image: url(:/stylesheet/dropdown_arrow.svg);
+    width: 8px;
+    height: 8px;
+}
+
+/* SpinBox & DoubleSpinBox */
+QSpinBox, QDoubleSpinBox {
+    background-color: #222730;
+    color: #E0E6ED;
+    border: 1px solid #383D48;
+    padding: 5px 8px;
+    padding-right: 22px; /* Ruang untuk tombol up/down */
+    border-radius: 4px;
+    selection-background-color: #184F8D;
+}
+
+QSpinBox:focus, QDoubleSpinBox:focus {
+    border: 1px solid #4A8CDA;
+}
+
+QSpinBox:disabled, QDoubleSpinBox:disabled {
+    background-color: #1A1E24;
+    color: #555E6D;
+    border-color: #2A303C;
+}
+
+/* Tombol Naik (Up Button) */
+QSpinBox::up-button, QDoubleSpinBox::up-button {
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 18px;
+    background-color: #313742;
+    border-left: 1px solid #383D48;
+    border-bottom: 1px solid #383D48;
+    border-top-right-radius: 3px;
+}
+
+QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover {
+    background-color: #3F4756;
+    border-left: 1px solid #4A8CDA;
+}
+
+QSpinBox::up-button:pressed, QDoubleSpinBox::up-button:pressed {
+    background-color: #184F8D;
+}
+
+QSpinBox::up-button:disabled, QDoubleSpinBox::up-button:disabled {
+    background-color: #1E232B;
+    border-color: #2A303C;
+}
+
+/* Panah Naik (Up Arrow) */
+QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {
+    image: url(:/stylesheet/spin_up.svg);
+    width: 8px;
+    height: 8px;
+}
+
+QSpinBox::up-arrow:hover, QDoubleSpinBox::up-arrow:hover {
+    image: url(:/stylesheet/spin_up_hover.svg);
+}
+
+QSpinBox::up-arrow:disabled, QSpinBox::up-arrow:off,
+QDoubleSpinBox::up-arrow:disabled, QDoubleSpinBox::up-arrow:off {
+    image: url(:/stylesheet/spin_up_disabled.svg);
+}
+
+/* Tombol Turun (Down Button) */
+QSpinBox::down-button, QDoubleSpinBox::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 18px;
+    background-color: #313742;
+    border-left: 1px solid #383D48;
+    border-bottom-right-radius: 3px;
+}
+
+QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {
+    background-color: #3F4756;
+    border-left: 1px solid #4A8CDA;
+}
+
+QSpinBox::down-button:pressed, QDoubleSpinBox::down-button:pressed {
+    background-color: #184F8D;
+}
+
+QSpinBox::down-button:disabled, QDoubleSpinBox::down-button:disabled {
+    background-color: #1E232B;
+    border-color: #2A303C;
+}
+
+/* Panah Turun (Down Arrow) */
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {
+    image: url(:/stylesheet/spin_down.svg);
+    width: 8px;
+    height: 8px;
+}
+
+QSpinBox::down-arrow:hover, QDoubleSpinBox::down-arrow:hover {
+    image: url(:/stylesheet/spin_down_hover.svg);
+}
+
+QSpinBox::down-arrow:disabled, QSpinBox::down-arrow:off,
+QDoubleSpinBox::down-arrow:disabled, QDoubleSpinBox::down-arrow:off {
+    image: url(:/stylesheet/spin_down_disabled.svg);
 }
 
 /* Checkbox & Radio Button Styling */
