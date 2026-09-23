@@ -311,13 +311,13 @@ void LC_WorkspacesManager::restoreGeometryAndState(const LC_WorkspacesManager::L
         dw->setUpdatesEnabled(true);
         if (dw->widget()) {
             dw->widget()->setUpdatesEnabled(true);
-            dw->widget()->show();
-            dw->widget()->update();
         }
-        if (dw->isFloating() && workspace.docAreaFloatingActive) {
-            dw->setVisible(true);
+        if (dw->isVisible()) {
+            dw->update();
+            if (dw->widget()) {
+                dw->widget()->update();
+            }
         }
-        dw->update();
     }
 
     appWin.fireWidgetSettingsChanged();

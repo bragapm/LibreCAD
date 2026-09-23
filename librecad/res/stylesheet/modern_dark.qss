@@ -164,8 +164,6 @@ QToolButton::menu-indicator {
 QDockWidget {
     background-color: #1B2027;
     color: #CDD3DE;
-    titlebar-close-icon: url();
-    titlebar-normal-icon: url();
     border: 1px solid #383D48;
     font-size: 11px;
 }
