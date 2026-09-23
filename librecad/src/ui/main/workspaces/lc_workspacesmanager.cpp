@@ -21,13 +21,15 @@
  * ********************************************************************************
  */
 
+#include <QAction>
+#include <QApplication>
+#include <QDockWidget>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QMessageBox>
-#include <QToolBar>
-#include <QApplication>
 #include <QScreen>
+#include <QToolBar>
 
 #include "lc_workspacesmanager.h"
 
@@ -150,7 +152,7 @@ void LC_WorkspacesManager::fillBySettings(LC_Workspace &workspace){
         workspace.dockAreaRightActive = LC_GET_BOOL("RightDockArea", true);
         workspace.dockAreaToptActive = LC_GET_BOOL("TopDockArea", false);
         workspace.dockAreaBottomActive = LC_GET_BOOL("BottomDockArea", false);
-        workspace.docAreaFloatingActive = LC_GET_BOOL("FloatingDockwidgets", false);
+        workspace.docAreaFloatingActive = LC_GET_BOOL("FloatingDockwidgets", true);
     }
     LC_GROUP_END();
 
@@ -171,11 +173,19 @@ void LC_WorkspacesManager::fillByState(LC_Workspace &workspace){
     workspace.windowX = appWin.x();
     workspace.windowY = appWin.y();
 
-    workspace.dockAreaLeftActive = appWin.getDockAreas().left->isChecked();
-    workspace.dockAreaRightActive = appWin.getDockAreas().right->isChecked();
-    workspace.dockAreaBottomActive = appWin.getDockAreas().bottom->isChecked();
-    workspace.dockAreaToptActive = appWin.getDockAreas().top->isChecked();
-    workspace.docAreaFloatingActive = appWin.getDockAreas().floating->isChecked();
+    workspace.dockAreaLeftActive = appWin.getDockAreas().left ? appWin.getDockAreas().left->isChecked() : false;
+    workspace.dockAreaRightActive = appWin.getDockAreas().right ? appWin.getDockAreas().right->isChecked() : true;
+    workspace.dockAreaBottomActive = appWin.getDockAreas().bottom ? appWin.getDockAreas().bottom->isChecked() : false;
+    workspace.dockAreaToptActive = appWin.getDockAreas().top ? appWin.getDockAreas().top->isChecked() : false;
+
+    bool hasVisibleFloating = false;
+    for (QDockWidget* dw : appWin.findChildren<QDockWidget*>()) {
+        if (dw->isFloating() && dw->isVisible()) {
+            hasVisibleFloating = true;
+            break;
+        }
+    }
+    workspace.docAreaFloatingActive = hasVisibleFloating || (appWin.getDockAreas().floating && appWin.getDockAreas().floating->isChecked());
 
     fillIconsAndMenuState(workspace);
 }
@@ -223,16 +233,22 @@ void LC_WorkspacesManager::restoreGeometryAndState(const LC_Workspace &workspace
 }
 
 void LC_WorkspacesManager::restoreGeometryAndState(const LC_WorkspacesManager::LC_Workspace &workspace, QC_ApplicationWindow &appWin) const {
-    appWin.setUpdatesEnabled(false);
-
     auto widgetsState = QByteArray::fromBase64(workspace.widgetsState.toUtf8(), QByteArray::Base64Encoding);
     appWin.restoreState(widgetsState);
 
-    appWin.getDockAreas().left->setChecked(workspace.dockAreaLeftActive);
-    appWin.getDockAreas().right->setChecked(workspace.dockAreaRightActive);
-    appWin.getDockAreas().bottom->setChecked(workspace.dockAreaBottomActive);
-    appWin.getDockAreas().top->setChecked(workspace.dockAreaToptActive);
-    appWin.getDockAreas().floating->setChecked(workspace.docAreaFloatingActive);
+    auto setActionCheckedSilently = [](QAction* action, bool checked) {
+        if (action) {
+            action->blockSignals(true);
+            action->setChecked(checked);
+            action->blockSignals(false);
+        }
+    };
+
+    setActionCheckedSilently(appWin.getDockAreas().left, workspace.dockAreaLeftActive);
+    setActionCheckedSilently(appWin.getDockAreas().right, workspace.dockAreaRightActive);
+    setActionCheckedSilently(appWin.getDockAreas().bottom, workspace.dockAreaBottomActive);
+    setActionCheckedSilently(appWin.getDockAreas().top, workspace.dockAreaToptActive);
+    setActionCheckedSilently(appWin.getDockAreas().floating, workspace.docAreaFloatingActive);
 
     appWin.rebuildMenuIfNecessary();
     appWin.setIconSize(QSize(workspace.iconsSizeToolbar, workspace.iconsSizeToolbar));
@@ -288,6 +304,22 @@ void LC_WorkspacesManager::restoreGeometryAndState(const LC_WorkspacesManager::L
     }
 
     appWin.setUpdatesEnabled(true);
+
+    // restore paint update
+    const auto dockWidgets = appWin.findChildren<QDockWidget*>();
+    for (QDockWidget* dw : dockWidgets) {
+        dw->setUpdatesEnabled(true);
+        if (dw->widget()) {
+            dw->widget()->setUpdatesEnabled(true);
+            dw->widget()->show();
+            dw->widget()->update();
+        }
+        if (dw->isFloating() && workspace.docAreaFloatingActive) {
+            dw->setVisible(true);
+        }
+        dw->update();
+    }
+
     appWin.fireWidgetSettingsChanged();
 }
 
@@ -436,7 +468,7 @@ void LC_WorkspacesManager::saveWorkspaces(QWidget* parent){
                 wsObj.insert("dockRight", QJsonValue::fromVariant(p->dockAreaRightActive));
                 wsObj.insert("dockTop", QJsonValue::fromVariant(p->dockAreaToptActive));
                 wsObj.insert("dockBottom", QJsonValue::fromVariant(p->dockAreaBottomActive));
-                wsObj.insert("dockFloat", QJsonValue::fromVariant(p->dockAreaBottomActive));
+                wsObj.insert("dockFloat", QJsonValue::fromVariant(p->docAreaFloatingActive));
 
                 wsObj.insert("columnCountLeftDock", QJsonValue::fromVariant(p->columnCountLeftDoc));
                 wsObj.insert("iconSizeToolbar", QJsonValue::fromVariant(p->iconsSizeToolbar));
