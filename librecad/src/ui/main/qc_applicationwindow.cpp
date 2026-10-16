@@ -385,7 +385,13 @@ LC_ActionContext* QC_ApplicationWindow::getActionContext() {
  * Close Event. Called when the user tries to close the app.
  */
 void QC_ApplicationWindow::closeEvent(QCloseEvent *ce) {
-    tryCloseAllBeforeExist() ? ce->accept() : ce->ignore();
+    setProperty("_lc_is_closing", true);
+    if (tryCloseAllBeforeExist()) {
+        ce->accept();
+    } else {
+        setProperty("_lc_is_closing", false);
+        ce->ignore();
+    }
 }
 
 bool QC_ApplicationWindow::isAcceptableDragNDropFileName(const QString& fileName) {

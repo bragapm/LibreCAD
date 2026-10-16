@@ -118,6 +118,9 @@ void LC_ActionCircleDimBase::onMouseLeftButtonRelease(int status, LC_MouseEvent 
             break;
         }
         case SetPos: {
+            if (m_entity == nullptr) {
+                break;
+            }
             RS_Vector snap = e->snapPoint;
             snap = getSnapAngleAwarePoint(e, m_entity->getCenter(), snap);
             fireCoordinateEvent(snap);

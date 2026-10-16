@@ -281,6 +281,7 @@ void RS_Debug::timestamp() {
  * Prints the unicode for every character in the given string.
  */
 void RS_Debug::printUnicode(const QString &text) {
+    if (m_debugLevel != D_DEBUGGING) return;
     for (char32_t v : text.toUcs4()) {
         print("[0x%X] ", v);
         QString str = QString::fromUcs4(&v, 1);

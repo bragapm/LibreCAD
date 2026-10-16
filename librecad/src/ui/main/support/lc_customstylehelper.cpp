@@ -33,7 +33,9 @@ void LC_CustomStyleHelper::loadFromSettings() {
         bool allow_style = LC_GET_BOOL("AllowStyle", false);
         if (allow_style) {
             QString style = LC_GET_STR("Style", "");
-            QApplication::setStyle(QStyleFactory::create(style));
+            if (!style.isEmpty() && style.compare("windowsvista", Qt::CaseInsensitive) != 0 && style.compare("windows", Qt::CaseInsensitive) != 0) {
+                QApplication::setStyle(QStyleFactory::create(style));
+            }
         }
 
         QString sheet_path = LC_GET_STR("StyleSheet", "");

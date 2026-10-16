@@ -78,12 +78,14 @@ void RS_ActionLayoutView::invokeSettingsDialog(){
 }
 
 bool RS_ActionLayoutView::isPortrait(){
+    if (!m_graphic) return false;
     bool landscape;
     m_graphic->getPaperFormat(&landscape);
     return !landscape;
 }
 
 void RS_ActionLayoutView::setPaperOrientation(bool portrait) {
+    if (!m_graphic) return;
     bool landscape;
     RS2::PaperFormat format = m_graphic->getPaperFormat(&landscape);
     if (landscape != !portrait) {
@@ -250,7 +252,7 @@ RS2::CursorType RS_ActionLayoutView::doGetMouseCursor([[maybe_unused]] int statu
 }
 
 void RS_ActionLayoutView::center() {
-    if (m_graphic) {
+    if (m_graphic && m_viewport) {
         // In Layout View, we don't shift the paper print offsets.
         // We just zoom the screen to see the whole page.
         m_viewport->zoomPage();
@@ -258,13 +260,13 @@ void RS_ActionLayoutView::center() {
 }
 
 void RS_ActionLayoutView::zoomToPage(){
-    if (m_graphic) {
+    if (m_graphic && m_viewport) {
         m_viewport->zoomPageEx();
     }
 }
 
 void RS_ActionLayoutView::fit() {
-    if (m_graphic) {
+    if (m_graphic && m_viewport) {
         // In Layout View, paper is always 1:1. We just zoom to page.
         m_viewport->zoomPage();
         redraw();

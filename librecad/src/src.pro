@@ -1756,3 +1756,4 @@ TRANSLATIONS = \
     ../ts/librecad_uk.ts \
     ../ts/librecad_zh_cn.ts \
     ../ts/librecad_zh_tw.ts
+

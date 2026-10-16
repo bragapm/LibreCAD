@@ -25,6 +25,7 @@
 #include "mainwindowx.h"
 
 #include <QDockWidget>
+#include <QPointer>
 #include <QToolBar>
 
 namespace
@@ -96,9 +97,15 @@ void MainWindowX::setupDockWidget(QDockWidget* dw) {
     }
     dw->setProperty("_lc_auto_redock_installed", true);
 
-    connect(dw, &QDockWidget::visibilityChanged, dw, [this, dw](bool visible) {
-        if (!visible && dw->isFloating()) {
-            redockWidget(dw);
+    QPointer<QDockWidget> dwPtr(dw);
+    connect(dw, &QDockWidget::visibilityChanged, this, [this, dwPtr](bool visible) {
+        if (!visible) {
+            QMetaObject::invokeMethod(this, [this, dwPtr]() {
+                if (!dwPtr) return;
+                if (!dwPtr->isVisible() && dwPtr->isFloating()) {
+                    redockWidget(dwPtr.data());
+                }
+            }, Qt::QueuedConnection);
         }
     });
 }
@@ -111,8 +118,9 @@ void MainWindowX::setupAllDockWidgets() {
 
 void MainWindowX::redockWidget(QDockWidget* dw) {
     if (!dw) return;
-    if (dw->property("_lc_dock_resetting").toBool()) return;
+    if (property("_lc_is_closing").toBool()) return;
     if (property("_lc_restoring_state").toBool()) return;
+    if (dw->property("_lc_dock_resetting").toBool()) return;
 
     dw->setProperty("_lc_dock_resetting", true);
     dw->setFloating(false);

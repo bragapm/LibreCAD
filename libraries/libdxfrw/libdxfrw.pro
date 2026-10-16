@@ -75,3 +75,9 @@ HEADERS += \
     src/intern/dwgreader27.h \
     src/intern/dwgreader24.h
 
+TRACY_DIR = C:/TracyProfiler/wolfpld-tracy-05cceee
+exists($$TRACY_DIR/public/tracy/Tracy.hpp) {
+    DEFINES += TRACY_ENABLE
+    INCLUDEPATH += $$TRACY_DIR/public
+}
+

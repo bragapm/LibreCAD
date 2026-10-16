@@ -22,6 +22,7 @@
 #include "intern/dxfwriter.h"
 #include "intern/drw_dbg.h"
 #include "intern/dwgutil.h"
+#include "tracy/Tracy.hpp"
 
 #define FIRSTHANDLE 48
 
@@ -2121,6 +2122,7 @@ bool dxfRW::processDxf() {
 /********* Header Section *********/
 
 bool dxfRW::processHeader() {
+    ZoneScopedN("DXF_Section::HEADER");
     DRW_DBG("dxfRW::processHeader\n");
     int code;
     std::string sectionstr;
@@ -2149,6 +2151,7 @@ bool dxfRW::processHeader() {
 /********* Tables Section *********/
 
 bool dxfRW::processTables() {
+    ZoneScopedN("DXF_Section::TABLES");
     DRW_DBG("dxfRW::processTables\n");
     int code;
     std::string sectionstr;
@@ -2435,6 +2438,7 @@ bool dxfRW::processAppId(){
 /********* Block Section *********/
 
 bool dxfRW::processBlocks() {
+    ZoneScopedN("DXF_Section::BLOCKS");
     DRW_DBG("dxfRW::processBlocks\n");
     int code;
     std::string sectionstr;
@@ -2486,6 +2490,7 @@ bool dxfRW::processBlock() {
 /********* Entities Section *********/
 
 bool dxfRW::processEntities(bool isblock) {
+    ZoneScopedN("DXF_Section::ENTITIES");
     DRW_DBG("dxfRW::processEntities\n");
     int code;
     if (!reader->readRec(&code)){
@@ -3103,6 +3108,7 @@ bool dxfRW::processLeader() {
 /********* Objects Section *********/
 
 bool dxfRW::processObjects() {
+    ZoneScopedN("DXF_Section::OBJECTS");
     DRW_DBG("dxfRW::processObjects\n");
     int code;
     if (!reader->readRec(&code)

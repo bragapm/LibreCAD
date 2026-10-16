@@ -86,14 +86,32 @@ QC_MDIWindow::QC_MDIWindow(RS_Document *doc, QWidget *parent, bool printPreview,
  */
 QC_MDIWindow::~QC_MDIWindow(){
     try {
-        if (!(m_graphicView != nullptr && m_graphicView->isCleanUp())) {
-            //do not clear layer/block lists, if application is being closed
-            removeWidgetsListeners();
-            if (m_owner) {
-                delete m_document;
-            }
-            m_document = nullptr;
+        removeWidgetsListeners();
+
+        if (m_parentWindow != nullptr) {
+            m_parentWindow->removeChildWindow(this);
         }
+
+        if (m_document != nullptr) {
+            RS_Graphic* graphic = m_document->getGraphic();
+            if (graphic != nullptr) {
+                graphic->removeLayerListListener(m_graphicView);
+            }
+            if (m_document->getGraphicView() == m_graphicView) {
+                const bool sharedWithParent = m_parentWindow != nullptr && m_parentWindow->getDocument() == m_document;
+                m_document->setGraphicView(sharedWithParent ? m_parentWindow->getGraphicView() : nullptr);
+            }
+        }
+
+        delete widget();
+        m_graphicView = nullptr;
+        m_layoutView = nullptr;
+        m_tabWidget = nullptr;
+
+        if (m_owner) {
+            delete m_document;
+        }
+        m_document = nullptr;
     } catch (...) {
         LC_ERR << __func__ << "(): received exception";
     }

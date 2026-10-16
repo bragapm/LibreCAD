@@ -25,6 +25,10 @@ copy "librecad\support\fonts\*.lff" "%LC_RESOURCEDIR%\fonts"
 copy "librecad\support\library\misc\*.dxf" "%LC_RESOURCEDIR%\library\misc"
 copy "librecad\support\library\templates\*.dxf" "%LC_RESOURCEDIR%\library\templates"
 
+REM Copy stylesheet
+if not exist "%LC_PWD%\windows\stylesheet\" (mkdir "%LC_PWD%\windows\stylesheet")
+copy "librecad\res\stylesheet\*" "%LC_PWD%\windows\stylesheet\"
+
 
 REM Generate translations
 echo "Generating Translations"

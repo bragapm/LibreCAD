@@ -206,7 +206,11 @@ bool RS_FilterDXFRW::fileImport(RS_Graphic& g, const QString& file, [[maybe_unus
         if (RS_Debug::D_DEBUGGING == RS_DEBUG->getLevel()) {
             dxfR.setDebug(DRW::DebugLevel::Debug);
         }
-        bool success = dxfR.read(this, true);
+        bool success = false;
+        {
+            ZoneScopedN("DXF::read (parsing)");
+            success = dxfR.read(this, true);
+        }
         RS_DEBUG->print("RS_FilterDXFRW::fileImport: reading file: OK");
         //graphic->setAutoUpdateBorders(true);
 
@@ -228,7 +232,10 @@ bool RS_FilterDXFRW::fileImport(RS_Graphic& g, const QString& file, [[maybe_unus
         graphic->getLayerList()->activate(cl, true);
     }
     RS_DEBUG->print("RS_FilterDXFRW::fileImport: updating inserts");
-    graphic->updateInserts();
+    {
+        ZoneScopedN("DXF::updateInserts");
+        graphic->updateInserts();
+    }
 
     RS_DEBUG->print("RS_FilterDXFRW::fileImport OK");
 
@@ -437,7 +444,7 @@ void RS_FilterDXFRW::addView(const DRW_View &data) {
  * @todo Adding blocks to blocks (stack for currentContainer)
  */
 void RS_FilterDXFRW::addBlock(const DRW_Block& data) {
-
+    ZoneScopedN("DXF::addBlock");
     RS_DEBUG->print("RS_FilterDXF::addBlock");
 
     RS_DEBUG->print("  adding block: %s", data.name.c_str());
@@ -479,6 +486,7 @@ void RS_FilterDXFRW::setBlock(const int handle){
  * Implementation of the method which closes blocks.
  */
 void RS_FilterDXFRW::endBlock() {
+    ZoneScopedN("DXF::endBlock");
     if (currentContainer->rtti() == RS2::EntityBlock) {
         RS_Block *bk = (RS_Block *)currentContainer;
         //remove unnamed blocks *D only if version != R12
@@ -496,6 +504,7 @@ void RS_FilterDXFRW::endBlock() {
  * Implementation of the method which handles point entities.
  */
 void RS_FilterDXFRW::addPoint(const DRW_Point& data) {
+    ZoneScopedN("DXF::addPoint");
     RS_Vector v(data.basePoint.x, data.basePoint.y);
 
     RS_Point* entity = new RS_Point(currentContainer,
@@ -511,6 +520,7 @@ void RS_FilterDXFRW::addPoint(const DRW_Point& data) {
  * Implementation of the method which handles line entities.
  */
 void RS_FilterDXFRW::addLine(const DRW_Line& data) {
+    ZoneScopedN("DXF::addLine");
     RS_DEBUG->print("RS_FilterDXF::addLine");
 
     RS_Vector v1(data.basePoint.x, data.basePoint.y);
@@ -538,6 +548,7 @@ void RS_FilterDXFRW::addLine(const DRW_Line& data) {
  * Implementation of the method which handles ray entities.
  */
 void RS_FilterDXFRW::addRay(const DRW_Ray& data) {
+    ZoneScopedN("DXF::addRay");
     RS_DEBUG->print("RS_FilterDXF::addRay");
 
 	RS_Vector v1{data.basePoint.x, data.basePoint.y};
@@ -566,6 +577,7 @@ void RS_FilterDXFRW::addRay(const DRW_Ray& data) {
  * Implementation of the method which handles line entities.
  */
 void RS_FilterDXFRW::addXline(const DRW_Xline& data) {
+    ZoneScopedN("DXF::addXline");
     RS_DEBUG->print("RS_FilterDXF::addXline");
 
     RS_Vector v1(data.basePoint.x, data.basePoint.y);
@@ -594,6 +606,7 @@ void RS_FilterDXFRW::addXline(const DRW_Xline& data) {
  * Implementation of the method which handles circle entities.
  */
 void RS_FilterDXFRW::addCircle(const DRW_Circle& data) {
+    ZoneScopedN("DXF::addCircle");
     RS_DEBUG->print("RS_FilterDXF::addCircle");
 
 	RS_Vector v{data.basePoint.x, data.basePoint.y};
@@ -612,6 +625,7 @@ void RS_FilterDXFRW::addCircle(const DRW_Circle& data) {
  * @param angle2 End angle in deg (!)
  */
 void RS_FilterDXFRW::addArc(const DRW_Arc& data) {
+    ZoneScopedN("DXF::addArc");
     RS_DEBUG->print("RS_FilterDXF::addArc");
     RS_Vector v(data.basePoint.x, data.basePoint.y);
     RS_ArcData d(v, data.radious,
@@ -633,6 +647,7 @@ void RS_FilterDXFRW::addArc(const DRW_Arc& data) {
  * @param angle2 End angle in rad (!)
  */
 void RS_FilterDXFRW::addEllipse(const DRW_Ellipse& data) {
+    ZoneScopedN("DXF::addEllipse");
     RS_DEBUG->print("RS_FilterDXFRW::addEllipse");
 
 	RS_Vector v1(data.basePoint.x, data.basePoint.y);
@@ -701,6 +716,7 @@ void RS_FilterDXFRW::addSolid(const DRW_Solid& data) {
  * Implementation of the method which handles lightweight polyline entities.
  */
 void RS_FilterDXFRW::addLWPolyline(const DRW_LWPolyline& data) {
+    ZoneScopedN("DXF::addLWPolyline");
     RS_DEBUG->print("RS_FilterDXFRW::addLWPolyline");
     if (data.vertlist.empty())
         return;
@@ -724,6 +740,7 @@ void RS_FilterDXFRW::addLWPolyline(const DRW_LWPolyline& data) {
  * Implementation of the method which handles polyline entities.
  */
 void RS_FilterDXFRW::addPolyline(const DRW_Polyline& data) {
+    ZoneScopedN("DXF::addPolyline");
     RS_DEBUG->print("RS_FilterDXFRW::addPolyline");
     if ( data.flags&0x10)
         return; //the polyline is a polygon mesh, not handled
@@ -754,6 +771,7 @@ void RS_FilterDXFRW::addPolyline(const DRW_Polyline& data) {
  * Implementation of the method which handles splines.
  */
 void RS_FilterDXFRW::addSpline(const DRW_Spline* data) {
+    ZoneScopedN("DXF::addSpline");
     RS_DEBUG->print("RS_FilterDXFRW::addSpline: degree: %d", data->degree);
 
     // todo - sand - review this, quite a strange logic there... why spline points can't be with degree 3, for example?
@@ -831,7 +849,7 @@ void RS_FilterDXFRW::addSpline(const DRW_Spline* data) {
  * Implementation of the method which handles inserts.
  */
 void RS_FilterDXFRW::addInsert(const DRW_Insert& data) {
-
+    ZoneScopedN("DXF::addInsert");
     RS_DEBUG->print("RS_FilterDXF::addInsert");
 
     RS_Vector ip(data.basePoint.x, data.basePoint.y);
@@ -858,6 +876,7 @@ void RS_FilterDXFRW::addInsert(const DRW_Insert& data) {
  * multi texts (MTEXT).
  */
 void RS_FilterDXFRW::addMText(const DRW_MText& data) {
+    ZoneScopedN("DXF::addMText");
     RS_DEBUG->print("RS_FilterDXF::addMText: %s", data.text.c_str());
 
     RS_MTextData::VAlign valign;
@@ -973,6 +992,7 @@ void RS_FilterDXFRW::addMText(const DRW_MText& data) {
  * texts (TEXT).
  */
 void RS_FilterDXFRW::addText(const DRW_Text& data) {
+    ZoneScopedN("DXF::addText");
     RS_DEBUG->print("RS_FilterDXFRW::addText");
     RS_Vector refPoint = RS_Vector(data.basePoint.x, data.basePoint.y);;
     RS_Vector secPoint = RS_Vector(data.secPoint.x, data.secPoint.y);;
@@ -998,7 +1018,11 @@ void RS_FilterDXFRW::addText(const DRW_Text& data) {
         dir = RS_TextData::None;
     }
 
-    QString mtext = toNativeString(QString::fromUtf8(data.text.c_str()));
+    QString mtext;
+    {
+        ZoneScopedN("addText::toNativeString");
+        mtext = toNativeString(QString::fromUtf8(data.text.c_str()));
+    }
     // use default style for the drawing:
     if (sty.isEmpty()) {
         // japanese, cyrillic:
@@ -1021,7 +1045,10 @@ void RS_FilterDXFRW::addText(const DRW_Text& data) {
     RS_Text* entity = new RS_Text(currentContainer, d);
 
     setEntityAttributes(entity, &data);
-    entity->update();
+    {
+        ZoneScopedN("addText::entityUpdate");
+        entity->update();
+    }
     currentContainer->addEntity(entity);
 }
 
@@ -1268,6 +1295,7 @@ void RS_FilterDXFRW::addLeader(const DRW_Leader *data) {
  * Implementation of the method which handles hatch entities.
  */
 void RS_FilterDXFRW::addHatch(const DRW_Hatch *data) {
+    ZoneScopedN("DXF::addHatch");
     RS_DEBUG->print("RS_FilterDXF::addHatch()");
     RS_Hatch* hatch;
     RS_EntityContainer* hatchLoop;
@@ -4125,13 +4153,20 @@ QString RS_FilterDXFRW::toDxfString(const QString& str) {
  * Converts a DXF encoded string into a native Unicode string.
  */
 QString RS_FilterDXFRW::toNativeString(const QString& data) {
+    if (data.isEmpty()) return data;
+
+    // Fast-path: if string doesn't contain escape or format characters, skip regex processing completely
+    if (!data.contains('\\') && !data.contains('%') && !data.contains('^') && !data.contains('{')) {
+        return data;
+    }
+
     QString res;
 
     // Ignore font tags:
     int j = 0;
     for (int i=0; i<data.length(); ++i) {
         if (data.at(i).unicode() == 0x7B){ //is '{' ?
-            if (data.at(i+1).unicode() == 0x5c){ //and is "{\" ?
+            if (i + 2 < data.length() && data.at(i+1).unicode() == 0x5c){ //and is "{\" ?
                 //check known codes
                 if ( (data.at(i+2).unicode() == 0x66) || //is "\f" ?
                      (data.at(i+2).unicode() == 0x48) || //is "\H" ?
@@ -4154,18 +4189,25 @@ QString RS_FilterDXFRW::toNativeString(const QString& data) {
     }
     res.append(data.mid(j));
 
+    static const QRegularExpression reP(QStringLiteral("\\\\P"));
+    static const QRegularExpression reTilde(QStringLiteral("\\\\~"));
+    static const QRegularExpression reTab(QStringLiteral("\\^I"));
+    static const QRegularExpression reDiam(QStringLiteral("%%[cC]"));
+    static const QRegularExpression reDeg(QStringLiteral("%%[dD]"));
+    static const QRegularExpression rePlusMinus(QStringLiteral("%%[pP]"));
+
     // Line feed:
-    res = res.replace(QRegularExpression("\\\\P"), "\n");
+    res.replace(reP, QStringLiteral("\n"));
     // Space:
-    res = res.replace(QRegularExpression("\\\\~"), " ");
+    res.replace(reTilde, QStringLiteral(" "));
     // Tab:
-    res = res.replace(QRegularExpression("\\^I"), "    ");//RLZ: change 4 spaces for \t when mtext have support for tab
+    res.replace(reTab, QStringLiteral("    "));//RLZ: change 4 spaces for \t when mtext have support for tab
     // diameter:
-    res = res.replace(QRegularExpression("%%[cC]"), QChar(0x2300));//RLZ: Empty_set is 0x2205, diameter is 0x2300 need to add in all fonts
+    res.replace(reDiam, QChar(0x2300));//RLZ: Empty_set is 0x2205, diameter is 0x2300 need to add in all fonts
     // degree:
-    res = res.replace(QRegularExpression("%%[dD]"), QChar(0x00B0));
+    res.replace(reDeg, QChar(0x00B0));
     // plus/minus
-    res = res.replace(QRegularExpression("%%[pP]"), QChar(0x00B1));
+    res.replace(rePlusMinus, QChar(0x00B1));
 
     return res;
 }

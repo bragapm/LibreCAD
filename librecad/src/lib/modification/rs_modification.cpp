@@ -2231,9 +2231,10 @@ LC_TrimResult RS_Modification::trim(const RS_Vector& trimCoord,
         return result;
     }
 
-    if (both && !limitEntity->isAtomic()) {
+    const bool limitIsAtomic = limitEntity->isAtomic();
+    if (both && !limitIsAtomic) {
         RS_DEBUG->print(RS_Debug::D_WARNING,
-                        "RS_Modification::trim: limitEntity is not atomic");
+                        "RS_Modification::trim: limitEntity is not atomic, trimming one entity only");
     }
     if(trimEntity->isLocked()|| !trimEntity->isVisible()) return result;
 
@@ -2252,7 +2253,7 @@ LC_TrimResult RS_Modification::trim(const RS_Vector& trimCoord,
     }
 
     if (!sol.hasValid()) {
-        return both ? trim( limitCoord, (RS_AtomicEntity*)limitEntity, trimCoord, trimEntity, false, forPreview) : result;
+        return (both && limitIsAtomic) ? trim( limitCoord, (RS_AtomicEntity*)limitEntity, trimCoord, trimEntity, false, forPreview) : result;
     }
 
     RS_AtomicEntity* trimmed1 = nullptr;
@@ -2295,7 +2296,7 @@ LC_TrimResult RS_Modification::trim(const RS_Vector& trimCoord,
     }
 
     // remove limit entity from view:
-    bool trimBoth= both && !limitEntity->isLocked() && limitEntity->isVisible();
+    bool trimBoth = both && limitIsAtomic && !limitEntity->isLocked() && limitEntity->isVisible();
     if (trimBoth) {
         trimmed2 = (RS_AtomicEntity*)limitEntity->clone();
         if (!forPreview) {

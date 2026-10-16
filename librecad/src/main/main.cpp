@@ -350,6 +350,42 @@ int main(int argc, char** argv) {
     loadTranslations();
 
     RS_DEBUG->print("main: creating main window..");
+
+    // Bersihkan setting style lawas di registry/QSettings agar tema modern dark tidak tertimpa
+    {
+        QSettings settings;
+        settings.beginGroup("Widgets");
+        if (settings.contains("AllowStyle")) {
+            settings.remove("AllowStyle");
+        }
+        if (settings.contains("Style")) {
+            settings.remove("Style");
+        }
+        if (settings.contains("StyleSheet")) {
+            settings.remove("StyleSheet");
+        }
+        settings.endGroup();
+
+        const QStringList oldApps = {"LibreCAD", "Tataletak - Kementerian ATR/BPN"};
+        for (const QString& oldApp : oldApps) {
+            QSettings oldSettings("LibreCAD", oldApp);
+            oldSettings.beginGroup("Widgets");
+            if (oldSettings.contains("AllowStyle")) {
+                oldSettings.remove("AllowStyle");
+            }
+            if (oldSettings.contains("Style")) {
+                oldSettings.remove("Style");
+            }
+            if (oldSettings.contains("StyleSheet")) {
+                oldSettings.remove("StyleSheet");
+            }
+            oldSettings.endGroup();
+        }
+    }
+
+    // Inisialisasi resource Qt secara eksplisit
+    Q_INIT_RESOURCE(stylesheet);
+
     // Load Modern Dark Theme QSS
     QString styleSheet;
 

@@ -133,6 +133,14 @@ Section "Install Section" SecInstall
   ;Store installation folder
   WriteRegStr HKCU "Software\LibreCAD" "" $INSTDIR
 
+  ; Clean up legacy style/widget settings from registry to ensure modern dark theme is applied
+  DeleteRegValue HKCU "Software\LibreCAD\Tataletak - LibreCAD\Widgets" "AllowStyle"
+  DeleteRegValue HKCU "Software\LibreCAD\Tataletak - LibreCAD\Widgets" "Style"
+  DeleteRegValue HKCU "Software\LibreCAD\Tataletak - LibreCAD\Widgets" "StyleSheet"
+  DeleteRegKey HKCU "Software\LibreCAD\Tataletak - LibreCAD\Widgets"
+  DeleteRegKey HKCU "Software\LibreCAD\LibreCAD\Widgets"
+  DeleteRegKey HKCU "Software\LibreCAD\Tataletak - Kementerian ATR/BPN\Widgets"
+
   ;Create uninstaller
   WriteUninstaller "$INSTDIR\Uninstall.exe"
 
