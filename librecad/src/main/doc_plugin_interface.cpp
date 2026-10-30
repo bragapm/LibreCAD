@@ -32,6 +32,7 @@
 #include "doc_plugin_interface.h"
 #include "intern/qc_actiongetent.h"
 #include "intern/qc_actiongetpoint.h"
+#include "intern/qc_actiongetrotate.h"
 #include "intern/qc_actiongetselect.h"
 #include "lc_actioncontext.h"
 #include "lc_documentsstorage.h"
@@ -1556,6 +1557,28 @@ bool Doc_plugin_interface::getSelectByType(QList<Plug_Entity *> *sel, enum DPI::
     }
     gView->killAllActions();
     gView->setTypeToSelect(RS2::EntityType::EntityUnknown);
+    return status;
+}
+
+bool Doc_plugin_interface::getRotation(QList<qulonglong> *entityIds, QPointF *basePoint, double *angleRad, bool *copyMode){
+    bool status = false;
+    auto a = std::make_shared<QC_ActionGetRotate>(m_actionContext);
+    if (a) {
+        gView->killAllActions();
+        gView->setCurrentAction(a);
+        QEventLoop ev;
+        while (!a->isCompleted()) {
+            ev.processEvents();
+            if (!gView->getEventHandler()->hasAction()) {
+                break;
+            }
+        }
+        if (a->isCompleted() && !a->wasCanceled()) {
+            a->getResult(entityIds, basePoint, angleRad, copyMode);
+            status = true;
+        }
+        gView->killAllActions();
+    }
     return status;
 }
 

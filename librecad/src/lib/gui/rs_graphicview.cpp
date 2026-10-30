@@ -28,11 +28,34 @@
 
 #include "rs_graphicview.h"
 
+#include <QOffscreenSurface>
+#include <QOpenGLContext>
+#include <QOpenGLFunctions>
+#include <QOpenGLWidget>
+#include <QStringList>
+#include <QSurfaceFormat>
+#include <QTimer>
+
 #include "lc_cursoroverlayinfo.h"
 #include "lc_graphicviewport.h"
 #include "lc_shortcuts_manager.h"
 #include "lc_widgetviewportrenderer.h"
+#if __has_include("lc_tracygpu.h")
+#include "lc_tracygpu.h"
+#else
+class LC_TracyGpuMonitor {
+public:
+    static LC_TracyGpuMonitor& instance() {
+        static LC_TracyGpuMonitor s;
+        return s;
+    }
+    void configurePlots() {}
+    void sampleGpuUsage(double = 0.0) {}
+    void initOpenGLContext() {}
+};
+#endif
 #include "rs_actioninterface.h"
+#include "rs_debug.h"
 #include "rs_entitycontainer.h"
 #include "rs_eventhandler.h"
 #include "rs_graphic.h"
@@ -41,11 +64,169 @@
 #include "rs_selection.h"
 #include "rs_settings.h"
 #include "rs_snapper.h"
+#include "tracy/Tracy.hpp"  // Tracy Profiler
 
 #ifdef EMU_C99
 #include "emu_c99.h"
 #endif
 
+#ifdef OPENGLACTIVE
+class LC_OpenGLCanvas : public QOpenGLWidget {
+public:
+    explicit LC_OpenGLCanvas(RS_GraphicView *parentView)
+        : QOpenGLWidget(parentView), m_view(parentView) {
+        setAttribute(Qt::WA_TransparentForMouseEvents, true);
+        setFocusPolicy(Qt::NoFocus);
+        setUpdateBehavior(QOpenGLWidget::NoPartialUpdate);
+    }
+
+protected:
+    void initializeGL() override {
+        if (m_view != nullptr) {
+            m_view->initializeGL();
+        }
+    }
+
+    void resizeGL(int w, int h) override {
+        if (m_view != nullptr) {
+            m_view->resizeGL(w, h);
+        }
+    }
+
+    void paintGL() override {
+        if (m_view != nullptr) {
+            m_view->paintGL();
+        }
+    }
+
+private:
+    RS_GraphicView *m_view = nullptr;
+};
+#endif
+
+bool RS_GraphicView::detectGpuCapability() {
+#ifndef OPENGLACTIVE
+    TracyMessageLC("[GPU Check] OPENGLACTIVE nonaktif -> Mode CPU Asli (Checkpoint)", tracy::Color::Orange);
+    TracyPlot("RenderBackend (1=GPU, 0=CPU)", 0LL);
+    return false;
+#else
+    static bool s_checked = false;
+    static bool s_capable = false;
+
+    if (s_checked) {
+        return s_capable;
+    }
+    ZoneScopedNC("RS_GraphicView::detectGpuCapability", tracy::Color::Cyan);
+    s_checked = true;
+
+    QSurfaceFormat fmt = QSurfaceFormat::defaultFormat();
+    QOpenGLContext ctx;
+    ctx.setFormat(fmt);
+    if (!ctx.create()) {
+        LC_LOG << "RS_GraphicView: OpenGL context gagal dibuat, fallback menggunakan CPU.";
+        TracyMessageLC("[GPU Check] OpenGL Context gagal dibuat -> Fallback CPU", tracy::Color::OrangeRed);
+        TracyPlot("RenderBackend (1=GPU, 0=CPU)", 0LL);
+        s_capable = false;
+        return false;
+    }
+
+    QOffscreenSurface surface;
+    surface.setFormat(ctx.format());
+    surface.create();
+    if (!surface.isValid() || !ctx.makeCurrent(&surface)) {
+        LC_LOG << "RS_GraphicView: OpenGL surface tidak valid, fallback menggunakan CPU.";
+        TracyMessageLC("[GPU Check] OpenGL Surface tidak valid -> Fallback CPU", tracy::Color::OrangeRed);
+        TracyPlot("RenderBackend (1=GPU, 0=CPU)", 0LL);
+        s_capable = false;
+        return false;
+    }
+
+    QOpenGLFunctions *funcs = ctx.functions();
+    if (funcs == nullptr) {
+        ctx.doneCurrent();
+        LC_LOG << "RS_GraphicView: QOpenGLFunctions tidak tersedia, fallback menggunakan CPU.";
+        TracyMessageLC("[GPU Check] QOpenGLFunctions null -> Fallback CPU", tracy::Color::OrangeRed);
+        TracyPlot("RenderBackend (1=GPU, 0=CPU)", 0LL);
+        s_capable = false;
+        return false;
+    }
+
+    QSurfaceFormat actualFmt = ctx.format();
+    if (actualFmt.majorVersion() < 2) {
+        ctx.doneCurrent();
+        LC_LOG << "RS_GraphicView: Versi OpenGL (" << actualFmt.majorVersion() << "." << actualFmt.minorVersion()
+               << ") tidak memadai (< 2.0), fallback menggunakan CPU.";
+        TracyMessageLC("[GPU Check] Versi OpenGL < 2.0 -> Fallback CPU", tracy::Color::OrangeRed);
+        TracyPlot("RenderBackend (1=GPU, 0=CPU)", 0LL);
+        s_capable = false;
+        return false;
+    }
+
+    if (!funcs->hasOpenGLFeature(QOpenGLFunctions::Framebuffers) ||
+        !funcs->hasOpenGLFeature(QOpenGLFunctions::Shaders)) {
+        ctx.doneCurrent();
+        LC_LOG << "RS_GraphicView: Fitur OpenGL Framebuffer/Shader tidak didukung GPU, fallback menggunakan CPU.";
+        TracyMessageLC("[GPU Check] Framebuffer/Shader tidak didukung -> Fallback CPU", tracy::Color::OrangeRed);
+        TracyPlot("RenderBackend (1=GPU, 0=CPU)", 0LL);
+        s_capable = false;
+        return false;
+    }
+
+    const char *vendorRaw = reinterpret_cast<const char *>(funcs->glGetString(GL_VENDOR));
+    const char *rendererRaw = reinterpret_cast<const char *>(funcs->glGetString(GL_RENDERER));
+    const char *versionRaw = reinterpret_cast<const char *>(funcs->glGetString(GL_VERSION));
+
+    QString vendor = vendorRaw ? QString::fromLatin1(vendorRaw) : QString();
+    QString renderer = rendererRaw ? QString::fromLatin1(rendererRaw) : QString();
+    QString version = versionRaw ? QString::fromLatin1(versionRaw) : QString();
+
+    ctx.doneCurrent();
+
+    QByteArray gpuDescUtf8 = QString("Vendor: %1 | Renderer: %2 | GL: %3").arg(vendor, renderer, version).toUtf8();
+    ZoneText(gpuDescUtf8.constData(), gpuDescUtf8.size());
+
+    if (vendor.isEmpty() && renderer.isEmpty()) {
+        LC_LOG << "RS_GraphicView: GPU tidak terdeteksi, fallback menggunakan CPU.";
+        TracyMessageLC("[GPU Check] Vendor/Renderer kosong -> Fallback CPU", tracy::Color::OrangeRed);
+        TracyPlot("RenderBackend (1=GPU, 0=CPU)", 0LL);
+        s_capable = false;
+        return false;
+    }
+
+    QString combinedInfo = (vendor + " " + renderer).toLower();
+    const QStringList unsupportedOrSoftwareRenderers = {
+        "gdi generic",
+        "microsoft basic render",
+        "microsoft basic display",
+        "llvmpipe",
+        "softpipe",
+        "swrast",
+        "software rasterizer",
+        "mesa offscreen"
+    };
+
+    for (const QString &swName : unsupportedOrSoftwareRenderers) {
+        if (combinedInfo.contains(swName)) {
+            LC_LOG << "RS_GraphicView: GPU hardware tidak mumpuni / software renderer terdeteksi ("
+                   << vendor << " - " << renderer << "), fallback menggunakan CPU.";
+            QByteArray fallbackMsg = QString("[GPU Check] Software/Basic Renderer (%1 - %2) -> Fallback CPU").arg(vendor, renderer).toUtf8();
+            TracyMessageC(fallbackMsg.constData(), fallbackMsg.size(), tracy::Color::OrangeRed);
+            TracyPlot("RenderBackend (1=GPU, 0=CPU)", 0LL);
+            s_capable = false;
+            return false;
+        }
+    }
+
+    LC_LOG << "RS_GraphicView: GPU terdeteksi dan mumpuni (" << vendor << " | " << renderer
+           << " | OpenGL " << version << "). Menggunakan akselerasi OpenGL.";
+    QByteArray okMsg = QString("[GPU Check] OpenGL GPU AKTIF: %1 | %2 | GL %3").arg(vendor, renderer, version).toUtf8();
+    TracyMessageC(okMsg.constData(), okMsg.size(), tracy::Color::Green);
+    TracyAppInfo(okMsg.constData(), okMsg.size());
+    TracyPlot("RenderBackend (1=GPU, 0=CPU)", 1LL);
+    s_capable = true;
+    return true;
+#endif
+}
 
 /**
  * Constructor.
@@ -57,6 +238,28 @@ RS_GraphicView::RS_GraphicView(QWidget *parent, Qt::WindowFlags f)
     , defaultSnapMode{std::make_unique<RS_SnapMode>()}
     , infoCursorOverlayPreferences{std::make_unique<LC_InfoCursorOverlayPrefs>()}{
     m_viewport->addViewportListener(this);
+
+    LC_TracyGpuMonitor::instance().configurePlots();
+    auto *gpuUsageTimer = new QTimer(this);
+    connect(gpuUsageTimer, &QTimer::timeout, this, []() {
+        LC_TracyGpuMonitor::instance().sampleGpuUsage();
+    });
+    gpuUsageTimer->start(200);
+
+#ifdef OPENGLACTIVE
+    if (detectGpuCapability()) {
+        m_useOpenGL = true;
+        m_glWidget = new LC_OpenGLCanvas(this);
+        m_glWidget->setGeometry(rect());
+        m_glWidget->lower();
+    } else {
+        m_useOpenGL = false;
+        m_glWidget = nullptr;
+    }
+#else
+    m_useOpenGL = false;
+    m_glWidget = nullptr;
+#endif
 }
 
 void RS_GraphicView::loadSettings() {
@@ -262,6 +465,9 @@ void RS_GraphicView::zoomPageEx() {
 }
 
 void RS_GraphicView::onViewportChanged() {
+    ZoneScopedNC("RS_GraphicView::onViewportChanged (Pan/Zoom)", tracy::Color::Yellow);
+    const char *backendTag = m_useOpenGL ? "Mode: GPU OpenGL" : "Mode: CPU Fallback";
+    ZoneText(backendTag, std::strlen(backendTag));
     adjustOffsetControls();
     adjustZoomControls();
     QString info = m_viewport->getGrid()->getInfo();
@@ -394,9 +600,85 @@ LC_InfoCursorOverlayPrefs* RS_GraphicView::getInfoCursorOverlayPreferences(){
     return infoCursorOverlayPreferences.get();
 }
 
+void RS_GraphicView::initializeGL() {
+#ifdef OPENGLACTIVE
+    ZoneScopedNC("RS_GraphicView::initializeGL [GPU]", tracy::Color::Green);
+    if (!m_useOpenGL || m_glWidget == nullptr || !m_glWidget->isValid() || m_glWidget->context() == nullptr) {
+        fallbackToCpu();
+        return;
+    }
+    QOpenGLFunctions *funcs = m_glWidget->context()->functions();
+    if (funcs != nullptr) {
+        funcs->initializeOpenGLFunctions();
+    }
+    LC_TracyGpuMonitor::instance().initOpenGLContext();
+    TracyMessageLC("[OpenGL Canvas] initializeGL berhasil", tracy::Color::Green);
+#endif
+}
+
+void RS_GraphicView::resizeGL([[maybe_unused]] int w, [[maybe_unused]] int h) {
+#ifdef OPENGLACTIVE
+    ZoneScopedNC("RS_GraphicView::resizeGL [GPU]", tracy::Color::Green);
+    if (!m_useOpenGL || m_glWidget == nullptr || !m_glWidget->isValid()) {
+        fallbackToCpu();
+        return;
+    }
+    if (m_viewport != nullptr) {
+        m_viewport->setSize(getWidth(), getHeight());
+    }
+    if (m_renderer != nullptr) {
+        m_renderer->invalidate(RS2::RedrawAll);
+    }
+#endif
+}
+
+void RS_GraphicView::paintGL() {
+}
+
+QPaintDevice* RS_GraphicView::getPaintDevice() {
+#ifdef OPENGLACTIVE
+    if (m_useOpenGL && m_glWidget != nullptr) {
+        return m_glWidget;
+    }
+#endif
+    return this;
+}
+
+void RS_GraphicView::fallbackToCpu() {
+#ifdef OPENGLACTIVE
+    ZoneScopedNC("RS_GraphicView::fallbackToCpu", tracy::Color::Red);
+    if (!m_useOpenGL && m_glWidget == nullptr) {
+        return;
+    }
+    LC_LOG << "RS_GraphicView: Melakukan fallback ke CPU rendering.";
+    TracyMessageLC("[RENDER MODE] Fallback ke CPU diaktifkan!", tracy::Color::Red);
+    TracyPlot("RenderBackend (1=GPU, 0=CPU)", 0LL);
+    m_useOpenGL = false;
+    if (m_glWidget != nullptr) {
+        m_glWidget->hide();
+        m_glWidget->deleteLater();
+        m_glWidget = nullptr;
+    }
+    if (m_renderer != nullptr) {
+        m_renderer->setPaintDevice(this);
+        m_renderer->setUseOpenGL(false);
+        m_renderer->invalidate(RS2::RedrawAll);
+    }
+    update();
+#endif
+}
+
 void RS_GraphicView::resizeEvent(QResizeEvent *event) {
     QWidget::resizeEvent(event);
-    m_viewport->setSize(getWidth(), getHeight());
+    int w = getWidth();
+    int h = getHeight();
+#ifdef OPENGLACTIVE
+    if (m_useOpenGL && m_glWidget != nullptr) {
+        m_glWidget->setGeometry(0, 0, w, h);
+        m_glWidget->lower();
+    }
+#endif
+    m_viewport->setSize(w, h);
 }
 
 bool RS_GraphicView::isPrintPreview() const {
@@ -421,4 +703,10 @@ LC_WidgetViewPortRenderer* RS_GraphicView::getRenderer() const{
 
 void RS_GraphicView::setRenderer(std::unique_ptr<LC_WidgetViewPortRenderer> renderer){
     m_renderer = std::move(renderer);
+#ifdef OPENGLACTIVE
+    if (m_renderer != nullptr) {
+        m_renderer->setPaintDevice(getPaintDevice());
+        m_renderer->setUseOpenGL(m_useOpenGL);
+    }
+#endif
 }

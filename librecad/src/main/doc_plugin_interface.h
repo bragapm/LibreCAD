@@ -173,6 +173,7 @@ public:
 
     std::tuple<DPI::PaperFormat, bool> getPaperFormat() override;
     void setPaperFormat(DPI::PaperFormat format, bool landscape) override;
+    bool getRotation(QList<qulonglong> *entityIds, QPointF *basePoint, double *angleRad, bool *copyMode = nullptr) override;
 private:
     RS_Document *doc;
     RS_Graphic *docGr;

@@ -38,6 +38,7 @@ struct LC_InfoCursorOverlayPrefs;
 class QDateTime;
 class QMouseEvent;
 class QKeyEvent;
+class QOpenGLWidget;
 
 class RS_ActionInterface;
 class RS_Entity;
@@ -178,6 +179,12 @@ public:
     void onRelativeZeroChanged(const RS_Vector &pos) override;
     void onUCSChanged(LC_UCS* ucs) override;
     void notifyNoActiveAction();
+
+    static bool detectGpuCapability();
+    bool isUsingOpenGL() const { return m_useOpenGL; }
+    QOpenGLWidget* getOpenGLWidget() const { return m_glWidget; }
+    QPaintDevice* getPaintDevice();
+    void fallbackToCpu();
 signals:
     void ucsChanged(LC_UCS* ucs);
     void relativeZeroChanged(const RS_Vector &);
@@ -185,11 +192,16 @@ signals:
 
     void currentActionChanged(RS_ActionInterface* action);
 protected:
+    virtual void initializeGL();
+    virtual void resizeGL(int w, int h);
+    virtual void paintGL();
+
     void setRenderer(std::unique_ptr<LC_WidgetViewPortRenderer> renderer);
     LC_WidgetViewPortRenderer* getRenderer() const;
     void resizeEvent(QResizeEvent *event) override;
     void onViewportRedrawNeeded() override;
 private:
+    friend class LC_OpenGLCanvas;
     std::unique_ptr<RS_EventHandler> m_eventHandler;
     RS_EntityContainer *container = nullptr;
     std::unique_ptr<LC_GraphicViewport> m_viewport;
@@ -217,6 +229,8 @@ private:
     bool showEntityDescriptionOnHover = false;
     bool m_panOnZoom = false;
     bool m_skipFirstZoom = false;
+    bool m_useOpenGL = false;
+    QOpenGLWidget* m_glWidget = nullptr;
     const RS_LineTypePattern *getPattern(RS2::LineType t);
 
     bool setEventHandlerAction(std::shared_ptr<RS_ActionInterface>);

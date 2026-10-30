@@ -31,6 +31,13 @@
 
 //#define RS_TEST
 
+// ============================================================================
+// SAKLAR UTAMA MODE OPENGL & OPTIMASI PERFORMA (Testing OPENGL)
+// Nyalakan (#define OPENGLACTIVE)  -> Mode GPU OpenGL + Optimasi Aktif
+// Matikan  (//#define OPENGLACTIVE) -> Mode CPU Asli LibreCAD (Checkpoint Awal)
+// ============================================================================
+#define OPENGLACTIVE
+
 // Windoze XP can't handle the original MAX/MINDOUBLE's
 #define RS_MAXDOUBLE 1.0E+10
 #define RS_MINDOUBLE -1.0E+10

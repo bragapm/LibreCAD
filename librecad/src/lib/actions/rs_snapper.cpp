@@ -720,9 +720,16 @@ RS_Entity* RS_Snapper::catchEntity(const RS_Vector& pos,
     RS_Entity* entity = getContainer()->getNearestEntity(pos, &dist, level);
 
     int idx = -1;
+#ifdef OPENGLACTIVE
+    //Testing OPENGL - Hindari pencarian linear O(N) findEntity() pada setiap pergerakan kursor jika bukan mode debug
+    if (RS_DEBUG->getLevel() >= RS_Debug::D_DEBUGGING && entity != nullptr && entity->getParent()) {
+        idx = entity->getParent()->findEntity(entity);
+    }
+#else
     if (entity != nullptr && entity->getParent()) {
         idx = entity->getParent()->findEntity(entity);
     }
+#endif
 
     if (entity != nullptr && dist <= getCatchDistance(getSnapRange(), m_catchEntityGuiRange)) {
         // highlight:
@@ -792,9 +799,16 @@ RS_Entity* RS_Snapper::catchEntity(const RS_Vector& pos, RS2::EntityType enType,
     RS_Entity* entity = ec.getNearestEntity(pos, &dist, RS2::ResolveNone);
 
     int idx = -1;
+#ifdef OPENGLACTIVE
+    //Testing OPENGL - Hindari pencarian linear O(N) findEntity() pada setiap pergerakan kursor jika bukan mode debug
+    if (RS_DEBUG->getLevel() >= RS_Debug::D_DEBUGGING && entity != nullptr && entity->getParent()) {
+        idx = entity->getParent()->findEntity(entity);
+    }
+#else
     if (entity != nullptr && entity->getParent()) {
         idx = entity->getParent()->findEntity(entity);
     }
+#endif
 
     if (entity != nullptr && dist <= getCatchDistance(getSnapRange(), m_catchEntityGuiRange)) {
         // highlight:

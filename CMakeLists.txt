@@ -36,7 +36,7 @@ add_compile_definitions(LC_VERSION=2.2.2.3-alpha)
 add_compile_definitions(LC_PRERELEASE=true)
 
 
-find_package(Qt6 COMPONENTS Gui Core Widgets PrintSupport Svg Network Sql Concurrent REQUIRED)
+find_package(Qt6 COMPONENTS Gui Core Widgets PrintSupport Svg Network Sql Concurrent OpenGL OpenGLWidgets REQUIRED)
 find_package(Qt6 REQUIRED COMPONENTS LinguistTools)
 
 find_package(Boost REQUIRED COMPONENTS)
@@ -869,6 +869,8 @@ set(SOURCES
         librecad/src/plugins/intern/qc_actiongetent.h
         librecad/src/plugins/intern/qc_actiongetpoint.cpp
         librecad/src/plugins/intern/qc_actiongetpoint.h
+        librecad/src/plugins/intern/qc_actiongetrotate.cpp
+        librecad/src/plugins/intern/qc_actiongetrotate.h
         librecad/src/plugins/intern/qc_actiongetselect.cpp
         librecad/src/plugins/intern/qc_actiongetselect.h
         librecad/src/plugins/document_interface.h
@@ -1543,7 +1545,7 @@ endif(Boost_FOUND)
 endif(WIN32)
 
 #add_executable(LibreCAD ${SOURCES})
-target_link_libraries(librecad PRIVATE Qt6::Core Qt6::Widgets Qt6::Gui Qt6::PrintSupport Qt6::Svg Qt::Network)
+target_link_libraries(librecad PRIVATE Qt6::Core Qt6::Widgets Qt6::Gui Qt6::PrintSupport Qt6::Svg Qt::Network Qt6::OpenGL Qt6::OpenGLWidgets)
 
 # Link Tracy client library when profiling is enabled
 if(TRACY_ENABLE)

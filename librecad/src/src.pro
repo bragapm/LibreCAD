@@ -26,7 +26,7 @@ CONFIG += qt \
     verbose \
     depend_includepath
 
-QT += widgets printsupport network
+QT += widgets printsupport network opengl openglwidgets
 CONFIG += c++17
 
 # using qt5 connections for UI forms
@@ -1667,6 +1667,7 @@ HEADERS += \
     plugins/document_interface.h \
     plugins/qc_plugininterface.h \
     plugins/intern/qc_actiongetpoint.h \
+    plugins/intern/qc_actiongetrotate.h \
     plugins/intern/qc_actiongetselect.h \
     plugins/intern/qc_actiongetent.h \
     main/main.h \
@@ -1677,6 +1678,7 @@ SOURCES += \
     main/qc_dialogfactory.cpp \
     main/doc_plugin_interface.cpp \
     plugins/intern/qc_actiongetpoint.cpp \
+    plugins/intern/qc_actiongetrotate.cpp \
     plugins/intern/qc_actiongetselect.cpp \
     plugins/intern/qc_actiongetent.cpp \
     main/main.cpp \

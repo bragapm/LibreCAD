@@ -1388,6 +1388,19 @@ RS_Vector RS_EntityContainer::getNearestEndpoint(
 
     for (auto en: m_entities) {
         if (en->getParent() == nullptr || !en->getParent()->ignoredOnModification()) {//no end point for Insert, text, Dim
+#ifdef OPENGLACTIVE
+            //Testing OPENGL - Fast AABB Bounding-Box Culling: lewati entitas yang kotaknya lebih jauh dari minDist saat ini
+            if (minDist < 1.0e100 && en->rtti() != RS2::EntityConstructionLine) {
+                const RS_Vector &minV = en->getMin();
+                const RS_Vector &maxV = en->getMax();
+                if (minV.valid && maxV.valid && minV.x <= maxV.x && minV.y <= maxV.y) {
+                    const double dx = (coord.x < minV.x) ? (minV.x - coord.x) : ((coord.x > maxV.x) ? (coord.x - maxV.x) : 0.0);
+                    if (dx >= minDist) continue;
+                    const double dy = (coord.y < minV.y) ? (minV.y - coord.y) : ((coord.y > maxV.y) ? (coord.y - maxV.y) : 0.0);
+                    if (dy >= minDist || (dx * dx + dy * dy) >= (minDist * minDist)) continue;
+                }
+            }
+#endif
             //            std::cout<<"find nearest for entity "<<i0<<std::endl;
             point = en->getNearestEndpoint(coord, &curDist);
             if (point.valid && curDist < minDist) {
@@ -1472,6 +1485,19 @@ RS_Vector RS_EntityContainer::getNearestMiddle(
         if (en->isVisible()
             && !en->getParent()->ignoredSnap()
             ) {//no midle point for spline, text, Dim
+#ifdef OPENGLACTIVE
+            //Testing OPENGL - Fast AABB Bounding-Box Culling: lewati entitas yang kotaknya lebih jauh dari minDist saat ini
+            if (minDist < 1.0e100 && en->rtti() != RS2::EntityConstructionLine) {
+                const RS_Vector &minV = en->getMin();
+                const RS_Vector &maxV = en->getMax();
+                if (minV.valid && maxV.valid && minV.x <= maxV.x && minV.y <= maxV.y) {
+                    const double dx = (coord.x < minV.x) ? (minV.x - coord.x) : ((coord.x > maxV.x) ? (coord.x - maxV.x) : 0.0);
+                    if (dx >= minDist) continue;
+                    const double dy = (coord.y < minV.y) ? (minV.y - coord.y) : ((coord.y > maxV.y) ? (coord.y - maxV.y) : 0.0);
+                    if (dy >= minDist || (dx * dx + dy * dy) >= (minDist * minDist)) continue;
+                }
+            }
+#endif
             point = en->getNearestMiddle(coord, &curDist, middlePoints);
             if (point.valid && curDist < minDist) {
                 closestPoint = point;
@@ -1651,6 +1677,21 @@ double RS_EntityContainer::getDistanceToPoint(
             RS_DEBUG->print("entity: %d", e->rtti());
             // bug#426, need to ignore Images to find nearest intersections
             if (level == RS2::ResolveAllButTextImage && e->rtti() == RS2::EntityImage) continue;
+
+#ifdef OPENGLACTIVE
+            //Testing OPENGL - Fast AABB Bounding-Box Culling: lewati perhitungan geometri mahal jika bounding box entitas > minDist
+            if (minDist < 1.0e100 && e->rtti() != RS2::EntityConstructionLine) {
+                const RS_Vector &minV = e->getMin();
+                const RS_Vector &maxV = e->getMax();
+                if (minV.valid && maxV.valid && minV.x <= maxV.x && minV.y <= maxV.y) {
+                    const double dx = (coord.x < minV.x) ? (minV.x - coord.x) : ((coord.x > maxV.x) ? (coord.x - maxV.x) : 0.0);
+                    if (dx > minDist) continue;
+                    const double dy = (coord.y < minV.y) ? (minV.y - coord.y) : ((coord.y > maxV.y) ? (coord.y - maxV.y) : 0.0);
+                    if (dy > minDist || (dx * dx + dy * dy) > (minDist * minDist)) continue;
+                }
+            }
+#endif
+
             curDist = e->getDistanceToPoint(coord, &subEntity, level, solidDist);
 
             RS_DEBUG->print("entity: getDistanceToPoint: OK");

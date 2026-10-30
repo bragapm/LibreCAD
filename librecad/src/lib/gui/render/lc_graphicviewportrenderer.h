@@ -62,6 +62,14 @@ class LC_GraphicViewportRenderer{
     bool getLineWidthScaling() const{
         return m_scaleLineWidth;
     }
+
+    void setPaintDevice(QPaintDevice* paintDevice) {
+        pd = paintDevice;
+    }
+
+    QPaintDevice* getPaintDevice() const {
+        return pd;
+    }
 protected:
     QPaintDevice* pd = nullptr;
     LC_GraphicViewport* viewport = nullptr;

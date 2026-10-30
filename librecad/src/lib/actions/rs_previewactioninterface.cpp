@@ -739,8 +739,18 @@ void RS_PreviewActionInterface::onMouseMoveEvent([[maybe_unused]]int status, [[m
 LC_MouseEvent RS_PreviewActionInterface::toLCMouseMoveEvent(QMouseEvent *e)
 {
     LC_MouseEvent result{};
+#ifdef OPENGLACTIVE
+    result.graphPoint = toGraph(e);
+    //Testing OPENGL - Lewati pemindaian snapPoint(e) yang berat saat menggerakkan kursor di mode Default (Neutral/Dragging/Box Select/Panning)
+    if (rtti() == RS2::ActionDefault && getStatus() != 3 /* Moving */ && getStatus() != 4 /* MovingRef */) {
+        result.snapPoint = result.graphPoint;
+    } else {
+        result.snapPoint = snapPoint(e);
+    }
+#else
     result.snapPoint = snapPoint(e);
     result.graphPoint = toGraph(e);
+#endif
     result.uiPosition = e->pos();
     result.isShift = isShift(e);
     result.isControl = isControl(e);

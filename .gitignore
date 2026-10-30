@@ -108,16 +108,17 @@ core.*
 *.vcxproj
 *.vcxproj.filters
 *.sln
-<<<<<<< HEAD
 /cmake-build-debug/
+/build
 
 # pixi environments
 .pixi
 *.egg-info
-=======
-/build
 
 !librecad/res/main/librecad.rc
 !librecad/res/main/tataletak.ico
 !librecad/res/main/librecad_res.o
->>>>>>> origin/LibreCAD_2.2.0.2_Modified
+
+# Tracy Profiler / GPU Monitor
+librecad/src/lib/gui/render/lc_tracygpu.h
+*tracygpu*

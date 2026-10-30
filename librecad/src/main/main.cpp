@@ -48,11 +48,21 @@
 #include "lc_iconcolorsoptions.h"
 #include "qc_applicationwindow.h"
 #include "qg_dlginitial.h"
+#include "rs.h"
 #include "rs_debug.h"
 #include "rs_fontlist.h"
 #include "rs_patternlist.h"
 #include "rs_settings.h"
 #include "rs_system.h"
+
+#if defined(OPENGLACTIVE) && defined(Q_OS_WIN)
+extern "C" {
+    // Meminta driver NVIDIA Optimus / Windows Hybrid Graphics memilih Dedicated GPU (GPU 1 - GeForce RTX)
+    __declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
+    // Meminta driver AMD PowerXpress memilih Dedicated GPU performa tinggi
+    __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+}
+#endif
 
 // fixme - sand - files - complete refactoring
 namespace

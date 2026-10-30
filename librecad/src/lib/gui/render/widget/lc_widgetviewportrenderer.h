@@ -27,6 +27,7 @@
 
 class QPixmap;
 class LC_PluginInvoker;
+class QOpenGLFramebufferObject;
 
 class LC_WidgetViewPortRenderer:public LC_GraphicViewportRenderer
 {
@@ -37,12 +38,15 @@ public:
     void setupPainter(RS_Painter* painter) override;
     void setAntialiasing(bool state) {antialiasing = state;}
     void invalidate(RS2::RedrawMethod method) {redrawMethod = static_cast<RS2::RedrawMethod>(redrawMethod | method);}
+    void setUseOpenGL(bool useOpenGL) {m_useOpenGL = useOpenGL;}
+    bool isUsingOpenGL() const {return m_useOpenGL;}
 protected:
     void doRender() override;
 
     virtual void doSetupBeforeContainerDraw();
     void paintClassicalBuffered(QPaintDevice* pd);
     void paintSequental(QPaintDevice* pd);
+    void paintOpenGL(QPaintDevice* pd);
 
     void drawLayerBackground(RS_Painter *painter);
     void drawLayerEntities(RS_Painter* painter);
@@ -67,6 +71,7 @@ protected:
 private:
     bool antialiasing = false;
     bool classicRenderer = true;
+    bool m_useOpenGL = false;
 
     std::unique_ptr<QPixmap> pixmapLayerBackground;
     std::unique_ptr<QPixmap> pixmapLayerDrawing;
@@ -93,6 +98,7 @@ private:
     std::unique_ptr<QPixmap> m_pixmapLayer3;  // Used for crosshair and actionitems
 
     LC_PluginInvoker* m_pluginInvoker = nullptr;
+    std::unique_ptr<QOpenGLFramebufferObject> m_glFboDrawing;
 };
 
 #endif // LC_WIDGETVIEWPORTRENDERER_H

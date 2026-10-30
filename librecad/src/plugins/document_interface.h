@@ -628,6 +628,14 @@ public:
 
     virtual std::tuple<DPI::PaperFormat, bool> getPaperFormat() = 0;
     virtual void setPaperFormat(DPI::PaperFormat format, bool landscape) = 0;
+
+    virtual bool getRotation(QList<qulonglong> *entityIds, QPointF *basePoint, double *angleRad, bool *copyMode = nullptr) {
+        Q_UNUSED(entityIds);
+        Q_UNUSED(basePoint);
+        Q_UNUSED(angleRad);
+        Q_UNUSED(copyMode);
+        return false;
+    }
 };
 
 

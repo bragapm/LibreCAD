@@ -29,10 +29,12 @@
 #include <iostream>
 
 #include <QDebug>
+#include <QElapsedTimer>
 #include <QGridLayout>
 #include <QLabel>
 #include <QMenu>
 #include <QNativeGestureEvent>
+#include <QOpenGLWidget>
 #include <QPoint>
 #include <QPointingDevice>
 #include <QTimer>
@@ -343,13 +345,19 @@ QG_GraphicView::QG_GraphicView(QWidget* parent, RS_Document* doc, LC_ActionConte
 }
 
 void QG_GraphicView::initView() {
+#ifdef OPENGLACTIVE
+    if (isUsingOpenGL() && getOpenGLWidget() != nullptr) {
+        getOpenGLWidget()->setGeometry(0, 0, getWidth(), getHeight());
+        getOpenGLWidget()->lower();
+    }
+#endif
     createViewRenderer();
 }
 
 void QG_GraphicView::createViewRenderer() {
     if (getViewPort()) {
         getViewPort()->setSize(width(), height()); // fixme - sand - merge - CHECK THIS
-        setRenderer(std::make_unique<LC_GraphicViewRenderer>(getViewPort(), this));
+        setRenderer(std::make_unique<LC_GraphicViewRenderer>(getViewPort(), getPaintDevice()));
     }
 }
 
@@ -493,8 +501,18 @@ void QG_GraphicView::dragEnterEvent(QDragEnterEvent* event) {
  * Redraws the widget.
  */
 void QG_GraphicView::redraw(RS2::RedrawMethod method) {
-    getRenderer()->invalidate(method);
-    update(); // Paint when reeady to pain
+    if (getRenderer() != nullptr) {
+        getRenderer()->invalidate(method);
+    }
+#ifdef OPENGLACTIVE
+    if (isUsingOpenGL() && getOpenGLWidget() != nullptr) {
+        getOpenGLWidget()->update(); // Paint via paintGL()
+    } else {
+        update(); // Fallback paint via CPU paintEvent()
+    }
+#else
+    update();
+#endif
 }
 
 void QG_GraphicView::resizeEvent(QResizeEvent* e) {
@@ -676,11 +694,22 @@ bool QG_GraphicView::event(QEvent *event){
 }
 
 void QG_GraphicView::doZoom(RS2::ZoomDirection direction, RS_Vector& center, double zoom_factor) {
+    ZoneScopedNC("Benchmark::QG_GraphicView::doZoom", tracy::Color::Magenta);
+    QElapsedTimer zoomTimer;
+    zoomTimer.start();
+    QByteArray zoomDesc = QString("%1 | Factor: %2 | Mode: %3")
+                              .arg(direction == RS2::In ? "Zoom In" : "Zoom Out")
+                              .arg(zoom_factor)
+                              .arg(isUsingOpenGL() ? "GPU OpenGL" : "CPU Fallback")
+                              .toUtf8();
+    ZoneText(zoomDesc.constData(), zoomDesc.size());
+
     if (direction==RS2::In) {
         getViewPort()->zoomIn(zoom_factor, center);
     } else {
         getViewPort()->zoomOut(zoom_factor, center);
     }
+    TracyPlot("Zoom Step Time (us)", static_cast<int64_t>(zoomTimer.nsecsElapsed() / 1000));
 }
 
 /**
@@ -823,6 +852,7 @@ void QG_GraphicView::focusInEvent(QFocusEvent* e) {
  * shift or ctrl is pressed.
  */
 void QG_GraphicView::wheelEvent(QWheelEvent *e) {
+    ZoneScopedNC("Benchmark::QG_GraphicView::wheelEvent (Zoom/Scroll)", tracy::Color::Magenta);
     //RS_DEBUG->print("wheel: %d", e->delta());
 
     //printf("state: %d\n", e->state());
@@ -965,22 +995,40 @@ void QG_GraphicView::wheelEvent(QWheelEvent *e) {
         const QPoint viewCenter{getWidth()/2, getHeight()/2};
         const QPoint delta = viewCenter - uiEventPosition.toPoint();
 
+#ifdef OPENGLACTIVE
+        //Testing OPENGL - Hindari 2x fireViewportChanged/redraw beruntun saat PanOnZoom aktif
+        const bool doZoomStep = !getPanOnZoom() || !getSkipFirstZoom() || (abs(delta.x())<32 && abs(delta.y())<32);
+        if (getPanOnZoom()) {
+            QCursor::setPos(mapToGlobal(viewCenter));
+            if (doZoomStep) {
+                getViewPort()->justSetOffsetAndFactor(
+                    getViewPort()->getOffsetX() + delta.x(),
+                    getViewPort()->getOffsetY() - delta.y(),
+                    getViewPort()->getFactor().x
+                );
+            } else {
+                getViewPort()->zoomPan(delta.x(), delta.y());
+            }
+        }
+        if (doZoomStep) {
+            RS_Vector& zoomCenter = mouse;
+            doZoom(zoomDirection, zoomCenter, m_scrollZoomFactor);
+        }
+    }
+    // TEST OPENGL
+    //redraw();
+#else
         if (getPanOnZoom()) {
             QCursor::setPos(mapToGlobal(viewCenter));
             getViewPort()->zoomPan(delta.x(), delta.y());
         }
         if (!getPanOnZoom() || !getSkipFirstZoom() || (abs(delta.x())<32 && abs(delta.y())<32)) {
             RS_Vector& zoomCenter = mouse;
-//            LC_ERR << " Mouse "  << mouse << " Direction: " << (zoomDirection == RS2::In ? "In" : "Out");
-
-            /*// todo - well, actually this is one-shot action... and it will lead to full action processing chain in action handler
-            // todo - are we REALLY need it there? alternatively, zoom may be part of this class)
-            auto zoomAction = std::make_unique<RS_ActionZoomIn>(m_actionContext, zoomDirection, RS2::Both, &zoomCenter,m_scrollZoomFactor);
-            zoomAction->trigger();*/
             doZoom(zoomDirection, zoomCenter, m_scrollZoomFactor);
         }
     }
     redraw();
+#endif
 
 /*    QMouseEvent event
     {
@@ -1058,15 +1106,13 @@ void QG_GraphicView::adjustOffsetControls(){
     }
     LC_LOG<<__func__<<"(): begin";
 
+#ifdef OPENGLACTIVE
+    //Testing OPENGL - Blokir sinyal scrollbar sementara agar setValue() tidak memicu slotHScrolled/slotVScrolled berulang
+    const QSignalBlocker blockH(m_hScrollBar);
+    const QSignalBlocker blockV(m_vScrollBar);
+#else
     getContainer()->forcedCalculateBorders();
-    RS_Vector vpMin = getContainer()->getMin();
-    RS_Vector vpMax = getContainer()->getMax();
-
-    // no drawing yet - still allow to scroll
-    if (!isRectValid(vpMin, vpMax)) {
-        vpMin = RS_Vector(-10,-10);
-        vpMax = RS_Vector(100,100);
-    }
+#endif
 
     int ox = getViewPort()->getOffsetX();
     int oy = getViewPort()->getOffsetY();
@@ -1079,8 +1125,14 @@ void QG_GraphicView::adjustOffsetControls(){
         m_hScrollBar->setRange(minVal, maxVal);
     }
 
+#ifdef OPENGLACTIVE
+    //Testing OPENGL - Perbaiki bug minVal > maxVal (sebelumnya +0.75 sehingga setRange tidak pernah tereksekusi & memicu calculateBorders)
+    minVal = int(-0.75 * getHeight() - oy);
+    maxVal = int( 0.25 * getHeight() - oy);
+#else
     minVal = int(0.75 * getHeight() - oy);
     maxVal = int(0.25 * getHeight() - oy);
+#endif
 
     if (minVal<=maxVal) {
         m_vScrollBar->setRange(minVal, maxVal);
@@ -1093,8 +1145,14 @@ void QG_GraphicView::adjustOffsetControls(){
     m_vScrollBar->setValue(oy);
     LC_LOG<<__func__<<"(): y scrollbar range["<<minVal<<", "<<maxVal<<"]: "<<oy;
 
+#ifdef OPENGLACTIVE
+    //Testing OPENGL - Jangan panggil slotHScrolled(-ox) & slotVScrolled(oy) di sini karena memicu calculateBorders() dan 4x redraw() setiap Zoom!
+    //slotHScrolled(-ox);
+    //slotVScrolled(oy);
+#else
     slotHScrolled(-ox);
     slotVScrolled(oy);
+#endif
 
 
     //        RS_DEBUG->print("H min: %d / max: %d / step: %d / value: %d\n",
@@ -1130,7 +1188,12 @@ void QG_GraphicView::slotHScrolled(int value) {
     //running = true;
     ////RS_DEBUG->print("value x: %d\n", value);
     if (m_hScrollBar->maximum()==m_hScrollBar->minimum()) {
+#ifdef OPENGLACTIVE
+        //Testing OPENGL - Gunakan batas container yang sudah ter-cache tanpa menghitung ulang seluruh entitas
+        //getContainer()->calculateBorders();
+#else
         getContainer()->calculateBorders();
+#endif
         RS_Vector min = getContainer()->getMin();
         RS_Vector max = getContainer()->getMax();
         RS_Vector ucsMin;
@@ -1154,7 +1217,12 @@ void QG_GraphicView::slotVScrolled(int value) {
     // so let's keep old code in here for now
 
     if (m_vScrollBar->maximum()==m_vScrollBar->minimum()) {
+#ifdef OPENGLACTIVE
+        //Testing OPENGL - Gunakan batas container yang sudah ter-cache tanpa menghitung ulang seluruh entitas
+        //getContainer()->calculateBorders();
+#else
         getContainer()->calculateBorders();
+#endif
         RS_Vector min = getContainer()->getMin();
         RS_Vector max = getContainer()->getMax();
         RS_Vector ucsMin;
@@ -1223,14 +1291,50 @@ void QG_GraphicView::layerActivated(RS_Layer *layer) {
     }
 }
 
+void QG_GraphicView::paintGL() {
+#ifdef OPENGLACTIVE
+    ZoneScopedNC("QG_GraphicView::paintGL [GPU OpenGL]", tracy::Color::Green);  // Tracy: profile OpenGL paint
+    if (!isUsingOpenGL() || getOpenGLWidget() == nullptr || !getOpenGLWidget()->isValid()) {
+        fallbackToCpu();
+        return;
+    }
+    TracyPlot("RenderBackend (1=GPU, 0=CPU)", 1LL);
+    const char *tag = (getViewPort() != nullptr && getViewPort()->isPanning())
+                          ? "Backend: GPU OpenGL | State: Panning"
+                          : "Backend: GPU OpenGL | State: Normal/Zoom";
+    ZoneText(tag, std::strlen(tag));
+    if (getRenderer() != nullptr) {
+        getRenderer()->render();
+    }
+    FrameMark;  // Tracy: mark end of frame (enables Frame Graph + FPS tracking)
+#endif
+}
+
 /**
  * Handles paint events by redrawing the graphic in this view.
- * usually that's very fast since we only paint the buffer we
- * have from the last call..
+ * If OpenGL GPU acceleration is active, painting is handled via paintGL().
+ * Otherwise, it falls back to CPU raster rendering.
  */
 void QG_GraphicView::paintEvent(QPaintEvent *){
-    ZoneScopedN("QG_GraphicView::paintEvent");  // Tracy: profile full paint
-    getRenderer()->render();
+#ifdef OPENGLACTIVE
+    if (isUsingOpenGL()) {
+        if (auto *glWidget = getOpenGLWidget()) {
+            if (glWidget->isValid()) {
+                return;
+            }
+        }
+        fallbackToCpu();
+    }
+#endif
+    ZoneScopedNC("QG_GraphicView::paintEvent [CPU Fallback]", tracy::Color::Orange);  // Tracy: profile CPU fallback paint
+    TracyPlot("RenderBackend (1=GPU, 0=CPU)", 0LL);
+    const char *tag = (getViewPort() != nullptr && getViewPort()->isPanning())
+                          ? "Backend: CPU Fallback | State: Panning"
+                          : "Backend: CPU Fallback | State: Normal/Zoom";
+    ZoneText(tag, std::strlen(tag));
+    if (getRenderer() != nullptr) {
+        getRenderer()->render();
+    }
     FrameMark;  // Tracy: mark end of frame (enables Frame Graph + FPS tracking)
 }
 
@@ -1330,6 +1434,13 @@ void QG_GraphicView::addScrollbars(){
     m_vScrollBar->setCursor(Qt::ArrowCursor);
     m_layout->addWidget(m_vScrollBar, 0, 1);
     connect(m_vScrollBar, &QG_ScrollBar::valueChanged, this, &QG_GraphicView::slotVScrolled);
+
+#ifdef OPENGLACTIVE
+    if (isUsingOpenGL() && getOpenGLWidget() != nullptr) {
+        getOpenGLWidget()->setGeometry(0, 0, getWidth(), getHeight());
+        getOpenGLWidget()->lower();
+    }
+#endif
 }
 
 bool QG_GraphicView::hasScrollbars(){
