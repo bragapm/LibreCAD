@@ -29,7 +29,6 @@
 #include <iostream>
 
 #include <QDebug>
-#include <QElapsedTimer>
 #include <QGridLayout>
 #include <QLabel>
 #include <QMenu>
@@ -65,7 +64,6 @@
 #include "rs_graphic.h"
 #include "rs_insert.h"
 #include "rs_settings.h"
-#include "tracy/Tracy.hpp"  // Tracy Profiler
 
 #ifdef EMU_C99
 #include "emu_c99.h"
@@ -310,6 +308,7 @@ void createViewRenderer();
  * Constructor.
  */
 // fixme - sand - files - init by action context???
+// apa mksd init by action context ??
 QG_GraphicView::QG_GraphicView(QWidget* parent, RS_Document* doc, LC_ActionContext* actionContext)
     :RS_GraphicView(parent, {})
     ,m_device("Mouse")
@@ -694,22 +693,11 @@ bool QG_GraphicView::event(QEvent *event){
 }
 
 void QG_GraphicView::doZoom(RS2::ZoomDirection direction, RS_Vector& center, double zoom_factor) {
-    ZoneScopedNC("Benchmark::QG_GraphicView::doZoom", tracy::Color::Magenta);
-    QElapsedTimer zoomTimer;
-    zoomTimer.start();
-    QByteArray zoomDesc = QString("%1 | Factor: %2 | Mode: %3")
-                              .arg(direction == RS2::In ? "Zoom In" : "Zoom Out")
-                              .arg(zoom_factor)
-                              .arg(isUsingOpenGL() ? "GPU OpenGL" : "CPU Fallback")
-                              .toUtf8();
-    ZoneText(zoomDesc.constData(), zoomDesc.size());
-
     if (direction==RS2::In) {
         getViewPort()->zoomIn(zoom_factor, center);
     } else {
         getViewPort()->zoomOut(zoom_factor, center);
     }
-    TracyPlot("Zoom Step Time (us)", static_cast<int64_t>(zoomTimer.nsecsElapsed() / 1000));
 }
 
 /**
@@ -852,7 +840,6 @@ void QG_GraphicView::focusInEvent(QFocusEvent* e) {
  * shift or ctrl is pressed.
  */
 void QG_GraphicView::wheelEvent(QWheelEvent *e) {
-    ZoneScopedNC("Benchmark::QG_GraphicView::wheelEvent (Zoom/Scroll)", tracy::Color::Magenta);
     //RS_DEBUG->print("wheel: %d", e->delta());
 
     //printf("state: %d\n", e->state());
@@ -1293,20 +1280,13 @@ void QG_GraphicView::layerActivated(RS_Layer *layer) {
 
 void QG_GraphicView::paintGL() {
 #ifdef OPENGLACTIVE
-    ZoneScopedNC("QG_GraphicView::paintGL [GPU OpenGL]", tracy::Color::Green);  // Tracy: profile OpenGL paint
     if (!isUsingOpenGL() || getOpenGLWidget() == nullptr || !getOpenGLWidget()->isValid()) {
         fallbackToCpu();
         return;
     }
-    TracyPlot("RenderBackend (1=GPU, 0=CPU)", 1LL);
-    const char *tag = (getViewPort() != nullptr && getViewPort()->isPanning())
-                          ? "Backend: GPU OpenGL | State: Panning"
-                          : "Backend: GPU OpenGL | State: Normal/Zoom";
-    ZoneText(tag, std::strlen(tag));
     if (getRenderer() != nullptr) {
         getRenderer()->render();
     }
-    FrameMark;  // Tracy: mark end of frame (enables Frame Graph + FPS tracking)
 #endif
 }
 
@@ -1326,16 +1306,9 @@ void QG_GraphicView::paintEvent(QPaintEvent *){
         fallbackToCpu();
     }
 #endif
-    ZoneScopedNC("QG_GraphicView::paintEvent [CPU Fallback]", tracy::Color::Orange);  // Tracy: profile CPU fallback paint
-    TracyPlot("RenderBackend (1=GPU, 0=CPU)", 0LL);
-    const char *tag = (getViewPort() != nullptr && getViewPort()->isPanning())
-                          ? "Backend: CPU Fallback | State: Panning"
-                          : "Backend: CPU Fallback | State: Normal/Zoom";
-    ZoneText(tag, std::strlen(tag));
     if (getRenderer() != nullptr) {
         getRenderer()->render();
     }
-    FrameMark;  // Tracy: mark end of frame (enables Frame Graph + FPS tracking)
 }
 
 

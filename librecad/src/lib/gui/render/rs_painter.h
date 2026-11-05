@@ -159,6 +159,12 @@ public:
 
     // When true, only selected items will be draw
     bool shouldDrawSelected() const {return drawSelectedEntities;}
+
+#ifdef OPENGLACTIVE
+    void resetSelectedEntitiesDetected() { m_hasSelectedEntitiesInPass = false; }
+    void markSelectedEntityDetected() { m_hasSelectedEntitiesInPass = true; }
+    bool hasSelectedEntitiesDetected() const { return m_hasSelectedEntitiesInPass; }
+#endif
     /**
      * @return Current drawing mode.
      */
@@ -259,6 +265,9 @@ protected:
     RS2::DrawingMode drawingMode = RS2::ModeFull;
     // When set to true, only selected entities should be drawn
     bool drawSelectedEntities = false;
+#ifdef OPENGLACTIVE
+    bool m_hasSelectedEntitiesInPass = false;
+#endif
 
     RS_Pen lpen;
     long rememberX = 0; // Used for the moment because QPainter doesn't support moveTo anymore, thus we need to remember ourselves the moveTo positions
@@ -295,6 +304,18 @@ protected:
     int viewPortOffsetY = 0;
     RS_Vector m_viewPortOffset;
     double viewPortHeight = 0.0;
+
+#ifdef OPENGLACTIVE
+    // Precomputed affine transformation coefficients (WCS -> GUI Screen Coordinates)
+    // uiX = m_wcsToGuiM11 * wcsX + m_wcsToGuiM12 * wcsY + m_wcsToGuiDx
+    // uiY = m_wcsToGuiM21 * wcsX + m_wcsToGuiM22 * wcsY + m_wcsToGuiDy
+    double m_wcsToGuiM11 = 1.0;
+    double m_wcsToGuiM12 = 0.0;
+    double m_wcsToGuiDx  = 0.0;
+    double m_wcsToGuiM21 = 0.0;
+    double m_wcsToGuiM22 = -1.0;
+    double m_wcsToGuiDy  = 0.0;
+#endif
 
     LC_Rect wcsBoundingRect;
 

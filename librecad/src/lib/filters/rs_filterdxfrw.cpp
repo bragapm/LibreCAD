@@ -29,7 +29,6 @@
 #include <QStringConverter>
 
 #include "rs_filterdxfrw.h"
-#include "tracy/Tracy.hpp"  // Tracy Profiler
 
 #include <QFile>
 #include <QFileInfo>
@@ -161,8 +160,6 @@ QString RS_FilterDXFRW::lastError() const
  * taken to be stored in a file.
  */
 bool RS_FilterDXFRW::fileImport(RS_Graphic& g, const QString& file, [[maybe_unused]] RS2::FormatType type) {
-    ZoneScoped;  // Tracy: ukur total waktu buka file DXF/DWG
-    ZoneText(file.toUtf8().constData(), file.toUtf8().size());  // Tracy: tampilkan nama file di tooltip
     RS_DEBUG->print("RS_FilterDXFRW::fileImport");
 
     RS_DEBUG->print("DXFRW Filter: importing file '%s'...", (const char*)QFile::encodeName(file));
@@ -208,7 +205,6 @@ bool RS_FilterDXFRW::fileImport(RS_Graphic& g, const QString& file, [[maybe_unus
         }
         bool success = false;
         {
-            ZoneScopedN("DXF::read (parsing)");
             success = dxfR.read(this, true);
         }
         RS_DEBUG->print("RS_FilterDXFRW::fileImport: reading file: OK");
@@ -233,7 +229,6 @@ bool RS_FilterDXFRW::fileImport(RS_Graphic& g, const QString& file, [[maybe_unus
     }
     RS_DEBUG->print("RS_FilterDXFRW::fileImport: updating inserts");
     {
-        ZoneScopedN("DXF::updateInserts");
         graphic->updateInserts();
     }
 
@@ -246,7 +241,6 @@ bool RS_FilterDXFRW::fileImport(RS_Graphic& g, const QString& file, [[maybe_unus
  * Implementation of the method which handles layers.
  */
 void RS_FilterDXFRW::addLayer(const DRW_Layer &data) {
-    ZoneScopedN("DXF::addLayer");  // Tracy: ukur waktu parsing tiap layer
     RS_DEBUG->print("RS_FilterDXF::addLayer");
     RS_DEBUG->print("  adding layer: %s", data.name.c_str());
 
@@ -444,7 +438,6 @@ void RS_FilterDXFRW::addView(const DRW_View &data) {
  * @todo Adding blocks to blocks (stack for currentContainer)
  */
 void RS_FilterDXFRW::addBlock(const DRW_Block& data) {
-    ZoneScopedN("DXF::addBlock");
     RS_DEBUG->print("RS_FilterDXF::addBlock");
 
     RS_DEBUG->print("  adding block: %s", data.name.c_str());
@@ -486,7 +479,6 @@ void RS_FilterDXFRW::setBlock(const int handle){
  * Implementation of the method which closes blocks.
  */
 void RS_FilterDXFRW::endBlock() {
-    ZoneScopedN("DXF::endBlock");
     if (currentContainer->rtti() == RS2::EntityBlock) {
         RS_Block *bk = (RS_Block *)currentContainer;
         //remove unnamed blocks *D only if version != R12
@@ -504,7 +496,6 @@ void RS_FilterDXFRW::endBlock() {
  * Implementation of the method which handles point entities.
  */
 void RS_FilterDXFRW::addPoint(const DRW_Point& data) {
-    ZoneScopedN("DXF::addPoint");
     RS_Vector v(data.basePoint.x, data.basePoint.y);
 
     RS_Point* entity = new RS_Point(currentContainer,
@@ -520,7 +511,6 @@ void RS_FilterDXFRW::addPoint(const DRW_Point& data) {
  * Implementation of the method which handles line entities.
  */
 void RS_FilterDXFRW::addLine(const DRW_Line& data) {
-    ZoneScopedN("DXF::addLine");
     RS_DEBUG->print("RS_FilterDXF::addLine");
 
     RS_Vector v1(data.basePoint.x, data.basePoint.y);
@@ -548,7 +538,6 @@ void RS_FilterDXFRW::addLine(const DRW_Line& data) {
  * Implementation of the method which handles ray entities.
  */
 void RS_FilterDXFRW::addRay(const DRW_Ray& data) {
-    ZoneScopedN("DXF::addRay");
     RS_DEBUG->print("RS_FilterDXF::addRay");
 
 	RS_Vector v1{data.basePoint.x, data.basePoint.y};
@@ -577,7 +566,6 @@ void RS_FilterDXFRW::addRay(const DRW_Ray& data) {
  * Implementation of the method which handles line entities.
  */
 void RS_FilterDXFRW::addXline(const DRW_Xline& data) {
-    ZoneScopedN("DXF::addXline");
     RS_DEBUG->print("RS_FilterDXF::addXline");
 
     RS_Vector v1(data.basePoint.x, data.basePoint.y);
@@ -606,7 +594,6 @@ void RS_FilterDXFRW::addXline(const DRW_Xline& data) {
  * Implementation of the method which handles circle entities.
  */
 void RS_FilterDXFRW::addCircle(const DRW_Circle& data) {
-    ZoneScopedN("DXF::addCircle");
     RS_DEBUG->print("RS_FilterDXF::addCircle");
 
 	RS_Vector v{data.basePoint.x, data.basePoint.y};
@@ -625,7 +612,6 @@ void RS_FilterDXFRW::addCircle(const DRW_Circle& data) {
  * @param angle2 End angle in deg (!)
  */
 void RS_FilterDXFRW::addArc(const DRW_Arc& data) {
-    ZoneScopedN("DXF::addArc");
     RS_DEBUG->print("RS_FilterDXF::addArc");
     RS_Vector v(data.basePoint.x, data.basePoint.y);
     RS_ArcData d(v, data.radious,
@@ -647,7 +633,6 @@ void RS_FilterDXFRW::addArc(const DRW_Arc& data) {
  * @param angle2 End angle in rad (!)
  */
 void RS_FilterDXFRW::addEllipse(const DRW_Ellipse& data) {
-    ZoneScopedN("DXF::addEllipse");
     RS_DEBUG->print("RS_FilterDXFRW::addEllipse");
 
 	RS_Vector v1(data.basePoint.x, data.basePoint.y);
@@ -716,7 +701,6 @@ void RS_FilterDXFRW::addSolid(const DRW_Solid& data) {
  * Implementation of the method which handles lightweight polyline entities.
  */
 void RS_FilterDXFRW::addLWPolyline(const DRW_LWPolyline& data) {
-    ZoneScopedN("DXF::addLWPolyline");
     RS_DEBUG->print("RS_FilterDXFRW::addLWPolyline");
     if (data.vertlist.empty())
         return;
@@ -740,7 +724,6 @@ void RS_FilterDXFRW::addLWPolyline(const DRW_LWPolyline& data) {
  * Implementation of the method which handles polyline entities.
  */
 void RS_FilterDXFRW::addPolyline(const DRW_Polyline& data) {
-    ZoneScopedN("DXF::addPolyline");
     RS_DEBUG->print("RS_FilterDXFRW::addPolyline");
     if ( data.flags&0x10)
         return; //the polyline is a polygon mesh, not handled
@@ -771,7 +754,6 @@ void RS_FilterDXFRW::addPolyline(const DRW_Polyline& data) {
  * Implementation of the method which handles splines.
  */
 void RS_FilterDXFRW::addSpline(const DRW_Spline* data) {
-    ZoneScopedN("DXF::addSpline");
     RS_DEBUG->print("RS_FilterDXFRW::addSpline: degree: %d", data->degree);
 
     // todo - sand - review this, quite a strange logic there... why spline points can't be with degree 3, for example?
@@ -849,7 +831,6 @@ void RS_FilterDXFRW::addSpline(const DRW_Spline* data) {
  * Implementation of the method which handles inserts.
  */
 void RS_FilterDXFRW::addInsert(const DRW_Insert& data) {
-    ZoneScopedN("DXF::addInsert");
     RS_DEBUG->print("RS_FilterDXF::addInsert");
 
     RS_Vector ip(data.basePoint.x, data.basePoint.y);
@@ -876,7 +857,6 @@ void RS_FilterDXFRW::addInsert(const DRW_Insert& data) {
  * multi texts (MTEXT).
  */
 void RS_FilterDXFRW::addMText(const DRW_MText& data) {
-    ZoneScopedN("DXF::addMText");
     RS_DEBUG->print("RS_FilterDXF::addMText: %s", data.text.c_str());
 
     RS_MTextData::VAlign valign;
@@ -992,7 +972,6 @@ void RS_FilterDXFRW::addMText(const DRW_MText& data) {
  * texts (TEXT).
  */
 void RS_FilterDXFRW::addText(const DRW_Text& data) {
-    ZoneScopedN("DXF::addText");
     RS_DEBUG->print("RS_FilterDXFRW::addText");
     RS_Vector refPoint = RS_Vector(data.basePoint.x, data.basePoint.y);;
     RS_Vector secPoint = RS_Vector(data.secPoint.x, data.secPoint.y);;
@@ -1020,7 +999,6 @@ void RS_FilterDXFRW::addText(const DRW_Text& data) {
 
     QString mtext;
     {
-        ZoneScopedN("addText::toNativeString");
         mtext = toNativeString(QString::fromUtf8(data.text.c_str()));
     }
     // use default style for the drawing:
@@ -1046,7 +1024,6 @@ void RS_FilterDXFRW::addText(const DRW_Text& data) {
 
     setEntityAttributes(entity, &data);
     {
-        ZoneScopedN("addText::entityUpdate");
         entity->update();
     }
     currentContainer->addEntity(entity);
@@ -1295,7 +1272,6 @@ void RS_FilterDXFRW::addLeader(const DRW_Leader *data) {
  * Implementation of the method which handles hatch entities.
  */
 void RS_FilterDXFRW::addHatch(const DRW_Hatch *data) {
-    ZoneScopedN("DXF::addHatch");
     RS_DEBUG->print("RS_FilterDXF::addHatch()");
     RS_Hatch* hatch;
     RS_EntityContainer* hatchLoop;

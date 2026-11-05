@@ -125,6 +125,30 @@ void LC_GraphicViewRenderer::renderEntity(RS_Painter *painter, RS_Entity *e) {
     }
 
     RS2::EntityType entityType = e->rtti();
+#ifdef OPENGLACTIVE
+    // Sub-pixel Culling (LOD) saat Zoom Jauh:
+    // Jika ukuran bounding box entitas di layar sangat kecil (< 1.5 piksel), lewati entitas komposit berat
+    if (e->getMin().valid && e->getMax().valid) {
+        const double uiW = std::abs(painter->toGuiDX(e->getMax().x - e->getMin().x));
+        const double uiH = std::abs(painter->toGuiDY(e->getMax().y - e->getMin().y));
+        if (uiW < 1.0 && uiH < 1.0) {
+            // Objek lebih kecil dari 1 piksel layar
+            if (entityType == RS2::EntityHatch ||
+                entityType == RS2::EntityMText ||
+                entityType == RS2::EntityText ||
+                entityType == RS2::EntityInsert ||
+                entityType == RS2::EntityImage) {
+                return;
+            }
+        } else if (entityType == RS2::EntityHatch && (uiW < 3.0 && uiH < 3.0)) {
+            // Arsiran non-solid yang kurang dari 3 piksel tidak terlihat detail garisnya
+            return;
+        } else if ((entityType == RS2::EntityMText || entityType == RS2::EntityText) && uiH < 1.5) {
+            // Teks dengan tinggi kurang dari 1.5 piksel tidak perlu digambar hurufnya
+            return;
+        }
+    }
+#endif
     if (isDraftMode()) {
         switch (entityType) {
             case RS2::EntityMText:

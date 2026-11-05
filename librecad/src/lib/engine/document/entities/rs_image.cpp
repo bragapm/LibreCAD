@@ -37,7 +37,6 @@
 #include "rs_painter.h"
 #include "rs_polyline.h"
 #include "rs_settings.h"
-#include "tracy/Tracy.hpp"  // Tracy Profiler (no-op when TRACY_ENABLE is not defined)
 
 namespace
 {
@@ -124,19 +123,16 @@ void RS_Image::updateData(RS_Vector size, RS_Vector Uv, RS_Vector Vv) {
 }
 
 void RS_Image::update() {
-    ZoneScoped;  // Tracy: profile entire update() call
     RS_DEBUG->print("RS_Image::update");
 
     // the whole image:
     QString filePathName = imageRelativePathName(data.file);
 
     {
-        ZoneScopedN("QImage::load from disk");  // Tracy: isolate disk I/O
         //QImage image = QImage(data.file);
         img = std::make_shared<QImage>(filePathName);
     }
     if (!img->isNull()) {
-        ZoneScopedN("calculateBorders");  // Tracy: isolate border calc
         data.size = RS_Vector(img->width(), img->height());
         RS_Image::calculateBorders(); // image update need this.
     } else {
@@ -375,7 +371,6 @@ void RS_Image::mirror(const RS_Vector& axisPoint1, const RS_Vector& axisPoint2) 
 }
 
 void RS_Image::draw(RS_Painter* painter) {
-    ZoneScopedN("RS_Image::draw");  // Tracy: profile every draw call
     if (!img.get() || img->isNull()) {
         return;
     }

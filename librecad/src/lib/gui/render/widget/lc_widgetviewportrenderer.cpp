@@ -30,47 +30,13 @@
 
 #include "lc_graphicviewport.h"
 #include "rs_entitycontainer.h"
+#include "rs_grid.h"
 #include "rs_math.h"
 #include "rs_painter.h"
 #include "rs_settings.h"
 
 #include "qc_applicationwindow.h"
 #include "lc_plugininvoker.h"
-#if __has_include("lc_tracygpu.h")
-#include "lc_tracygpu.h"
-#else
-#define LC_TracyGpuZoneC(name, color)
-#define LC_TracyGpuNamedZoneC(varname, name, color)
-#define LC_TracyGpuCollect()
-class LC_TracyGpuMonitor {
-public:
-    static LC_TracyGpuMonitor& instance() {
-        static LC_TracyGpuMonitor s;
-        return s;
-    }
-    void beginGpuFrameTimer() {}
-    void endGpuFrameTimer(int64_t = 0) {}
-};
-#endif
-#include "tracy/Tracy.hpp"  // Tracy Profiler
-
-namespace {
-    const char* paintEngineTypeName(const QPainter &painter) {
-        if (painter.paintEngine() == nullptr) {
-            return "PaintEngine: None";
-        }
-        switch (painter.paintEngine()->type()) {
-            case QPaintEngine::OpenGL:
-                return "PaintEngine: OpenGL (GPU)";
-            case QPaintEngine::OpenGL2:
-                return "PaintEngine: OpenGL2 (Hardware GPU)";
-            case QPaintEngine::Raster:
-                return "PaintEngine: Raster (CPU)";
-            default:
-                return "PaintEngine: Other";
-        }
-    }
-}
 
 LC_WidgetViewPortRenderer::LC_WidgetViewPortRenderer(LC_GraphicViewport *viewport, QPaintDevice* paintDevice):
     LC_GraphicViewportRenderer(viewport, paintDevice)
@@ -127,9 +93,6 @@ void LC_WidgetViewPortRenderer::loadSettings() {
 }
 
 void LC_WidgetViewPortRenderer::doRender() {
-    ZoneScopedN("LC_WidgetViewPortRenderer::doRender");
-    QElapsedTimer benchmarkTimer;
-    benchmarkTimer.start();
 
 #ifdef DEBUG_RENDERING
     QElapsedTimer timer;
@@ -166,11 +129,6 @@ void LC_WidgetViewPortRenderer::doRender() {
         paintClassicalBuffered(pd);
     }
 
-    const int64_t elapsedUs = benchmarkTimer.nsecsElapsed() / 1000;
-    TracyPlot("Render Frame Time (us)", elapsedUs);
-    if (viewport != nullptr && viewport->isPanning()) {
-        TracyPlot("Panning Render Frame Time (us)", elapsedUs);
-    }
 
 #ifdef DEBUG_RENDERING
     LC_ERR<<"Paint:"  << timer.elapsed() <<
@@ -184,25 +142,30 @@ void LC_WidgetViewPortRenderer::doRender() {
 
 void LC_WidgetViewPortRenderer::paintOpenGL(QPaintDevice* pd) {
 #ifdef OPENGLACTIVE
-    ZoneScopedNC("Renderer::paintOpenGL [GPU]", tracy::Color::Green);
     int width = viewport->getWidth();
     int height = viewport->getHeight();
     if (width <= 0 || height <= 0 || pd == nullptr) {
         return;
     }
 
-    QElapsedTimer cpuFrameTimer;
-    cpuFrameTimer.start();
 
-    LC_TracyGpuMonitor::instance().beginGpuFrameTimer();
-    {
-        LC_TracyGpuZoneC("GPU::paintOpenGL", tracy::Color::Green);
+        // Margin overscan di setiap sisi (50% dari lebar & tinggi layar) agar saat Panning,
+        // GPU hanya menggeser (glBlitFramebuffer) area dari FBO tanpa perlu re-render CPU
+        const int marginX = std::max(width / 4, 128);
+        const int marginY = std::max(height / 4, 128);
+        const int fboWidth = width + 2 * marginX;
+        const int fboHeight = height + 2 * marginY;
+        const QSize fboSize(fboWidth, fboHeight);
 
-        const QSize curSize(width, height);
+        const int curOffsetX = viewport->getOffsetX();
+        const int curOffsetY = viewport->getOffsetY();
+        const RS_Vector curFactor = viewport->getFactor();
+
         bool needFullRedraw = (redrawMethod & (RS2::RedrawDrawing | RS2::RedrawGrid)) != 0;
 
-        if (!m_glFboDrawing || m_glFboDrawing->size() != curSize) {
-            m_glFboDrawing = std::make_unique<QOpenGLFramebufferObject>(curSize);
+        if (!m_glFboDrawing || m_glFboDrawing->size() != fboSize) {
+            m_glFboDrawing = std::make_unique<QOpenGLFramebufferObject>(fboSize);
+            m_fboCacheValid = false;
             needFullRedraw = true;
         }
 
@@ -220,25 +183,45 @@ void LC_WidgetViewPortRenderer::paintOpenGL(QPaintDevice* pd) {
         const bool canUseFboCache = (m_glFboDrawing && m_glFboDrawing->isValid() && fnBlit && fnBindFb);
 
         if (canUseFboCache) {
-            // Jika ada perubahan gambar CAD (pan, zoom, tambah entitas), render background & entitas ke FBO di GPU
+            const bool sameZoom = m_fboCacheValid &&
+                                  std::abs(curFactor.x - m_fboCachedFactorX) < 1.0e-12 &&
+                                  std::abs(curFactor.y - m_fboCachedFactorY) < 1.0e-12;
+            const int panShiftX = curOffsetX - m_fboCachedOffsetX;
+            const int panShiftY = curOffsetY - m_fboCachedOffsetY;
+            const bool withinOverscanMargin = (std::abs(panShiftX) <= marginX) && (std::abs(panShiftY) <= marginY);
+
+            // Saat pengguna melakukan Panning dan pergeseran masih di dalam batas margin overscan FBO,
+            // lewati proses render ulang CPU dan gunakan pergeseran hardware glBlitFramebuffer!
+            if (viewport->isPanning() && sameZoom && withinOverscanMargin) {
+                needFullRedraw = false;
+            } else if (!m_fboCacheValid || !sameZoom || !withinOverscanMargin) {
+                needFullRedraw = true;
+            }
+
+            // Jika ada perubahan gambar CAD (zoom, tambah entitas, atau geseran pan melebihi batas margin),
+            // render background & entitas ke Overscan FBO di GPU
             if (needFullRedraw) {
-                ZoneNamedNC(fboRenderZone, "OpenGL::FBO_Cache_Entities", tracy::Color::LimeGreen, true);
                 m_glFboDrawing->bind();
 
-                QOpenGLPaintDevice glPaintDev(curSize);
+                // Perluas ukuran & geser offset viewport sementara ke ukuran Overscan FBO
+                viewport->setSize(fboWidth, fboHeight);
+                viewport->justSetOffsetAndFactor(curOffsetX + marginX, curOffsetY + marginY, curFactor.x);
+                if (viewport->getGrid() != nullptr) {
+                    viewport->getGrid()->invalidate(viewport->isGridOn());
+                }
+                const LC_Rect savedClipRect = renderBoundingClipRect;
+                renderBoundingClipRect = prepareBoundingClipRect();
+
+                QOpenGLPaintDevice glPaintDev(fboSize);
                 RS_Painter fboPainter(&glPaintDev);
                 setupPainter(&fboPainter);
 
                 {
-                    ZoneNamedNC(bgZone, "OpenGL::Layer1_Background", tracy::Color::DarkGreen, true);
-                    LC_TracyGpuNamedZoneC(gpuBgZone, "GPU::Layer1_Background", tracy::Color::DarkGreen);
-                    fboPainter.fillRect(0, 0, width, height, m_colorBackground);
+                    fboPainter.fillRect(0, 0, fboWidth, fboHeight, m_colorBackground);
                     drawLayerBackground(&fboPainter);
                 }
 
                 {
-                    ZoneNamedNC(entZone, "OpenGL::Layer2_Entities", tracy::Color::LimeGreen, true);
-                    LC_TracyGpuNamedZoneC(gpuEntZone, "GPU::Layer2_Entities", tracy::Color::LimeGreen);
                     m_pluginInvoker->drawPlugs(&fboPainter, 0);
                     drawLayerEntities(&fboPainter);
                     drawLayerEntitiesOver(&fboPainter);
@@ -247,25 +230,39 @@ void LC_WidgetViewPortRenderer::paintOpenGL(QPaintDevice* pd) {
 
                 fboPainter.end();
                 m_glFboDrawing->release();
+
+                // Kembalikan ukuran & offset viewport ke ukuran layar asli
+                viewport->setSize(width, height);
+                viewport->justSetOffsetAndFactor(curOffsetX, curOffsetY, curFactor.x);
+                renderBoundingClipRect = savedClipRect;
+
+                m_fboCachedOffsetX = curOffsetX;
+                m_fboCachedOffsetY = curOffsetY;
+                m_fboCachedFactorX = curFactor.x;
+                m_fboCachedFactorY = curFactor.y;
+                m_fboCacheValid = true;
             }
 
-            // 1. Salin background + entitas CAD dari cache FBO langsung via hardware GPU Blit (0.01 ms)
+            // 1. Salin background + entitas CAD dari Overscan FBO langsung via hardware GPU Blit (0.01 ms)
+            // Saat panning, jendela baca (srcX0, srcY0) digeser sesuai (deltaX, deltaY)
             {
-                ZoneNamedNC(blitZone, "OpenGL::GPU_Blit_Entities", tracy::Color::Cyan, true);
+                const int deltaX = curOffsetX - m_fboCachedOffsetX;
+                const int deltaY = curOffsetY - m_fboCachedOffsetY;
+                const GLint srcX0 = marginX - deltaX;
+                const GLint srcY0 = marginY - deltaY;
+
                 fnBindFb(0x8CA8 /* GL_READ_FRAMEBUFFER */, m_glFboDrawing->handle());
                 fnBindFb(0x8CA9 /* GL_DRAW_FRAMEBUFFER */, targetFbo);
-                fnBlit(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+                fnBlit(srcX0, srcY0, srcX0 + width, srcY0 + height,
+                       0, 0, width, height,
+                       GL_COLOR_BUFFER_BIT, GL_NEAREST);
                 fnBindFb(0x8D40 /* GL_FRAMEBUFFER */, targetFbo);
             }
 
             // 2. Gambar overlay (kursor salib, snapper, highlight) langsung di atas layar
             {
-                ZoneNamedNC(ovlZone, "OpenGL::Layer3_Overlays", tracy::Color::SeaGreen, true);
-                LC_TracyGpuNamedZoneC(gpuOvlZone, "GPU::Layer3_Overlays", tracy::Color::SeaGreen);
 
                 RS_Painter wPainter(pd);
-                const char* engineInfo = paintEngineTypeName(wPainter);
-                ZoneText(engineInfo, std::strlen(engineInfo));
 
                 setupPainter(&wPainter);
                 if (antialiasing) {
@@ -277,21 +274,15 @@ void LC_WidgetViewPortRenderer::paintOpenGL(QPaintDevice* pd) {
         } else {
             // Jalur fallback jika FBO/blit tidak tersedia
             RS_Painter wPainter(pd);
-            const char* engineInfo = paintEngineTypeName(wPainter);
-            ZoneText(engineInfo, std::strlen(engineInfo));
 
             setupPainter(&wPainter);
 
             {
-                ZoneNamedNC(bgZone, "OpenGL::Layer1_Background", tracy::Color::DarkGreen, true);
-                LC_TracyGpuNamedZoneC(gpuBgZone, "GPU::Layer1_Background", tracy::Color::DarkGreen);
                 wPainter.fillRect(0, 0, width, height, m_colorBackground);
                 drawLayerBackground(&wPainter);
             }
 
             {
-                ZoneNamedNC(entZone, "OpenGL::Layer2_Entities", tracy::Color::LimeGreen, true);
-                LC_TracyGpuNamedZoneC(gpuEntZone, "GPU::Layer2_Entities", tracy::Color::LimeGreen);
                 m_pluginInvoker->drawPlugs(&wPainter, 0);
                 drawLayerEntities(&wPainter);
                 drawLayerEntitiesOver(&wPainter);
@@ -299,8 +290,6 @@ void LC_WidgetViewPortRenderer::paintOpenGL(QPaintDevice* pd) {
             }
 
             {
-                ZoneNamedNC(ovlZone, "OpenGL::Layer3_Overlays", tracy::Color::SeaGreen, true);
-                LC_TracyGpuNamedZoneC(gpuOvlZone, "GPU::Layer3_Overlays", tracy::Color::SeaGreen);
                 if (antialiasing) {
                     wPainter.setRenderHint(QPainter::Antialiasing);
                 }
@@ -309,18 +298,12 @@ void LC_WidgetViewPortRenderer::paintOpenGL(QPaintDevice* pd) {
 
             wPainter.end();
         }
-    }
-
-    const int64_t cpuFrameTimeUs = cpuFrameTimer.nsecsElapsed() / 1000;
-    LC_TracyGpuMonitor::instance().endGpuFrameTimer(cpuFrameTimeUs);
-    LC_TracyGpuCollect();
 #else
     (void)pd;
 #endif
 }
 
 void LC_WidgetViewPortRenderer::paintSequental(QPaintDevice* pd) {
-    ZoneScopedNC("Renderer::paintSequental [CPU]", tracy::Color::Orange);
     int width = viewport->getWidth();
     int height = viewport->getHeight();
 
@@ -363,14 +346,11 @@ void LC_WidgetViewPortRenderer::paintSequental(QPaintDevice* pd) {
     }
 
     RS_Painter wPainter(pd);
-    const char* engineInfo = paintEngineTypeName(wPainter);
-    ZoneText(engineInfo, std::strlen(engineInfo));
     wPainter.drawPixmap(0, 0, *pixmapLayerOverlays);
 }
 
 
 void LC_WidgetViewPortRenderer::paintClassicalBuffered(QPaintDevice* pd) {
-    ZoneScopedNC("Renderer::paintClassicalBuffered [CPU]", tracy::Color::Orange);
     int width = viewport->getWidth();
     int height = viewport->getHeight();
     QSize const s0(width, height);
@@ -411,8 +391,6 @@ void LC_WidgetViewPortRenderer::paintClassicalBuffered(QPaintDevice* pd) {
 
     // Finally paint the layers back on the screen, bitblk to the rescue!
     RS_Painter wPainter(pd);
-    const char* engineInfo = paintEngineTypeName(wPainter);
-    ZoneText(engineInfo, std::strlen(engineInfo));
     wPainter.drawPixmap(0, 0, *m_pixmapLayer1);
     wPainter.drawPixmap(0, 0, *m_pixmapLayer2);
     wPainter.drawPixmap(0, 0, *m_pixmapLayer3);
@@ -442,7 +420,6 @@ void LC_WidgetViewPortRenderer::setupPainter(RS_Painter *painter) {
 
 
 void LC_WidgetViewPortRenderer::drawLayerBackground(RS_Painter *painter) {
-    ZoneScopedN("Renderer::Layer1_Background");
 #ifdef DEBUG_RENDERING_DETAILS
     drawLayerBackgroundTimer.start();
 #endif
@@ -456,19 +433,31 @@ void LC_WidgetViewPortRenderer::drawLayerBackground(RS_Painter *painter) {
 // fixme - sand - ADD additional pass with ordering of entities - in order to draw construction entities under normal ones!!!
 
 void LC_WidgetViewPortRenderer::drawLayerEntities(RS_Painter* painter) {
-    ZoneScopedN("Renderer::Layer2_Entities");
 #ifdef DEBUG_RENDERING_DETAILS
     drawLayerEntitiesTimer.start();
 #endif
 
     RS_EntityContainer *container = viewport->getContainer();
     painter->setDrawSelectedOnly(false);
+#ifdef OPENGLACTIVE
+    painter->resetSelectedEntitiesDetected();
+#endif
     doSetupBeforeContainerDraw();
     justDrawEntity(painter, container);
 
+#ifdef OPENGLACTIVE
+    // Hanya jalankan Pass ke-2 jika pada Pass ke-1 ditemukan minimal 1 entitas yang sedang diseleksi!
+    // Menghemat 50% waktu iterasi CPU saat Zoom In/Out pada gambar kompleks tanpa seleksi.
+    if (painter->hasSelectedEntitiesDetected()) {
+        painter->setDrawSelectedOnly(true);
+        doSetupBeforeContainerDraw();
+        justDrawEntity(painter, container);
+    }
+#else
     painter->setDrawSelectedOnly(true);
     doSetupBeforeContainerDraw();
     justDrawEntity(painter, container);
+#endif
 
 #ifdef DEBUG_RENDERING_DETAILS
     drawLayerEntitiesTime += drawLayerEntitiesTimer.elapsed();
@@ -482,7 +471,6 @@ void LC_WidgetViewPortRenderer::doSetupBeforeContainerDraw() {
 
 
 void LC_WidgetViewPortRenderer::drawLayerOverlays(RS_Painter *painter) {
-    ZoneScopedN("Renderer::Layer3_Overlays");
 #ifdef DEBUG_RENDERING_DETAILS
     drawLayerOverlaysTimer.start();
 #endif

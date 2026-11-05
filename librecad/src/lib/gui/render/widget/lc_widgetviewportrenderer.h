@@ -99,6 +99,11 @@ private:
 
     LC_PluginInvoker* m_pluginInvoker = nullptr;
     std::unique_ptr<QOpenGLFramebufferObject> m_glFboDrawing;
+    bool m_fboCacheValid = false;
+    int m_fboCachedOffsetX = 0;
+    int m_fboCachedOffsetY = 0;
+    double m_fboCachedFactorX = 0.0;
+    double m_fboCachedFactorY = 0.0;
 };
 
 #endif // LC_WIDGETVIEWPORTRENDERER_H

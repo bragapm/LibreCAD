@@ -30,7 +30,6 @@
 #include <QMouseEvent>
 
 #include "lc_graphicviewport.h"
-#include "tracy/Tracy.hpp"
 
 RS_ActionZoomPan::RS_ActionZoomPan(LC_ActionContext *actionContext)
         :RS_ActionInterface("Zoom Panning", actionContext, RS2::ActionZoomPan) {}
@@ -45,7 +44,6 @@ void RS_ActionZoomPan::init(int status) {
 }
 
 void RS_ActionZoomPan::trigger() {
-    ZoneScopedNC("Benchmark::RS_ActionZoomPan::trigger [Panning]", tracy::Color::Cyan);
     /*if (v1.valid && v2.valid) {
         graphicView->zoomPan(v2-v1);
         v1 = v2;
@@ -58,8 +56,6 @@ void RS_ActionZoomPan::trigger() {
 #endif
         const int dx = m_x2 - m_x1;
         const int dy = m_y2 - m_y1;
-        QByteArray panInfo = QString("Pan Delta: dx=%1, dy=%2").arg(dx).arg(dy).toUtf8();
-        ZoneText(panInfo.constData(), panInfo.size());
         m_viewport->zoomPan(dx, dy);
         m_x1 = m_x2;
         m_y1 = m_y2;
@@ -70,14 +66,12 @@ void RS_ActionZoomPan::trigger() {
 }
 
 void RS_ActionZoomPan::finish(bool updateTB) {
-    ZoneScopedNC("Benchmark::RS_ActionZoomPan::finish [PanEnd Redraw]", tracy::Color::DarkCyan);
     RS_ActionInterface::finish(updateTB);
     m_viewport->setPanning(false);
     redraw();
 }
 
 void RS_ActionZoomPan::mouseMoveEvent(QMouseEvent *e){
-    ZoneScopedNC("Benchmark::RS_ActionZoomPan::mouseMoveEvent", tracy::Color::LightSkyBlue);
     //v2 = snapPoint(e);
     m_x2 = e->position().x();
     m_y2 = e->position().y();
@@ -96,7 +90,6 @@ void RS_ActionZoomPan::mouseMoveEvent(QMouseEvent *e){
 void RS_ActionZoomPan::mousePressEvent(QMouseEvent* e) {
     if (e->button()==Qt::MiddleButton ||
             e->button()==Qt::LeftButton) {
-        TracyMessageL("[Benchmark] Panning Started");
         m_x1 = e->position().x();
         m_y1 = e->position().y();
         setStatus(SetPanning);
@@ -108,7 +101,6 @@ void RS_ActionZoomPan::mouseReleaseEvent(QMouseEvent* e) {
     switch (e->button()) {
         case Qt::MiddleButton:
         case Qt::RightButton:
-            TracyMessageL("[Benchmark] Panning Ended");
             setStatus(SetPanEnd);
             break;
         default:

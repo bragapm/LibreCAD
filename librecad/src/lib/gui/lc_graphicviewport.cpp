@@ -22,8 +22,6 @@
 #include "lc_graphicviewport.h"
 
 #include <QDateTime>
-#include <QElapsedTimer>
-#include "tracy/Tracy.hpp"
 
 #include "lc_graphicviewportlistener.h"
 #include "lc_linemath.h"
@@ -175,7 +173,6 @@ void LC_GraphicViewport::zoomInY(double f) {
  * zooms out by factor f
  */
 void LC_GraphicViewport::zoomOut(double f, const RS_Vector &center) {
-    ZoneScopedNC("Benchmark::LC_GraphicViewport::zoomOut", tracy::Color::Gold);
     if (m_zoomDelegate && m_zoomDelegate->handleZoomOut(f, center)) return;
     if (f < 1.0e-6) {
         RS_DEBUG->print(RS_Debug::D_WARNING, "RS_GraphicView::zoomOut: invalid factor");
@@ -249,22 +246,12 @@ void LC_GraphicViewport::centerY(double v) {
  * Centers the point v1.
  */
 void LC_GraphicViewport::zoomPan(int dx, int dy) {
-    ZoneScopedNC("Benchmark::LC_GraphicViewport::zoomPan", tracy::Color::Cyan);
-    QElapsedTimer panTimer;
-    panTimer.start();
 
     if (m_zoomDelegate && m_zoomDelegate->handleZoomPan(dx, dy)) return;
     offsetX += dx;
     offsetY -= dy;
 
-    QByteArray panOffsetText = QString("dx=%1, dy=%2 | newOffset=(%3, %4)")
-        .arg(dx).arg(dy).arg(offsetX).arg(offsetY).toUtf8();
-    ZoneText(panOffsetText.constData(), panOffsetText.size());
-
     fireViewportChanged();
-
-    const int64_t panStepUs = panTimer.nsecsElapsed() / 1000;
-    TracyPlot("Pan Step Time (us)", panStepUs);
 }
 
 /**
@@ -275,9 +262,6 @@ void LC_GraphicViewport::zoomPan(int dx, int dy) {
  *                               current graphic view
  */
 void LC_GraphicViewport::zoomWindow(RS_Vector v1, RS_Vector v2,bool keepAspectRatio) {
-    ZoneScopedNC("Benchmark::LC_GraphicViewport::zoomWindow", tracy::Color::Yellow);
-    QElapsedTimer zoomWinTimer;
-    zoomWinTimer.start();
 
     if (m_zoomDelegate && m_zoomDelegate->handleZoomWindow(v1, v2, keepAspectRatio)) return;
 
@@ -361,14 +345,7 @@ void LC_GraphicViewport::zoomWindow(RS_Vector v1, RS_Vector v2,bool keepAspectRa
     factor.x = zoomX;
     factor.y = zoomY;
 
-    QByteArray zoomWinInfo = QString("Zoom Factor=(%1, %2) | Offset=(%3, %4)")
-        .arg(factor.x, 0, 'f', 4).arg(factor.y, 0, 'f', 4).arg(offsetX).arg(offsetY).toUtf8();
-    ZoneText(zoomWinInfo.constData(), zoomWinInfo.size());
-
     fireViewportChanged();
-
-    const int64_t zoomWinUs = zoomWinTimer.nsecsElapsed() / 1000;
-    TracyPlot("Viewport ZoomWindow Time (us)", zoomWinUs);
 }
 
 
@@ -376,9 +353,6 @@ void LC_GraphicViewport::zoomWindow(RS_Vector v1, RS_Vector v2,bool keepAspectRa
  * zooms in by factor f
  */
 void LC_GraphicViewport::zoomIn(double f, const RS_Vector &center) {
-    ZoneScopedNC("Benchmark::LC_GraphicViewport::zoomIn", tracy::Color::Gold);
-    QByteArray zoomInInfo = QString("factor=%1, center=(%2, %3)").arg(f, 0, 'f', 4).arg(center.x, 0, 'f', 2).arg(center.y, 0, 'f', 2).toUtf8();
-    ZoneText(zoomInInfo.constData(), zoomInInfo.size());
 
     if (m_zoomDelegate && m_zoomDelegate->handleZoomIn(f, center)) return;
     if (f < 1.0e-6) {
@@ -417,7 +391,6 @@ void LC_GraphicViewport::removeViewportListener(LC_GraphicViewPortListener *list
 
 
 void LC_GraphicViewport::fireViewportChanged(){
-    ZoneScopedN("LC_GraphicViewport::fireViewportChanged");
     invalidateGrid();
     for (int i=0; i<viewportListeners.size(); ++i) {
         LC_GraphicViewPortListener* l = viewportListeners.at(i);

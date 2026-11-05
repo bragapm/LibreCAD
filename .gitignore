@@ -118,7 +118,3 @@ core.*
 !librecad/res/main/librecad.rc
 !librecad/res/main/tataletak.ico
 !librecad/res/main/librecad_res.o
-
-# Tracy Profiler / GPU Monitor
-librecad/src/lib/gui/render/lc_tracygpu.h
-*tracygpu*

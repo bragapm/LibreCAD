@@ -1433,6 +1433,12 @@ void RS_Painter::drawInfiniteWCS(RS_Vector startpoint, RS_Vector endpoint) {
 
 void RS_Painter::drawEntity(RS_Entity* entity)
 {
+#ifdef OPENGLACTIVE
+    // bisa melewati pass ke-2 (selected-only) jika tidak ada seleksi sama sekali.
+    if (!drawSelectedEntities && entity->getFlag(RS2::FlagSelected)) {
+        m_hasSelectedEntitiesInPass = true;
+    }
+#endif
     renderer->renderEntity(this, entity);
 }
 
@@ -1454,6 +1460,29 @@ void RS_Painter::setViewPort(LC_GraphicViewport *v) {
     viewPortOffsetY = v->getOffsetY();
     m_viewPortOffset.set(viewPortOffsetX, viewPortOffsetY);
     viewPortHeight = v->getHeight();
+
+#ifdef OPENGLACTIVE
+    // Precompute 2D affine matrix coefficients (WCS -> GUI) once per render pass
+    if (hasUCS()) {
+        const RS_Vector& orig = getUcsOrigin();
+        const RS_Vector& rot  = getUcsRotation(); // rot.x = cos(a), rot.y = sin(a)
+        m_wcsToGuiM11 =  viewPortFactorX * rot.x;
+        m_wcsToGuiM12 = -viewPortFactorX * rot.y;
+        m_wcsToGuiDx  =  viewPortOffsetX - (m_wcsToGuiM11 * orig.x + m_wcsToGuiM12 * orig.y);
+
+        m_wcsToGuiM21 = -viewPortFactorY * rot.y;
+        m_wcsToGuiM22 = -viewPortFactorY * rot.x;
+        m_wcsToGuiDy  = (viewPortHeight - viewPortOffsetY) - (m_wcsToGuiM21 * orig.x + m_wcsToGuiM22 * orig.y);
+    } else {
+        m_wcsToGuiM11 =  viewPortFactorX;
+        m_wcsToGuiM12 =  0.0;
+        m_wcsToGuiDx  =  viewPortOffsetX;
+
+        m_wcsToGuiM21 =  0.0;
+        m_wcsToGuiM22 = -viewPortFactorY;
+        m_wcsToGuiDy  =  viewPortHeight - viewPortOffsetY;
+    }
+#endif
 }
 
 // NOTE:
@@ -1469,7 +1498,15 @@ void RS_Painter::setViewPort(LC_GraphicViewport *v) {
 
 void RS_Painter::toGui(const RS_Vector &wcsCoordinate, double &uiX, double &uiY) const {
 //    viewport->toUI(pos, x,y);
-
+#ifdef OPENGLACTIVE
+    if (hasUCS()) {
+        uiX = wcsCoordinate.x * m_wcsToGuiM11 + wcsCoordinate.y * m_wcsToGuiM12 + m_wcsToGuiDx;
+        uiY = wcsCoordinate.x * m_wcsToGuiM21 + wcsCoordinate.y * m_wcsToGuiM22 + m_wcsToGuiDy;
+    } else {
+        uiX = wcsCoordinate.x * m_wcsToGuiM11 + m_wcsToGuiDx;
+        uiY = wcsCoordinate.y * m_wcsToGuiM22 + m_wcsToGuiDy;
+    }
+#else
     if (hasUCS()){
 //   ucsToUCS(wcsCoordinate.x, wcsCoordinate.y, uiX, uiY);
 // the code below is equivalent to
@@ -1499,10 +1536,25 @@ void RS_Painter::toGui(const RS_Vector &wcsCoordinate, double &uiX, double &uiY)
 //        uiY = toGuiY(wcsCoordinate.y);
         uiY = -wcsCoordinate.y * viewPortFactorY - viewPortOffsetY + viewPortHeight;
     }
+#endif
 }
 
 RS_Vector RS_Painter::toGui(const RS_Vector& worldCoordinates) const
 {
+#ifdef OPENGLACTIVE
+    if (hasUCS()) {
+        return RS_Vector(
+            worldCoordinates.x * m_wcsToGuiM11 + worldCoordinates.y * m_wcsToGuiM12 + m_wcsToGuiDx,
+            worldCoordinates.x * m_wcsToGuiM21 + worldCoordinates.y * m_wcsToGuiM22 + m_wcsToGuiDy,
+            0.0
+        );
+    }
+    return RS_Vector(
+        worldCoordinates.x * m_wcsToGuiM11 + m_wcsToGuiDx,
+        worldCoordinates.y * m_wcsToGuiM22 + m_wcsToGuiDy,
+        0.0
+    );
+#else
     RS_Vector uiPosition = worldCoordinates;
     if (hasUCS()) {
         uiPosition.move(-getUcsOrigin()).rotate(getUcsRotation());
@@ -1528,11 +1580,25 @@ RS_Vector RS_Painter::toGui(const RS_Vector& worldCoordinates) const
 #endif
 
    return uiPosition;
+#endif
 }
 
 QPointF RS_Painter::toGuiPointF(const RS_Vector& worldCoordinates) const{
+#ifdef OPENGLACTIVE
+    if (hasUCS()) {
+        return QPointF(
+            worldCoordinates.x * m_wcsToGuiM11 + worldCoordinates.y * m_wcsToGuiM12 + m_wcsToGuiDx,
+            worldCoordinates.x * m_wcsToGuiM21 + worldCoordinates.y * m_wcsToGuiM22 + m_wcsToGuiDy
+        );
+    }
+    return QPointF(
+        worldCoordinates.x * m_wcsToGuiM11 + m_wcsToGuiDx,
+        worldCoordinates.y * m_wcsToGuiM22 + m_wcsToGuiDy
+    );
+#else
     RS_Vector uiPos = toGui(worldCoordinates);
     return {uiPos.x, uiPos.y};
+#endif
 }
 
 double RS_Painter::toGuiDX(double ucsDX) const {
@@ -1547,6 +1613,14 @@ double RS_Painter::toGuiDY(double ucsDY) const {
 
 void RS_Painter::disableUCS(){
     useUCS(false);
+#ifdef OPENGLACTIVE
+    m_wcsToGuiM11 =  viewPortFactorX;
+    m_wcsToGuiM12 =  0.0;
+    m_wcsToGuiDx  =  viewPortOffsetX;
+    m_wcsToGuiM21 =  0.0;
+    m_wcsToGuiM22 = -viewPortFactorY;
+    m_wcsToGuiDy  =  viewPortHeight - viewPortOffsetY;
+#endif
 }
 
 bool RS_Painter::isFullyWithinBoundingRect(RS_Entity* e){

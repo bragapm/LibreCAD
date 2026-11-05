@@ -572,7 +572,11 @@ void RS_ActionDefault::onMouseMoveEvent([[maybe_unused]]int status, LC_MouseEven
         case Panning: {
             RS_Vector const vTarget{e->uiPosition};
             RS_Vector const v01 = vTarget - m_actionData->v1;
+#ifdef OPENGLACTIVE
+            if (std::abs(v01.x) >= 1.0 || std::abs(v01.y) >= 1.0) {
+#else
             if (v01.squared() >= 64.){
+#endif
                 m_viewport->zoomPan((int) v01.x, (int) v01.y);
                 m_actionData->v1 = vTarget;
             }
@@ -639,6 +643,9 @@ void RS_ActionDefault::onMouseLeftButtonPress(int status, LC_MouseEvent *e) {
             if (e->isControl){
                 m_actionData->v1 = RS_Vector{e->uiPosition};
                 setStatus(Panning);
+#ifdef OPENGLACTIVE
+                m_viewport->setPanning(true);
+#endif
             } else {
                 m_actionData->v1 = e->graphPoint;
                 setStatus(Dragging);
@@ -893,11 +900,22 @@ void RS_ActionDefault::onMouseRightButtonRelease([[maybe_unused]]int status, [[m
 }
 
 void RS_ActionDefault::goToNeutralStatus(){
+#ifdef OPENGLACTIVE
+    const bool wasPanning = (m_viewport != nullptr && m_viewport->isPanning());
+    if (wasPanning) {
+        m_viewport->setPanning(false);
+    }
+#endif
     deletePreview();
     deleteHighlights();
     deleteInfoCursor();
     drawPreview();
     drawHighlights();
+#ifdef OPENGLACTIVE
+    if (wasPanning) {
+        redraw();
+    }
+#endif
     setStatus(Neutral);
 }
 
