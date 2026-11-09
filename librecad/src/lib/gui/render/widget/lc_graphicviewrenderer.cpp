@@ -32,6 +32,8 @@
 #include "lc_linemath.h"
 #include "rs_entity.h"
 #include "rs_entitycontainer.h"
+#include "rs_mtext.h"
+#include "rs_text.h"
 
 LC_GraphicViewRenderer::LC_GraphicViewRenderer(LC_GraphicViewport *viewport, QPaintDevice* p)
    :LC_WidgetViewPortRenderer(viewport, p) {
@@ -126,26 +128,109 @@ void LC_GraphicViewRenderer::renderEntity(RS_Painter *painter, RS_Entity *e) {
 
     RS2::EntityType entityType = e->rtti();
 #ifdef OPENGLACTIVE
-    // Sub-pixel Culling (LOD) saat Zoom Jauh:
-    // Jika ukuran bounding box entitas di layar sangat kecil (< 1.5 piksel), lewati entitas komposit berat
-    if (e->getMin().valid && e->getMax().valid) {
+    // Sub-pixel & Minimum Size Culling (LOD) saat Zoom Jauh ke seluruh entitas geometri:
+    // Mencegah pen-resolution, OpenGL state change, dan overdraw GPU untuk entitas di bawah batas persepsi visual
+    if (!constructionEntity && !e->getFlag(RS2::FlagSelected) && e->getMin().valid && e->getMax().valid) {
         const double uiW = std::abs(painter->toGuiDX(e->getMax().x - e->getMin().x));
         const double uiH = std::abs(painter->toGuiDY(e->getMax().y - e->getMin().y));
-        if (uiW < 1.0 && uiH < 1.0) {
-            // Objek lebih kecil dari 1 piksel layar
-            if (entityType == RS2::EntityHatch ||
-                entityType == RS2::EntityMText ||
-                entityType == RS2::EntityText ||
-                entityType == RS2::EntityInsert ||
-                entityType == RS2::EntityImage) {
-                return;
+
+        switch (entityType) {
+            // 1. Entitas Primitif Linier Dasar (Line)
+            case RS2::EntityLine:
+                // Garis dengan ukuran < 0.5 piksel di kedua sumbu (panjang diagonal < 0.7 piksel).
+                // Sub-pixel line tidak membentuk piksel utuh di layar monitor.
+                if (uiW < 0.5 && uiH < 0.5) {
+                    return;
+                }
+                break;
+
+            // 2. Entitas Kurva & Busur (Arc, Circle, Ellipse)
+            case RS2::EntityArc:
+            case RS2::EntityCircle:
+            case RS2::EntityEllipse:
+                // Lingkaran / busur sub-pixel (< 0.8 piksel) tidak dapat menampilkan kelengkungan
+                if (uiW < 0.8 && uiH < 0.8) {
+                    return;
+                }
+                break;
+
+            // 3. Entitas Geometri Kompleks / Multi-segmen (Polyline, Spline)
+            case RS2::EntityPolyline:
+            case RS2::EntitySpline:
+            case RS2::EntitySplinePoints:
+                // Kurva multi-segmen dengan ukuran di layar < 1.0 piksel
+                if (uiW < 1.0 && uiH < 1.0) {
+                    return;
+                }
+                break;
+
+            // 4. Entitas Anotasi & Dimensi (Dimension, Leader, Tolerance)
+            case RS2::EntityDimAligned:
+            case RS2::EntityDimLinear:
+            case RS2::EntityDimRadial:
+            case RS2::EntityDimDiametric:
+            case RS2::EntityDimAngular:
+            case RS2::EntityDimArc:
+            case RS2::EntityDimLeader:
+            case RS2::EntityDimOrdinate:
+            case RS2::EntityTolerance:
+                // Dimensi lengkap terdiri dari teks, panah, dan garis bantu.
+                // Jika seluruh dimensi < 3.0 piksel, simbol dan angka sudah tidak terbaca.
+                if (uiW < 3.0 && uiH < 3.0) {
+                    return;
+                }
+                break;
+
+            // 5. Entitas Teks (Text, MText)
+            case RS2::EntityMText: {
+                auto* mtext = static_cast<RS_MText*>(e);
+                const double fontHeight = mtext->getHeight();
+                const double uiFontHeight = std::abs(painter->toGuiDY(fontHeight));
+                // Kalkulasi LOD berbasis tinggi font riil di layar, independen terhadap rotasi atau panjang kalimat
+                if (uiFontHeight < 1.5 || (uiW < 1.0 && uiH < 1.0)) {
+                    return;
+                }
+                break;
             }
-        } else if (entityType == RS2::EntityHatch && (uiW < 3.0 && uiH < 3.0)) {
-            // Arsiran non-solid yang kurang dari 3 piksel tidak terlihat detail garisnya
-            return;
-        } else if ((entityType == RS2::EntityMText || entityType == RS2::EntityText) && uiH < 1.5) {
-            // Teks dengan tinggi kurang dari 1.5 piksel tidak perlu digambar hurufnya
-            return;
+            case RS2::EntityText: {
+                auto* text = static_cast<RS_Text*>(e);
+                const double fontHeight = text->getHeight();
+                const double uiFontHeight = std::abs(painter->toGuiDY(fontHeight));
+                // Kalkulasi LOD berbasis tinggi font riil di layar, independen terhadap rotasi atau panjang kalimat
+                if (uiFontHeight < 1.5 || (uiW < 1.0 && uiH < 1.0)) {
+                    return;
+                }
+                break;
+            }
+
+            // 6. Entitas Arsiran (Hatch)
+            case RS2::EntityHatch:
+                // Arsiran non-solid yang kurang dari 3.0 piksel tidak terlihat detail garis polanya
+                if (uiW < 3.0 && uiH < 3.0) {
+                    return;
+                }
+                break;
+
+            // 7. Entitas Komposit Blok / Insert & Image
+            case RS2::EntityInsert:
+                // Block reference yang berukuran < 1.5 piksel di layar tidak perlu diurai ratusan anak entitasnya
+                if (uiW < 1.5 && uiH < 1.5) {
+                    return;
+                }
+                break;
+
+            case RS2::EntityImage:
+                if (uiW < 1.0 && uiH < 1.0) {
+                    return;
+                }
+                break;
+
+            default:
+                // Fallback untuk entitas geometri lainnya yang berukuran sub-pixel (< 0.5 piksel)
+                if (uiW < 0.5 && uiH < 0.5) {
+                    return;
+                }
+                break;
         }
     }
 #endif

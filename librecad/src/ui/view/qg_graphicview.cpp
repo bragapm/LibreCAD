@@ -341,6 +341,17 @@ QG_GraphicView::QG_GraphicView(QWidget* parent, RS_Document* doc, LC_ActionConte
 
     // SourceForge issue 45 (Left-mouse drag shrinks window)
     setAttribute(Qt::WA_NoMousePropagation);
+
+#ifdef OPENGLACTIVE
+    m_zoomDebounceTimer = new QTimer(this);
+    m_zoomDebounceTimer->setSingleShot(true);
+    connect(m_zoomDebounceTimer, &QTimer::timeout, this, [this]() {
+        if (getViewPort() != nullptr) {
+            getViewPort()->setFastZooming(false);
+        }
+        redraw(RS2::RedrawDrawing);
+    });
+#endif
 }
 
 void QG_GraphicView::initView() {
@@ -532,6 +543,15 @@ void QG_GraphicView::switchToAction(RS2::ActionType actionType, void* data ) con
 }
 
 void QG_GraphicView::mousePressEvent(QMouseEvent* event){
+#ifdef OPENGLACTIVE
+    if (m_zoomDebounceTimer && m_zoomDebounceTimer->isActive()) {
+        m_zoomDebounceTimer->stop();
+        if (getViewPort() != nullptr && getViewPort()->isFastZooming()) {
+            getViewPort()->setFastZooming(false);
+            redraw(RS2::RedrawDrawing);
+        }
+    }
+#endif
     // pan zoom with middle mouse button
     if (event->button()==Qt::MiddleButton){
         switchToAction(RS2::ActionZoomPan);
@@ -679,6 +699,14 @@ bool QG_GraphicView::event(QEvent *event){
             // It seems the NativeGestureEvent::pos() incorrectly reports global coordinates
             QPointF g = mapFromGlobal(nge->globalPosition().toPoint());
             RS_Vector mouse = getViewPort()->toWorldFromUi(g.x(), g.y());
+#ifdef OPENGLACTIVE
+            if (m_zoomDebounceTimer != nullptr) {
+                if (getViewPort() != nullptr) {
+                    getViewPort()->setFastZooming(true);
+                }
+                m_zoomDebounceTimer->start(80);
+            }
+#endif
             doZoom(direction, mouse, factor);
         }
 
@@ -884,6 +912,14 @@ void QG_GraphicView::wheelEvent(QWheelEvent *e) {
                 }
 
                 double zoomFactor = 1. + std::abs(v);
+#ifdef OPENGLACTIVE
+                if (m_zoomDebounceTimer != nullptr) {
+                    if (getViewPort() != nullptr) {
+                        getViewPort()->setFastZooming(true);
+                    }
+                    m_zoomDebounceTimer->start(80);
+                }
+#endif
                 doZoom(direction, mouse, zoomFactor);
             }
             else{
@@ -983,6 +1019,13 @@ void QG_GraphicView::wheelEvent(QWheelEvent *e) {
         const QPoint delta = viewCenter - uiEventPosition.toPoint();
 
 #ifdef OPENGLACTIVE
+        if (m_zoomDebounceTimer != nullptr) {
+            if (getViewPort() != nullptr) {
+                getViewPort()->setFastZooming(true);
+            }
+            m_zoomDebounceTimer->start(80);
+        }
+
         //Testing OPENGL - Hindari 2x fireViewportChanged/redraw beruntun saat PanOnZoom aktif
         const bool doZoomStep = !getPanOnZoom() || !getSkipFirstZoom() || (abs(delta.x())<32 && abs(delta.y())<32);
         if (getPanOnZoom()) {

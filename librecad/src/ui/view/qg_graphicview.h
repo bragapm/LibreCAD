@@ -47,6 +47,7 @@ class QLabel;
 class QMenu;
 class QMouseEvent;
 class LC_ActionContext;
+class QTimer;
 
 /**
  * This is the Qt implementation of a widget which can view a 
@@ -178,6 +179,9 @@ private:
     std::unique_ptr<LC_UCSMarkOptions> m_ucsMarkOptions;
 
     QMap<QString, QMenu*> m_menus;
+#ifdef OPENGLACTIVE
+    QTimer* m_zoomDebounceTimer = nullptr;
+#endif
 
     bool m_scrollbars{false};
     bool m_cursor_hiding{false};

@@ -167,6 +167,7 @@ private:
     RS_EntityContainer trimPattern(const RS_EntityContainer& patternEntities) const;
 
     void drawSolidFill(RS_Painter *painter);
+    void drawBoundary(RS_Painter *painter);
 
     void debugOutPath(const QPainterPath &tmpPath) const;
 

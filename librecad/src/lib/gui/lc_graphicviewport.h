@@ -161,6 +161,8 @@ public:
     LC_OverlaysManager* getOverlaysManager() { return &overlaysManager;}
     bool isPanning() const {return panning;}
     void setPanning(bool state) {  panning = state;}
+    bool isFastZooming() const {return m_fastZooming;}
+    void setFastZooming(bool state) { m_fastZooming = state;}
     RS_Graphic* getGraphic() {return graphic;}
     void addViewportListener(LC_GraphicViewPortListener* listener);
     void removeViewportListener(LC_GraphicViewPortListener* listener);
@@ -211,6 +213,7 @@ protected:
     LC_OverlaysManager overlaysManager;
 
     bool panning = false;
+    bool m_fastZooming = false;
     bool hideRelativeZero = false; // fixme - should be dispatched from action
 
     QList<LC_GraphicViewPortListener*> viewportListeners;

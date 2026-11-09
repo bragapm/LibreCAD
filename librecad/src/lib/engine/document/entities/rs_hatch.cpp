@@ -26,6 +26,8 @@
 
 #include <iostream>
 #include <set>
+#include <algorithm>
+#include <cmath>
 
 #include <QPainterPath>
 
@@ -567,11 +569,70 @@ void RS_Hatch::activateContour(bool on) {
 /**
  * Overrides drawing of subentities. This is only ever called for solid fills.
  */
+void RS_Hatch::drawBoundary(RS_Painter *painter) {
+    const bool isHatchSelected = getFlag(RS2::FlagSelected);
+    for (RS_Entity* e: *this) {
+        if (e != nullptr && e != hatch && !e->getFlag(RS2::FlagTemp)) {
+            const bool wasVisible = e->isVisible();
+            const bool wasSelected = e->getFlag(RS2::FlagSelected);
+            e->setVisible(true);
+            if (isHatchSelected) {
+                e->setFlag(RS2::FlagSelected);
+            } else {
+                e->delFlag(RS2::FlagSelected);
+            }
+            painter->drawEntity(e);
+            e->setVisible(wasVisible);
+            if (wasSelected) {
+                e->setFlag(RS2::FlagSelected);
+            } else {
+                e->delFlag(RS2::FlagSelected);
+            }
+        }
+    }
+}
+
 void RS_Hatch::draw(RS_Painter* painter) {
     if (data.solid) {
         drawSolidFill(painter);
     }
-    else{
+    else {
+#ifdef OPENGLACTIVE
+        // Sub-pixel & Density Culling untuk Arsiran Menengah (RS_Hatch):
+        // Jika kerapatan garis arsiran di layar terlalu padat (sub-pixel), mata manusia
+        // tidak dapat membedakan ribuan garis individual dan hanya melihat gumpalan warna pekat.
+        if (hatch != nullptr && hatch->count() > 0 && getMin().valid && getMax().valid) {
+            const double uiW = std::abs(painter->toGuiDX(getMax().x - getMin().x));
+            const double uiH = std::abs(painter->toGuiDY(getMax().y - getMin().y));
+            const double maxDim = std::max(uiW, uiH);
+            const unsigned int numLines = hatch->count();
+
+            // Hitung rata-rata jarak antar garis arsiran di layar monitor (piksel)
+            const double lineSpacing = (numLines > 0) ? (maxDim / numLines) : 10.0;
+
+            // 1. Kerapatan Ekstrem (lineSpacing < 1.0 piksel):
+            // Garis-garis arsiran lebih rapat dari 1 piksel (sub-pixel density).
+            // Alih-alih merender ratusan/ribuan garis individual, gambar batas luar (boundary loop) saja.
+            if (lineSpacing < 1.0) {
+                drawBoundary(painter);
+                return;
+            }
+
+            // 2. Kerapatan Menengah (1.0 piksel <= lineSpacing < 3.0 piksel):
+            // Lakukan decimation (stride): gambar setiap K garis agar jarak visual di layar tetap ~2.5 - 3 piksel.
+            // Memangkas 50% - 75% beban iterasi CPU dan pemanggilan draw call OpenGL saat zoom menengah.
+            if (lineSpacing < 3.0) {
+                const int stride = std::max(1, static_cast<int>(std::ceil(2.5 / lineSpacing)));
+                int idx = 0;
+                for (RS_Entity* se: *hatch) {
+                    if (se != nullptr && (idx++ % stride) == 0) {
+                        painter->drawEntity(se);
+                    }
+                }
+                return;
+            }
+        }
+#endif
         for(RS_Entity* se: *this){
             painter->drawEntity(se);
         }
