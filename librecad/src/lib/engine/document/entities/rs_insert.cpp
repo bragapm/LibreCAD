@@ -26,7 +26,8 @@
 
 #include "rs_insert.h"
 
-#include<iostream>
+#include <algorithm>
+#include <iostream>
 
 #include "rs_arc.h"
 #include "rs_block.h"
@@ -132,8 +133,10 @@ RS_Entity* RS_Insert::clone() const{
  */
 void RS_Insert::update() {
 
-    RS_DEBUG->print("RS_Insert::update");
-    RS_DEBUG->print("RS_Insert::update: name: %s", m_data.name.toLatin1().data());
+    if (RS_DEBUG->getLevel() >= RS_Debug::D_DEBUGGING) {
+        RS_DEBUG->print("RS_Insert::update");
+        RS_DEBUG->print("RS_Insert::update: name: %s", m_data.name.toLatin1().data());
+    }
     //        RS_DEBUG->print("RS_Insert::update: insertionPoint: %f/%f",
     //                data.insertionPoint.x, data.insertionPoint.y);
 
@@ -329,7 +332,11 @@ void RS_Insert::move(const RS_Vector& offset) {
     RS_DEBUG->print("RS_Insert::move1: insertionPoint: %f/%f", m_data.insertionPoint.x, m_data.insertionPoint.y);
     m_data.insertionPoint.move(offset);
     RS_DEBUG->print("RS_Insert::move2: insertionPoint: %f/%f", m_data.insertionPoint.x, m_data.insertionPoint.y);
-    update();
+    if (!isEmpty() && updateEnabled) {
+        RS_EntityContainer::move(offset);
+    } else {
+        update();
+    }
 }
 
 void RS_Insert::rotate(const RS_Vector& center, double angle) {
@@ -339,7 +346,13 @@ void RS_Insert::rotate(const RS_Vector& center, double angle) {
     m_data.insertionPoint.rotate(center, angle);
     m_data.angle = RS_Math::correctAngle(m_data.angle + angle);
     RS_DEBUG->print("RS_Insert::rotate2: insertionPoint: %f/%f", m_data.insertionPoint.x, m_data.insertionPoint.y);
-    update();
+    if (!isEmpty() && updateEnabled) {
+        if (std::abs(angle) >= RS_TOLERANCE_ANGLE) {
+            RS_EntityContainer::rotate(center, RS_Vector{angle});
+        }
+    } else {
+        update();
+    }
 }
 
 void RS_Insert::rotate(const RS_Vector& center, const RS_Vector& angleVector) {
@@ -351,19 +364,37 @@ void RS_Insert::rotate(const RS_Vector& center, const RS_Vector& angleVector) {
     m_data.angle = RS_Math::correctAngle(m_data.angle + angleVector.angle());
     RS_DEBUG->print("RS_Insert::rotate2: insertionPoint: %f/%f",
                     m_data.insertionPoint.x, m_data.insertionPoint.y);
-    update();
+    if (!isEmpty() && updateEnabled) {
+        RS_EntityContainer::rotate(center, angleVector);
+    } else {
+        update();
+    }
 }
 
 void RS_Insert::scale(const RS_Vector& center, const RS_Vector& factor) {
     RS_DEBUG->print("RS_Insert::scale1: insertionPoint: %f/%f",
                     m_data.insertionPoint.x, m_data.insertionPoint.y);
+    const double prevAngle = m_data.angle;
     m_data.insertionPoint.scale(center, factor);
     m_data.scaleFactor.scale(RS_Vector(0.0, 0.0), factor);
     m_data.spacing.scale(RS_Vector(0.0, 0.0), factor);
     RS_DEBUG->print("RS_Insert::scale2: insertionPoint: %f/%f",
                     m_data.insertionPoint.x, m_data.insertionPoint.y);
-    update();
-
+    const bool isotropic = std::abs(factor.x - factor.y) <= MIN_Scale_Factor;
+    const bool canScaleAnisotropicInPlace =
+        std::abs(prevAngle) < RS_TOLERANCE_ANGLE &&
+        std::none_of(cbegin(), cend(), [](const RS_Entity* e) {
+            return e->rtti() == RS2::EntityArc || e->rtti() == RS2::EntityCircle;
+        });
+    if (!isEmpty() && updateEnabled &&
+        factor.x > MIN_Scale_Factor && factor.y > MIN_Scale_Factor &&
+        std::abs(m_data.scaleFactor.x) >= MIN_Scale_Factor &&
+        std::abs(m_data.scaleFactor.y) >= MIN_Scale_Factor &&
+        (isotropic || canScaleAnisotropicInPlace)) {
+        RS_EntityContainer::scale(center, factor);
+    } else {
+        update();
+    }
 }
 
 void RS_Insert::mirror(const RS_Vector& axisPoint1, const RS_Vector& axisPoint2) {

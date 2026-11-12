@@ -293,7 +293,9 @@ void RS_Text::update() {
             letter->setPen(RS_Pen(RS2::FlagInvalid));
             letter->setLayer(nullptr);
             letter->update();
-            letter->forcedCalculateBorders();
+            if (!letter->isVisible()) {
+                letter->forcedCalculateBorders();
+            }
 
             letterWidth = RS_Vector(letter->getMax().x-letterPos.x, 0.0);
             if (letterWidth.x < 0) {
@@ -363,7 +365,9 @@ void RS_Text::update() {
     if (data.halign!=RS_TextData::HAAligned && data.halign!=RS_TextData::HAFit){
         data.secondPoint = RS_Vector(offset.x, offset.y - vSize);
     }
-    RS_EntityContainer::move(offset);
+    if (offset.x != 0.0 || offset.y != 0.0) {
+        RS_EntityContainer::move(offset);
+    }
 
 
     // Scale:
@@ -383,7 +387,9 @@ void RS_Text::update() {
                                RS_Vector(data.height*data.widthRel/9.0, data.height/9.0));
     }
 
-    forcedCalculateBorders();
+    if (isEmpty() || !isVisible() || !getAutoUpdateBorders()) {
+        forcedCalculateBorders();
+    }
 
     // Update actual text size (before rotating, after scaling!):
     usedTextWidth = getSize().x;
@@ -397,14 +403,20 @@ void RS_Text::update() {
         data.secondPoint.rotate(RS_Vector(0.0,0.0), data.angle);
         data.secondPoint.move(data.insertionPoint);
     }
-    RS_EntityContainer::rotate(RS_Vector(0.0,0.0), data.angle);
+    if (std::abs(data.angle) >= RS_TOLERANCE_ANGLE) {
+        RS_EntityContainer::rotate(RS_Vector(0.0,0.0), data.angle);
+    }
 
     // Move to insertion point:
-    RS_EntityContainer::move(data.insertionPoint);
+    if (data.insertionPoint.x != 0.0 || data.insertionPoint.y != 0.0) {
+        RS_EntityContainer::move(data.insertionPoint);
+    }
 
     updateBaselinePoints();
 
-    forcedCalculateBorders();
+    if (isEmpty() || !isVisible() || !getAutoUpdateBorders()) {
+        forcedCalculateBorders();
+    }
 
     RS_DEBUG->print("RS_Text::update: OK");
 }

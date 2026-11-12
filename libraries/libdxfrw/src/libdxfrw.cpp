@@ -94,7 +94,7 @@ bool dxfRW::read(DRW_Interface *interface_, bool ext){
         DRW_DBG("dxfRW::read binary file\n");
     } else {
         binFile = false;
-        filestr.open (fileName.c_str(), std::ios_base::in);
+        filestr.open (fileName.c_str(), std::ios_base::in | std::ios_base::binary);
         reader = new dxfReaderAscii(&filestr);
     }
 

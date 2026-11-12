@@ -28,9 +28,10 @@
 #ifndef RS_BLOCKLIST_H
 #define RS_BLOCKLIST_H
 
+#include <QHash>
 #include <QList>
+#include <QString>
 
-class QString;
 class RS_Block;
 class RS_BlockListListener;
 
@@ -104,6 +105,8 @@ private:
     bool m_owner = false;
     //! Blocks in the graphic
     QList<RS_Block*> m_blocks;
+    //! Fast lookup index by block name
+    QHash<QString, RS_Block*> m_blockMap;
     //! List of registered BlockListListeners
     QList<RS_BlockListListener*> m_blockListListeners;
     //! Currently active block

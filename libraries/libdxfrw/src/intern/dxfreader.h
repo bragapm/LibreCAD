@@ -13,6 +13,8 @@
 #ifndef DXFREADER_H
 #define DXFREADER_H
 
+#include <cstddef>
+#include <vector>
 #include "drw_textcodec.h"
 
 class dxfReader {
@@ -49,6 +51,7 @@ public:
     void setIgnoreComments(const bool bValue) {m_bIgnoreComments = bValue;}
 
 protected:
+    virtual bool isGood() const;
     virtual bool readCode(int *code) = 0; //return true if successful (not EOF)
     virtual bool readString(std::string *text) = 0;
     virtual bool readString() = 0;
@@ -87,7 +90,7 @@ public:
 
 class dxfReaderAscii : public dxfReader {
 public:
-    dxfReaderAscii(std::ifstream *stream):dxfReader(stream){skip = true; }
+    explicit dxfReaderAscii(std::ifstream *stream);
     bool readCode(int *code) override;
     bool readString(std::string *text) override;
     bool readString() override;
@@ -97,6 +100,19 @@ public:
     bool readInt32() override;
     bool readInt64() override;
     bool readBool() override;
+
+protected:
+    bool isGood() const override;
+
+private:
+    static constexpr std::size_t kBufferSize = 1 << 20;
+    bool readLine(const char*& outBeg, const char*& outEnd);
+
+    std::vector<char> m_buf;
+    std::size_t m_pos = 0;
+    std::size_t m_end = 0;
+    std::string m_lineScratch;
+    bool m_eof = false;
 };
 
 #endif // DXFREADER_H

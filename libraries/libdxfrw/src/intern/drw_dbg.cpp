@@ -55,6 +55,7 @@ void DRW_dbg::setCustomDebugPrinter(std::unique_ptr<DRW::DebugPrinter> printer)
 
 void DRW_dbg::setLevel(Level lvl){
     level = lvl;
+    s_enabled = (lvl == Level::Debug);
     switch (level){
     case Level::Debug:
         currentPrinter = debugPrinter.get();

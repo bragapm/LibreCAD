@@ -866,32 +866,51 @@ void RS_EntityContainer::updateDimensions(bool autoText) {
  * Updates all Insert entities in this container.
  */
 void RS_EntityContainer::updateInserts() {
-
-    std::string idTypeId = std::to_string(getId()) + "/" + std::to_string(rtti());
-    RS_DEBUG->print("RS_EntityContainer::updateInserts() ID/type: %s", idTypeId.c_str());
+    const bool debugging = RS_DEBUG->getLevel() >= RS_Debug::D_DEBUGGING;
+    std::string idTypeId;
+    if (debugging) {
+        idTypeId = std::to_string(getId()) + "/" + std::to_string(rtti());
+        RS_DEBUG->print("RS_EntityContainer::updateInserts() ID/type: %s", idTypeId.c_str());
+    }
 
     for (RS_Entity *e: std::as_const(*this)) {
+        if (e == nullptr) {
+            continue;
+        }
         //// Only update our own inserts and not inserts of inserts
-        if (e != nullptr && e->getId() != 0 && e->rtti() == RS2::EntityInsert  /*&& e->getParent()==this*/) {
+        if (e->getId() != 0 && e->rtti() == RS2::EntityInsert  /*&& e->getParent()==this*/) {
             static_cast<RS_Insert*>(e)->update();
 
-            RS_DEBUG->print("RS_EntityContainer::updateInserts: updated ID/type: %s", idTypeId.c_str());
-        } else if (e->isContainer()) {
-            if (e->rtti() == RS2::EntityHatch) {
-
-                RS_DEBUG->print(RS_Debug::D_DEBUGGING, "RS_EntityContainer::updateInserts: skip hatch ID/type: %s",
-                                idTypeId.c_str());
-            } else {
-                RS_DEBUG->print("RS_EntityContainer::updateInserts: update container ID/type: %s", idTypeId.c_str());
-
-                static_cast<RS_EntityContainer*>(e)->updateInserts();
+            if (debugging) {
+                RS_DEBUG->print("RS_EntityContainer::updateInserts: updated ID/type: %s", idTypeId.c_str());
             }
-        } else {
+        } else if (e->isContainer()) {
+            switch (e->rtti()) {
+                case RS2::EntityHatch:
+                case RS2::EntityPolyline:
+                case RS2::EntitySpline:
+                case RS2::EntityText:
+                case RS2::EntityMText:
+                    if (debugging) {
+                        RS_DEBUG->print(RS_Debug::D_DEBUGGING, "RS_EntityContainer::updateInserts: skip container ID/type: %s",
+                                        idTypeId.c_str());
+                    }
+                    break;
+                default:
+                    if (debugging) {
+                        RS_DEBUG->print("RS_EntityContainer::updateInserts: update container ID/type: %s", idTypeId.c_str());
+                    }
+                    static_cast<RS_EntityContainer*>(e)->updateInserts();
+                    break;
+            }
+        } else if (debugging) {
             RS_DEBUG->print(RS_Debug::D_DEBUGGING, "RS_EntityContainer::updateInserts: skip entity ID/type: %s",
                             idTypeId.c_str());
         }
     }
-    RS_DEBUG->print("RS_EntityContainer::updateInserts() ID/type: %s", idTypeId.c_str());
+    if (debugging) {
+        RS_DEBUG->print("RS_EntityContainer::updateInserts() ID/type: %s", idTypeId.c_str());
+    }
 }
 
 

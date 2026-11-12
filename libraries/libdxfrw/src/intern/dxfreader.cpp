@@ -13,6 +13,8 @@
 #include <cstdlib>
 #include <fstream>
 #include <string>
+#include <charconv>
+#include <cstring>
 #include <sstream>
 #include "dxfreader.h"
 #include "drw_textcodec.h"
@@ -95,19 +97,25 @@ bool dxfReader::readRec(int *codeData) {
         //break in binary files because the conduct is unpredictable
         return false;
 
+    return isGood();
+}
+bool dxfReader::isGood() const {
     return (filestr->good());
 }
 int dxfReader::getHandleString(){
-    int res;
-#if defined(__APPLE__)
-    int Succeeded = sscanf ( strData.c_str(), "%x", &res );
-    if ( !Succeeded || Succeeded == EOF )
-        res = 0;
-#else
-    std::istringstream Convert(strData);
-    if ( !(Convert >> std::hex >>res) )
-        res = 0;
-#endif
+    const char* p = strData.data();
+    const char* end = p + strData.size();
+    while (p < end && (*p == ' ' || *p == '\t')) {
+        ++p;
+    }
+    if (end - p >= 2 && p[0] == '0' && (p[1] == 'x' || p[1] == 'X')) {
+        p += 2;
+    }
+    int res = 0;
+    auto [ptr, ec] = std::from_chars(p, end, res, 16);
+    if (ec != std::errc{}) {
+        return 0;
+    }
     return res;
 }
 
@@ -204,28 +212,156 @@ bool dxfReaderBinary::readBool() {
     return (filestr->good());
 }
 
-bool dxfReaderAscii::readCode(int *code) {
-    std::string text;
-    std::getline(*filestr, text);
-    *code = atoi(text.c_str());
-    DRW_DBG(*code); DRW_DBG("\n");
-    return (filestr->good());
+namespace {
+inline const char* skipLeadingSpaces(const char* p, const char* end) {
+    while (p < end && (*p == ' ' || *p == '\t' || *p == '\v' || *p == '\f')) {
+        ++p;
+    }
+    return p;
 }
+
+inline int parseAsciiInt(const char* p, const char* end) {
+    p = skipLeadingSpaces(p, end);
+    if (p < end && *p == '+' && (p + 1 < end) && (p[1] >= '0' && p[1] <= '9')) {
+        ++p;
+    }
+    int val = 0;
+    auto [ptr, ec] = std::from_chars(p, end, val, 10);
+    if (ec == std::errc{}) {
+        return val;
+    }
+    if (ec == std::errc::result_out_of_range) {
+        std::string tmp(p, static_cast<std::size_t>(end - p));
+        return std::atoi(tmp.c_str());
+    }
+    return 0;
+}
+
+inline double parseAsciiDouble(const char* p, const char* end) {
+    p = skipLeadingSpaces(p, end);
+    if (p < end && *p == '+' && (p + 1 < end) &&
+        ((p[1] >= '0' && p[1] <= '9') || p[1] == '.')) {
+        ++p;
+    }
+    double val = 0.0;
+    auto [ptr, ec] = std::from_chars(p, end, val);
+    if (ec == std::errc{}) {
+        return val;
+    }
+    std::string text(p, static_cast<std::size_t>(end - p));
+    std::istringstream sd(text);
+    if (!(sd >> val)) {
+        val = 0.0;
+    }
+    return val;
+}
+} // namespace
+
+dxfReaderAscii::dxfReaderAscii(std::ifstream *stream)
+    : dxfReader(stream)
+    , m_buf(kBufferSize)
+{
+    skip = true;
+}
+
+bool dxfReaderAscii::isGood() const {
+    return !m_eof && !filestr->bad();
+}
+
+bool dxfReaderAscii::readLine(const char*& outBeg, const char*& outEnd) {
+    if (m_eof) {
+        outBeg = nullptr;
+        outEnd = nullptr;
+        return false;
+    }
+
+    if (m_pos < m_end) {
+        const char* start = m_buf.data() + m_pos;
+        const std::size_t avail = m_end - m_pos;
+        if (const void* nlPtr = std::memchr(start, '\n', avail)) {
+            const char* nl = static_cast<const char*>(nlPtr);
+            m_pos = static_cast<std::size_t>((nl - m_buf.data()) + 1);
+            const char* lineEnd = nl;
+            if (lineEnd > start && lineEnd[-1] == '\r') {
+                --lineEnd;
+            }
+            outBeg = start;
+            outEnd = lineEnd;
+            return true;
+        }
+        m_lineScratch.assign(start, avail);
+        m_pos = 0;
+        m_end = 0;
+    } else {
+        m_lineScratch.clear();
+    }
+
+    while (true) {
+        filestr->read(m_buf.data(), static_cast<std::streamsize>(m_buf.size()));
+        m_end = static_cast<std::size_t>(filestr->gcount());
+        m_pos = 0;
+        if (m_end == 0) {
+            m_eof = true;
+            if (!m_lineScratch.empty() && m_lineScratch.back() == '\r') {
+                m_lineScratch.pop_back();
+            }
+            outBeg = m_lineScratch.data();
+            outEnd = outBeg + m_lineScratch.size();
+            return false;
+        }
+
+        if (const void* nlPtr = std::memchr(m_buf.data(), '\n', m_end)) {
+            const char* nl = static_cast<const char*>(nlPtr);
+            const std::size_t prefixLen = static_cast<std::size_t>(nl - m_buf.data());
+            m_lineScratch.append(m_buf.data(), prefixLen);
+            m_pos = prefixLen + 1;
+            if (!m_lineScratch.empty() && m_lineScratch.back() == '\r') {
+                m_lineScratch.pop_back();
+            }
+            outBeg = m_lineScratch.data();
+            outEnd = outBeg + m_lineScratch.size();
+            return true;
+        }
+
+        m_lineScratch.append(m_buf.data(), m_end);
+        m_end = 0;
+    }
+}
+
+bool dxfReaderAscii::readCode(int *code) {
+    const char* p = nullptr;
+    const char* end = nullptr;
+    const bool ok = readLine(p, end);
+    *code = (p != nullptr) ? parseAsciiInt(p, end) : 0;
+    DRW_DBG(*code); DRW_DBG("\n");
+    return ok && !filestr->bad();
+}
+
 bool dxfReaderAscii::readString(std::string *text) {
     type = STRING;
-    std::getline(*filestr, *text);
-    if (!text->empty() && text->at(text->size()-1) == '\r')
-        text->erase(text->size()-1);
-    return (filestr->good());
+    const char* p = nullptr;
+    const char* end = nullptr;
+    const bool ok = readLine(p, end);
+    if (p != nullptr && end >= p) {
+        text->assign(p, static_cast<std::size_t>(end - p));
+    } else {
+        text->clear();
+    }
+    return ok && !filestr->bad();
 }
 
 bool dxfReaderAscii::readString() {
     type = STRING;
-    std::getline(*filestr, strData);
-    if (!strData.empty() && strData.at(strData.size()-1) == '\r')
-        strData.erase(strData.size()-1);
+    const char* p = nullptr;
+    const char* end = nullptr;
+    const bool ok = readLine(p, end);
+    if (p != nullptr && end >= p) {
+        strData.assign(p, static_cast<std::size_t>(end - p));
+    } else {
+        strData.clear();
+    }
     DRW_DBG(strData); DRW_DBG("\n");
-    return (filestr->good());
+    return ok && !filestr->bad();
 }
 
 bool dxfReaderAscii::readBinary() {
@@ -234,13 +370,14 @@ bool dxfReaderAscii::readBinary() {
 
 bool dxfReaderAscii::readInt16() {
     type = INT32;
-    std::string text;
-    if (readString(&text)){
-        intData = atoi(text.c_str());
+    const char* p = nullptr;
+    const char* end = nullptr;
+    if (readLine(p, end) && !filestr->bad()) {
+        intData = parseAsciiInt(p, end);
         DRW_DBG(intData); DRW_DBG("\n");
         return true;
-    } else
-        return false;
+    }
+    return false;
 }
 
 bool dxfReaderAscii::readInt32() {
@@ -255,34 +392,26 @@ bool dxfReaderAscii::readInt64() {
 
 bool dxfReaderAscii::readDouble() {
     type = DOUBLE;
-    std::string text;
-    if (readString(&text)){
-#if defined(__APPLE__)
-        int succeeded=sscanf( & (text[0]), "%lg", &doubleData);
-        if(succeeded != 1) {
-            DRW_DBG("dxfReaderAscii::readDouble(): reading double error: ");
-            DRW_DBG(text);
-            DRW_DBG('\n');
-        }
-#else
-        std::istringstream sd(text);
-        sd >> doubleData;
+    const char* p = nullptr;
+    const char* end = nullptr;
+    if (readLine(p, end) && !filestr->bad()) {
+        doubleData = parseAsciiDouble(p, end);
         DRW_DBG(doubleData); DRW_DBG('\n');
-#endif
         return true;
-    } else
-        return false;
+    }
+    return false;
 }
 
 //saved as int or add a bool member??
 bool dxfReaderAscii::readBool() {
     type = BOOL;
-    std::string text;
-    if (readString(&text)){
-        intData = atoi(text.c_str());
+    const char* p = nullptr;
+    const char* end = nullptr;
+    if (readLine(p, end) && !filestr->bad()) {
+        intData = parseAsciiInt(p, end);
         DRW_DBG(intData); DRW_DBG("\n");
         return true;
-    } else
-        return false;
+    }
+    return false;
 }
 

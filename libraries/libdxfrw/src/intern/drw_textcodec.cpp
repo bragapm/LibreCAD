@@ -138,7 +138,18 @@ std::string DRW_TextCodec::fromUtf8(const std::string &s) {
 }
 
 std::string DRW_Converter::toUtf8(const std::string &s) {
+    bool plainAscii = true;
+    for (unsigned char c : s) {
+        if (c >= 0x80 || c == '\\') {
+            plainAscii = false;
+            break;
+        }
+    }
+    if (plainAscii) {
+        return s;
+    }
     std::string result;
+    result.reserve(s.size());
     int j = 0;
     unsigned int i= 0;
     for (i=0; i < s.length(); i++) {
@@ -196,7 +207,18 @@ std::string DRW_ConvTable::fromUtf8(const std::string &s) {
 }
 
 std::string DRW_ConvTable::toUtf8(const std::string &s) {
+    bool plainAscii = true;
+    for (unsigned char c : s) {
+        if (c >= 0x80 || c == '\\') {
+            plainAscii = false;
+            break;
+        }
+    }
+    if (plainAscii) {
+        return s;
+    }
     std::string res;
+    res.reserve(s.size());
     for ( auto it=s.begin() ; it < s.end(); ++it ) {
         unsigned char c = *it;
         if (c < 0x80) {

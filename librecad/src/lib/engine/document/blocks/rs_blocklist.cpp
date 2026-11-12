@@ -53,6 +53,7 @@ RS_BlockList::RS_BlockList(bool owner) {
  */
 void RS_BlockList::clear() {
     m_blocks.clear();
+    m_blockMap.clear();
 	m_activeBlock = nullptr;
 	setModified(true);
 }
@@ -98,6 +99,7 @@ bool RS_BlockList::add(RS_Block* block, bool notify) {
     RS_Block* b = find(block->getName());
 	if (!b) {
         m_blocks.append(block);
+        m_blockMap.insert(block->getName(), block);
 
         if (notify) {
             addNotification();
@@ -133,6 +135,13 @@ void RS_BlockList::addNotification() {
 void RS_BlockList::remove(RS_Block* block) {
     RS_DEBUG->print("RS_BlockList::removeBlock()");
 
+    if (block) {
+        const QString name = block->getName();
+        if (m_blockMap.value(name) == block) {
+            m_blockMap.remove(name);
+        }
+    }
+
     // here the block is removed from the list but not deleted
     m_blocks.removeOne(block);
 
@@ -167,7 +176,11 @@ bool RS_BlockList:: rename(RS_Block* block, const QString& name) {
 	if (block) {
 		if (!find(name)) {
 			QString oldName = block->getName();
+			if (m_blockMap.value(oldName) == block) {
+				m_blockMap.remove(oldName);
+			}
 			block->setName(name);
+			m_blockMap.insert(name, block);
 			setModified(true);
 
 			// when the renamed block is nested within other block, we need to rename its inserts as well
@@ -205,21 +218,23 @@ void RS_BlockList::editBlock(RS_Block* block, const RS_Block& source) {
  * \p nullptr if no such block was found.
  */
 RS_Block* RS_BlockList::find(const QString& name) {
-    try {
-        RS_DEBUG->print(RS_Debug::D_DEBUGGING, "RS_BlockList::find(): %s", name.toLatin1().constData());
+    const bool debugging = RS_DEBUG->getLevel() >= RS_Debug::D_DEBUGGING;
+    if (debugging) {
+        try {
+            RS_DEBUG->print(RS_Debug::D_DEBUGGING, "RS_BlockList::find(): %s", name.toLatin1().constData());
+        }
+        catch(...) {
+            RS_DEBUG->print(RS_Debug::D_DEBUGGING, "RS_BlockList::find(): wrong name to find");
+            return nullptr;
+        }
     }
-    catch(...) {
-        RS_DEBUG->print(RS_Debug::D_DEBUGGING, "RS_BlockList::find(): wrong name to find");
-        return nullptr;
+    auto it = m_blockMap.constFind(name);
+    if (it != m_blockMap.cend()) {
+        return it.value();
     }
-	// Todo : reduce this from O(N) to O(log(N)) complexity based on sorted list or hash
-	//DFS
-	for(RS_Block* b: m_blocks) {
-		if (b->getName()==name) {
-			return b;
-		}
-	}
-    RS_DEBUG->print(RS_Debug::D_DEBUGGING, "RS_BlockList::find(): bad");
+    if (debugging) {
+        RS_DEBUG->print(RS_Debug::D_DEBUGGING, "RS_BlockList::find(): bad");
+    }
 	return nullptr;
 }
 

@@ -16,16 +16,17 @@
 #include <string>
 #include <iostream>
 #include <memory>
+#include <type_traits>
 #include "../drw_base.h"
 //#include <iomanip>
 
 #define DRW_DBGSL(a) DRW_dbg::getInstance()->setLevel(a)
-#define DRW_DBGGL DRW_dbg::getInstance()->getLevel()
-#define DRW_DBG(a) DRW_dbg::getInstance()->print(a)
-#define DRW_DBGH(a) DRW_dbg::getInstance()->printH(a)
-#define DRW_DBGB(a) DRW_dbg::getInstance()->printB(a)
-#define DRW_DBGHL(a, b, c) DRW_dbg::getInstance()->printHL(a, b ,c)
-#define DRW_DBGPT(a, b, c) DRW_dbg::getInstance()->printPT(a, b, c)
+#define DRW_DBGGL (DRW_dbg::isEnabled() ? DRW_dbg::Level::Debug : DRW_dbg::Level::None)
+#define DRW_DBG(a) DRW_dbg::dbgPrint(a)
+#define DRW_DBGH(a) DRW_dbg::dbgPrintH(a)
+#define DRW_DBGB(a) DRW_dbg::dbgPrintB(a)
+#define DRW_DBGHL(a, b, c) DRW_dbg::dbgPrintHL(a, b, c)
+#define DRW_DBGPT(a, b, c) DRW_dbg::dbgPrintPT(a, b, c)
 
 class DRW_dbg {
 public:
@@ -41,6 +42,23 @@ public:
     void setCustomDebugPrinter(std::unique_ptr<DRW::DebugPrinter> printer);
     Level getLevel();
     static DRW_dbg *getInstance();
+    static bool isEnabled() noexcept { return s_enabled; }
+    static void dbgPrint(const std::string& s) {
+        if (s_enabled) getInstance()->print(s);
+    }
+    static void dbgPrint(const char* s) {
+        if (s_enabled && s != nullptr) getInstance()->print(std::string(s));
+    }
+    template <typename T, typename std::enable_if_t<
+        !std::is_convertible_v<const T&, const char*> &&
+        !std::is_same_v<std::decay_t<T>, std::string>, int> = 0>
+    static void dbgPrint(const T& v) {
+        if (s_enabled) getInstance()->print(v);
+    }
+    static void dbgPrintH(long long int i) { if (s_enabled) getInstance()->printH(i); }
+    static void dbgPrintB(int i) { if (s_enabled) getInstance()->printB(i); }
+    static void dbgPrintHL(int c, int s, int h) { if (s_enabled) getInstance()->printHL(c, s, h); }
+    static void dbgPrintPT(double x, double y, double z) { if (s_enabled) getInstance()->printPT(x, y, z); }
     void print(const std::string &s);
     void print(signed char i);
     void print(unsigned char i);
@@ -58,6 +76,7 @@ public:
 private:
     DRW_dbg();
     static DRW_dbg *instance;
+    static inline bool s_enabled{false};
     Level level{Level::None};
     DRW::DebugPrinter silentDebug;
     std::unique_ptr< DRW::DebugPrinter > debugPrinter;
