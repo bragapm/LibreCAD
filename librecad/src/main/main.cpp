@@ -64,6 +64,106 @@ extern "C" {
 }
 #endif
 
+#if defined(OPENGLACTIVE) && defined(Q_OS_LINUX)
+namespace {
+// Di Linux, driver NVIDIA/Mesa tidak membaca symbol export binary seperti Windows.
+// Pemilihan Dedicated GPU (PRIME Render Offload / DRI_PRIME) dilakukan via environment variable
+// sebelum QApplication / konteks OpenGL (GLX/EGL) diinisialisasi.
+struct LinuxRenderNode {
+    QString name;          // renderD128, renderD129, ...
+    QString driver;        // nvidia, amdgpu, i915, xe, nouveau, ...
+    bool isBootGpu = false; // GPU default (boot_vga == 1)
+    qulonglong vramBytes = 0; // khusus amdgpu (mem_info_vram_total), 0 jika tidak tersedia
+};
+
+QByteArray readSysfsValue(const QString& path)
+{
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly)) {
+        return {};
+    }
+    return file.readAll().trimmed();
+}
+
+QList<LinuxRenderNode> enumerateLinuxRenderNodes()
+{
+    QList<LinuxRenderNode> nodes;
+    const QDir drmDir(QStringLiteral("/sys/class/drm"));
+    const QStringList entries = drmDir.entryList({QStringLiteral("renderD*")},
+                                                 QDir::AllEntries | QDir::System | QDir::NoDotAndDotDot);
+    for (const QString& entry : entries) {
+        const QString devicePath = drmDir.filePath(entry + QStringLiteral("/device"));
+        LinuxRenderNode node;
+        node.name = entry;
+        // /sys/class/drm/renderDxxx/device/driver -> /sys/bus/pci/drivers/<nama_driver>
+        node.driver = QFileInfo(QFileInfo(devicePath + QStringLiteral("/driver")).canonicalFilePath()).fileName();
+        node.isBootGpu = readSysfsValue(devicePath + QStringLiteral("/boot_vga")) == "1";
+        node.vramBytes = readSysfsValue(devicePath + QStringLiteral("/mem_info_vram_total")).toULongLong();
+        nodes.append(node);
+    }
+    return nodes;
+}
+
+void preferDiscreteGpuOnLinux()
+{
+    // Opt-out manual: TATALETAK_NO_DGPU=1 librecad
+    if (qEnvironmentVariableIsSet("TATALETAK_NO_DGPU")) {
+        return;
+    }
+
+    // Hormati override dari user, launcher, atau switcheroo-control jika sudah di-set
+    if (qEnvironmentVariableIsSet("__NV_PRIME_RENDER_OFFLOAD") ||
+        qEnvironmentVariableIsSet("__GLX_VENDOR_LIBRARY_NAME") ||
+        qEnvironmentVariableIsSet("DRI_PRIME") ||
+        qEnvironmentVariableIsSet("LIBGL_ALWAYS_SOFTWARE")) {
+        return;
+    }
+
+    // Pisahkan GPU default (boot_vga) dan GPU sekunder
+    const QList<LinuxRenderNode> nodes = enumerateLinuxRenderNodes();
+    const LinuxRenderNode* bootGpu = nullptr;
+    QList<LinuxRenderNode> secondaryGpus;
+    for (const LinuxRenderNode& node : nodes) {
+        if (node.isBootGpu && bootGpu == nullptr) {
+            bootGpu = &node;
+        } else {
+            secondaryGpus.append(node);
+        }
+    }
+    // Single GPU / tidak bisa menentukan GPU default -> jangan ubah apa pun
+    if (bootGpu == nullptr || secondaryGpus.isEmpty()) {
+        return;
+    }
+
+    // NVIDIA hybrid: hanya jika render node benar-benar dimiliki driver "nvidia"
+    // (artinya nvidia-drm aktif dan PRIME Render Offload bisa dipakai)
+    for (const LinuxRenderNode& node : secondaryGpus) {
+        if (node.driver == QLatin1String("nvidia")) {
+            qputenv("__NV_PRIME_RENDER_OFFLOAD", "1");
+            qputenv("__GLX_VENDOR_LIBRARY_NAME", "nvidia");
+            qInfo() << "main: hybrid GPU terdeteksi (" << bootGpu->driver << "+ nvidia ), mengaktifkan NVIDIA PRIME Render Offload."
+                    << "Set TATALETAK_NO_DGPU=1 untuk menonaktifkan.";
+            return;
+        }
+    }
+
+    // Mesa hybrid: hanya jika tepat ada 1 GPU sekunder ber-driver amdgpu (lewati nouveau / multi-GPU ambigu)
+    if (secondaryGpus.size() == 1 && secondaryGpus.first().driver == QLatin1String("amdgpu")) {
+        const LinuxRenderNode& dgpu = secondaryGpus.first();
+        const bool bootIsIntel = bootGpu->driver == QLatin1String("i915") || bootGpu->driver == QLatin1String("xe");
+        // AMD iGPU + AMD dGPU: pastikan GPU sekunder memang punya VRAM lebih besar (bukan kebalikannya
+        // pada desktop dengan dGPU sebagai GPU default dan iGPU sebagai sekunder)
+        const bool bootIsWeakerAmd = bootGpu->driver == QLatin1String("amdgpu") && dgpu.vramBytes > bootGpu->vramBytes;
+        if (bootIsIntel || bootIsWeakerAmd) {
+            qputenv("DRI_PRIME", "1");
+            qInfo() << "main: hybrid GPU terdeteksi (" << bootGpu->driver << "+ amdgpu ), mengaktifkan DRI_PRIME=1."
+                    << "Set TATALETAK_NO_DGPU=1 untuk menonaktifkan.";
+        }
+    }
+}
+}
+#endif
+
 // fixme - sand - files - complete refactoring
 namespace
 {
@@ -265,6 +365,10 @@ int main(int argc, char** argv) {
     }
 
     RS_DEBUG->setLevel(RS_Debug::D_WARNING);
+
+#if defined(OPENGLACTIVE) && defined(Q_OS_LINUX)
+    preferDiscreteGpuOnLinux();
+#endif
 
     LC_Application app(argc, argv);
     QCoreApplication::setOrganizationName("LibreCAD");

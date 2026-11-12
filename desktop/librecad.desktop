@@ -55,3 +55,4 @@ Exec=librecad %F
 Icon=tataletak
 Categories=Graphics;Engineering;
 MimeType=image/vnd.dxf;
+PrefersNonDefaultGPU=true
