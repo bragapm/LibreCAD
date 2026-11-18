@@ -21,6 +21,9 @@
  ******************************************************************************/
 #include "lc_widgetviewportrenderer.h"
 
+#include <algorithm>
+#include <cmath>
+
 #include <QElapsedTimer>
 #include <QOpenGLFramebufferObject>
 #include <QOpenGLFunctions>
@@ -149,170 +152,181 @@ void LC_WidgetViewPortRenderer::paintOpenGL(QPaintDevice* pd) {
         return;
     }
 
+    auto* glWidget = dynamic_cast<QOpenGLWidget*>(pd);
+    const GLuint targetFbo = glWidget ? glWidget->defaultFramebufferObject() : 0;
+    const double dpr = (glWidget != nullptr && glWidget->devicePixelRatioF() > 0.0)
+                           ? static_cast<double>(glWidget->devicePixelRatioF())
+                           : 1.0;
 
-        // Margin overscan di setiap sisi HANYA diaktifkan saat Panning (agar GPU dapat menggeser via glBlitFramebuffer).
-        // Saat Zooming (atau kondisi normal/idle), overscan margin DINONAKTIFKAN (marginX = 0, marginY = 0) sehingga:
-        // 1. Luas area FBO turun 55% (dari 2.25x ke 1.0x tepat seukuran layar monitor).
-        // 2. prepareBoundingClipRect() memotong tepat di batas layar, sehingga seluruh entitas di luar monitor
-        //    langsung di-cull oleh isOutsideOfBoundingClipRect() tanpa diproses oleh CPU dan GPU.
-        const bool isPanning = (viewport != nullptr && viewport->isPanning());
-        const bool isFastZooming = (viewport != nullptr && viewport->isFastZooming());
-        const int marginX = isPanning ? std::max(width / 4, 128) : 0;
-        const int marginY = isPanning ? std::max(height / 4, 128) : 0;
-        const int fboWidth = width + 2 * marginX;
-        const int fboHeight = height + 2 * marginY;
-        const QSize fboSize(fboWidth, fboHeight);
+    // Margin overscan di setiap sisi HANYA diaktifkan saat Panning (agar GPU dapat menggeser via glBlitFramebuffer).
+    // Saat Zooming (atau kondisi normal/idle), overscan margin DINONAKTIFKAN (marginX = 0, marginY = 0) sehingga:
+    // 1. Luas area FBO turun 55% (dari 2.25x ke 1.0x tepat seukuran layar monitor).
+    // 2. prepareBoundingClipRect() memotong tepat di batas layar, sehingga seluruh entitas di luar monitor
+    //    langsung di-cull oleh isOutsideOfBoundingClipRect() tanpa diproses oleh CPU dan GPU.
+    const bool isPanning = (viewport != nullptr && viewport->isPanning());
+    const bool isFastZooming = (viewport != nullptr && viewport->isFastZooming());
+    const int marginX = isPanning ? std::max(width / 4, 128) : 0;
+    const int marginY = isPanning ? std::max(height / 4, 128) : 0;
+    const int fboWidth = width + 2 * marginX;
+    const int fboHeight = height + 2 * marginY;
 
-        const int curOffsetX = viewport->getOffsetX();
-        const int curOffsetY = viewport->getOffsetY();
-        const RS_Vector curFactor = viewport->getFactor();
+    // Konversi ukuran logical -> physical pixels agar selaras dengan defaultFramebufferObject() QOpenGLWidget pada layar HiDPI.
+    const int targetW = std::max(1, static_cast<int>(std::lround(width * dpr)));
+    const int targetH = std::max(1, static_cast<int>(std::lround(height * dpr)));
+    const int fboPhysWidth = std::max(1, static_cast<int>(std::lround(fboWidth * dpr)));
+    const int fboPhysHeight = std::max(1, static_cast<int>(std::lround(fboHeight * dpr)));
+    const QSize fboPhysSize(fboPhysWidth, fboPhysHeight);
 
-        bool needFullRedraw = (redrawMethod & (RS2::RedrawDrawing | RS2::RedrawGrid)) != 0;
+    const int curOffsetX = viewport->getOffsetX();
+    const int curOffsetY = viewport->getOffsetY();
+    const RS_Vector curFactor = viewport->getFactor();
 
-        if (!m_glFboDrawing || m_glFboDrawing->size() != fboSize) {
-            m_glFboDrawing = std::make_unique<QOpenGLFramebufferObject>(fboSize);
-            m_fboCacheValid = false;
+    bool needFullRedraw = (redrawMethod & (RS2::RedrawDrawing | RS2::RedrawGrid)) != 0;
+
+    if (!m_glFboDrawing || m_glFboDrawing->size() != fboPhysSize || std::abs(m_fboCachedDpr - dpr) > 1.0e-6) {
+        m_glFboDrawing = std::make_unique<QOpenGLFramebufferObject>(fboPhysSize);
+        m_fboCacheValid = false;
+        needFullRedraw = true;
+    }
+
+    auto* ctx = QOpenGLContext::currentContext();
+    auto* glFuncs = ctx ? ctx->functions() : nullptr;
+    using FnBlit = void (QOPENGLF_APIENTRYP)(GLint, GLint, GLint, GLint,
+                                             GLint, GLint, GLint, GLint,
+                                             GLbitfield, GLenum);
+    const FnBlit fnBlit = ctx ? reinterpret_cast<FnBlit>(ctx->getProcAddress("glBlitFramebuffer")) : nullptr;
+
+    const bool canUseFboCache = (m_glFboDrawing && m_glFboDrawing->isValid() && glFuncs != nullptr && fnBlit != nullptr);
+
+    if (canUseFboCache) {
+        const bool sameZoom = m_fboCacheValid &&
+                              std::abs(curFactor.x - m_fboCachedFactorX) < 1.0e-12 &&
+                              std::abs(curFactor.y - m_fboCachedFactorY) < 1.0e-12;
+        const int panShiftX = curOffsetX - m_fboCachedOffsetX;
+        const int panShiftY = curOffsetY - m_fboCachedOffsetY;
+        const bool withinOverscanMargin = (std::abs(panShiftX) <= m_fboCachedMarginX) &&
+                                          (std::abs(panShiftY) <= m_fboCachedMarginY);
+
+        // Periksa rasio zoom terhadap FBO cache:
+        // Selama fast zoom, jika rasio masih dalam batas wajar (0.25x - 4.0x), gunakan scaling tekstur FBO.
+        const double zoomRatio = (m_fboCachedFactorX > 1.0e-12) ? (curFactor.x / m_fboCachedFactorX) : 1.0;
+        const bool canScaleTexture = isFastZooming && m_fboCacheValid && (zoomRatio >= 0.25 && zoomRatio <= 4.0);
+
+        // Saat Panning (dan pergeseran dalam margin overscan) ATAU saat Fast Zooming (roda mouse berputar cepat):
+        // lewati proses render ulang CPU yang berat dan manfaatkan akselerasi hardware GPU Blit!
+        if ((isPanning && sameZoom && withinOverscanMargin && m_fboCachedMarginX > 0) || canScaleTexture) {
+            needFullRedraw = false;
+        } else if (!m_fboCacheValid || !sameZoom || !withinOverscanMargin || (isPanning && m_fboCachedMarginX == 0)) {
             needFullRedraw = true;
         }
 
-        auto* glWidget = dynamic_cast<QOpenGLWidget*>(pd);
-        const GLuint targetFbo = glWidget ? glWidget->defaultFramebufferObject() : 0;
+        // Jika ada perubahan gambar CAD (tambah entitas, zoom non-fast, atau rasio zoom melebihi batas),
+        // render background & entitas ke FBO di GPU
+        if (needFullRedraw) {
+            m_glFboDrawing->bind();
+            glFuncs->glDisable(GL_SCISSOR_TEST);
+            glFuncs->glViewport(0, 0, fboPhysWidth, fboPhysHeight);
 
-        auto* ctx = QOpenGLContext::currentContext();
-        using FnBlit = void (QOPENGLF_APIENTRYP)(GLint, GLint, GLint, GLint,
-                                                 GLint, GLint, GLint, GLint,
-                                                 GLbitfield, GLenum);
-        static FnBlit fnBlit = ctx ? reinterpret_cast<FnBlit>(ctx->getProcAddress("glBlitFramebuffer")) : nullptr;
-        using FnBindFb = void (QOPENGLF_APIENTRYP)(GLenum, GLuint);
-        static FnBindFb fnBindFb = ctx ? reinterpret_cast<FnBindFb>(ctx->getProcAddress("glBindFramebuffer")) : nullptr;
-
-        const bool canUseFboCache = (m_glFboDrawing && m_glFboDrawing->isValid() && fnBlit && fnBindFb);
-
-        if (canUseFboCache) {
-            const bool sameZoom = m_fboCacheValid &&
-                                  std::abs(curFactor.x - m_fboCachedFactorX) < 1.0e-12 &&
-                                  std::abs(curFactor.y - m_fboCachedFactorY) < 1.0e-12;
-            const int panShiftX = curOffsetX - m_fboCachedOffsetX;
-            const int panShiftY = curOffsetY - m_fboCachedOffsetY;
-            const bool withinOverscanMargin = (std::abs(panShiftX) <= m_fboCachedMarginX) &&
-                                              (std::abs(panShiftY) <= m_fboCachedMarginY);
-
-            // Periksa rasio zoom terhadap FBO cache:
-            // Selama fast zoom, jika rasio masih dalam batas wajar (0.25x - 4.0x), gunakan scaling tekstur FBO.
-            const double zoomRatio = (m_fboCachedFactorX > 1.0e-12) ? (curFactor.x / m_fboCachedFactorX) : 1.0;
-            const bool canScaleTexture = isFastZooming && m_fboCacheValid && (zoomRatio >= 0.25 && zoomRatio <= 4.0);
-
-            // Saat Panning (dan pergeseran dalam margin overscan) ATAU saat Fast Zooming (roda mouse berputar cepat):
-            // lewati proses render ulang CPU yang berat dan manfaatkan akselerasi hardware GPU Blit!
-            if ((isPanning && sameZoom && withinOverscanMargin && m_fboCachedMarginX > 0) || canScaleTexture) {
-                needFullRedraw = false;
-            } else if (!m_fboCacheValid || !sameZoom || !withinOverscanMargin || (isPanning && m_fboCachedMarginX == 0)) {
-                needFullRedraw = true;
+            // Perluas ukuran & geser offset viewport sementara ke ukuran FBO (hanya jika ada overscan margin)
+            viewport->setSize(fboWidth, fboHeight);
+            viewport->justSetOffsetAndFactor(curOffsetX + marginX, curOffsetY + marginY, curFactor.x);
+            if (viewport->getGrid() != nullptr) {
+                viewport->getGrid()->invalidate(viewport->isGridOn());
             }
+            const LC_Rect savedClipRect = renderBoundingClipRect;
+            renderBoundingClipRect = prepareBoundingClipRect();
 
-            // Jika ada perubahan gambar CAD (tambah entitas, zoom non-fast, atau rasio zoom melebihi batas),
-            // render background & entitas ke FBO di GPU
-            if (needFullRedraw) {
-                m_glFboDrawing->bind();
+            QOpenGLPaintDevice glPaintDev(fboPhysSize);
+            glPaintDev.setDevicePixelRatio(dpr);
+            RS_Painter fboPainter(&glPaintDev);
+            setupPainter(&fboPainter);
 
-                // Perluas ukuran & geser offset viewport sementara ke ukuran FBO (hanya jika ada overscan margin)
-                viewport->setSize(fboWidth, fboHeight);
-                viewport->justSetOffsetAndFactor(curOffsetX + marginX, curOffsetY + marginY, curFactor.x);
-                if (viewport->getGrid() != nullptr) {
-                    viewport->getGrid()->invalidate(viewport->isGridOn());
-                }
-                const LC_Rect savedClipRect = renderBoundingClipRect;
-                renderBoundingClipRect = prepareBoundingClipRect();
-
-                QOpenGLPaintDevice glPaintDev(fboSize);
-                RS_Painter fboPainter(&glPaintDev);
-                setupPainter(&fboPainter);
-
-                {
-                    fboPainter.fillRect(0, 0, fboWidth, fboHeight, m_colorBackground);
-                    drawLayerBackground(&fboPainter);
-                }
-
-                {
-                    m_pluginInvoker->drawPlugs(&fboPainter, 0);
-                    drawLayerEntities(&fboPainter);
-                    drawLayerEntitiesOver(&fboPainter);
-                    m_pluginInvoker->drawPlugs(&fboPainter, 1);
-                }
-
-                fboPainter.end();
-                m_glFboDrawing->release();
-
-                // Kembalikan ukuran & offset viewport ke ukuran layar asli
-                viewport->setSize(width, height);
-                viewport->justSetOffsetAndFactor(curOffsetX, curOffsetY, curFactor.x);
-                renderBoundingClipRect = savedClipRect;
-
-                m_fboCachedOffsetX = curOffsetX;
-                m_fboCachedOffsetY = curOffsetY;
-                m_fboCachedFactorX = curFactor.x;
-                m_fboCachedFactorY = curFactor.y;
-                m_fboCachedMarginX = marginX;
-                m_fboCachedMarginY = marginY;
-                m_fboCacheValid = true;
-            }
-
-            // 1. Salin background + entitas CAD dari FBO langsung via hardware GPU Blit (0.01 ms)
-            // Saat panning 1:1, gunakan GL_NEAREST.
-            // Saat fast zoom texture scaling, gunakan GL_LINEAR (bilinear filtering) untuk kehalusan visual.
             {
-                GLint srcX0, srcY0, srcX1, srcY1;
-                GLenum filter = GL_NEAREST;
-
-                if (sameZoom) {
-                    const int deltaX = curOffsetX - m_fboCachedOffsetX;
-                    const int deltaY = curOffsetY - m_fboCachedOffsetY;
-                    srcX0 = m_fboCachedMarginX - deltaX;
-                    srcY0 = m_fboCachedMarginY - deltaY;
-                    srcX1 = srcX0 + width;
-                    srcY1 = srcY0 + height;
-                    filter = GL_NEAREST;
-                } else {
-                    const double invScaleX = (curFactor.x > 1.0e-12) ? (m_fboCachedFactorX / curFactor.x) : 1.0;
-                    const double invScaleY = (curFactor.y > 1.0e-12) ? (m_fboCachedFactorY / curFactor.y) : 1.0;
-                    srcX0 = static_cast<GLint>(-curOffsetX * invScaleX + m_fboCachedOffsetX + m_fboCachedMarginX);
-                    srcX1 = static_cast<GLint>((width - curOffsetX) * invScaleX + m_fboCachedOffsetX + m_fboCachedMarginX);
-                    srcY0 = static_cast<GLint>(-curOffsetY * invScaleY + m_fboCachedOffsetY + m_fboCachedMarginY);
-                    srcY1 = static_cast<GLint>((height - curOffsetY) * invScaleY + m_fboCachedOffsetY + m_fboCachedMarginY);
-                    filter = GL_LINEAR;
-                }
-
-                if (filter == GL_LINEAR && ctx != nullptr) {
-                    fnBindFb(0x8D40 /* GL_FRAMEBUFFER */, targetFbo);
-                    auto* f = ctx->functions();
-                    if (f != nullptr) {
-                        f->glClearColor(m_colorBackground.redF(), m_colorBackground.greenF(),
-                                        m_colorBackground.blueF(), m_colorBackground.alphaF());
-                        f->glClear(GL_COLOR_BUFFER_BIT);
-                    }
-                }
-
-                fnBindFb(0x8CA8 /* GL_READ_FRAMEBUFFER */, m_glFboDrawing->handle());
-                fnBindFb(0x8CA9 /* GL_DRAW_FRAMEBUFFER */, targetFbo);
-                fnBlit(srcX0, srcY0, srcX1, srcY1,
-                       0, 0, width, height,
-                       GL_COLOR_BUFFER_BIT, filter);
-                fnBindFb(0x8D40 /* GL_FRAMEBUFFER */, targetFbo);
+                fboPainter.fillRect(0, 0, fboWidth, fboHeight, m_colorBackground);
+                drawLayerBackground(&fboPainter);
             }
 
-            // 2. Gambar overlay (kursor salib, snapper, highlight) langsung di atas layar
             {
-
-                RS_Painter wPainter(pd);
-
-                setupPainter(&wPainter);
-                if (antialiasing) {
-                    wPainter.setRenderHint(QPainter::Antialiasing);
-                }
-                drawLayerOverlays(&wPainter);
-                wPainter.end();
+                m_pluginInvoker->drawPlugs(&fboPainter, 0);
+                drawLayerEntities(&fboPainter);
+                drawLayerEntitiesOver(&fboPainter);
+                m_pluginInvoker->drawPlugs(&fboPainter, 1);
             }
-        } else {
+
+            fboPainter.end();
+            m_glFboDrawing->release();
+
+            // Kembalikan ukuran & offset viewport ke ukuran layar asli
+            viewport->setSize(width, height);
+            viewport->justSetOffsetAndFactor(curOffsetX, curOffsetY, curFactor.x);
+            renderBoundingClipRect = savedClipRect;
+
+            m_fboCachedOffsetX = curOffsetX;
+            m_fboCachedOffsetY = curOffsetY;
+            m_fboCachedFactorX = curFactor.x;
+            m_fboCachedFactorY = curFactor.y;
+            m_fboCachedMarginX = marginX;
+            m_fboCachedMarginY = marginY;
+            m_fboCachedDpr = dpr;
+            m_fboCacheValid = true;
+        }
+
+        // 1. Salin background + entitas CAD dari FBO langsung via hardware GPU Blit (0.01 ms)
+        // Saat panning 1:1, gunakan GL_NEAREST.
+        // Saat fast zoom texture scaling, gunakan GL_LINEAR (bilinear filtering) untuk kehalusan visual.
+        {
+            GLint srcX0, srcY0, srcX1, srcY1;
+            GLenum filter = GL_NEAREST;
+
+            if (sameZoom) {
+                const int deltaX = curOffsetX - m_fboCachedOffsetX;
+                const int deltaY = curOffsetY - m_fboCachedOffsetY;
+                const int maxSrcX = std::max(0, fboPhysWidth - targetW);
+                const int maxSrcY = std::max(0, fboPhysHeight - targetH);
+                srcX0 = std::clamp(static_cast<int>(std::lround((m_fboCachedMarginX - deltaX) * dpr)), 0, maxSrcX);
+                srcY0 = std::clamp(static_cast<int>(std::lround((m_fboCachedMarginY - deltaY) * dpr)), 0, maxSrcY);
+                srcX1 = srcX0 + targetW;
+                srcY1 = srcY0 + targetH;
+                filter = GL_NEAREST;
+            } else {
+                const double invScaleX = (curFactor.x > 1.0e-12) ? (m_fboCachedFactorX / curFactor.x) : 1.0;
+                const double invScaleY = (curFactor.y > 1.0e-12) ? (m_fboCachedFactorY / curFactor.y) : 1.0;
+                srcX0 = static_cast<GLint>(std::lround((-curOffsetX * invScaleX + m_fboCachedOffsetX + m_fboCachedMarginX) * dpr));
+                srcX1 = static_cast<GLint>(std::lround(((width - curOffsetX) * invScaleX + m_fboCachedOffsetX + m_fboCachedMarginX) * dpr));
+                srcY0 = static_cast<GLint>(std::lround((-curOffsetY * invScaleY + m_fboCachedOffsetY + m_fboCachedMarginY) * dpr));
+                srcY1 = static_cast<GLint>(std::lround(((height - curOffsetY) * invScaleY + m_fboCachedOffsetY + m_fboCachedMarginY) * dpr));
+                filter = GL_LINEAR;
+            }
+
+            // Selalu bersihkan seluruh targetFbo (physical pixels) dan matikan scissor test sebelum blit
+            // agar sisa overlay (kotak seleksi, hover highlight) dari frame sebelumnya tidak pernah tertinggal.
+            glFuncs->glBindFramebuffer(0x8D40 /* GL_FRAMEBUFFER */, targetFbo);
+            glFuncs->glDisable(GL_SCISSOR_TEST);
+            glFuncs->glViewport(0, 0, targetW, targetH);
+            glFuncs->glClearColor(m_colorBackground.redF(), m_colorBackground.greenF(),
+                                  m_colorBackground.blueF(), m_colorBackground.alphaF());
+            glFuncs->glClear(GL_COLOR_BUFFER_BIT);
+
+            glFuncs->glBindFramebuffer(0x8CA8 /* GL_READ_FRAMEBUFFER */, m_glFboDrawing->handle());
+            glFuncs->glBindFramebuffer(0x8CA9 /* GL_DRAW_FRAMEBUFFER */, targetFbo);
+            fnBlit(srcX0, srcY0, srcX1, srcY1,
+                   0, 0, targetW, targetH,
+                   GL_COLOR_BUFFER_BIT, filter);
+            glFuncs->glBindFramebuffer(0x8D40 /* GL_FRAMEBUFFER */, targetFbo);
+        }
+
+        // 2. Gambar overlay (kursor salib, snapper, highlight) langsung di atas layar
+        {
+            RS_Painter wPainter(pd);
+
+            setupPainter(&wPainter);
+            if (antialiasing) {
+                wPainter.setRenderHint(QPainter::Antialiasing);
+            }
+            drawLayerOverlays(&wPainter);
+            wPainter.end();
+        }
+    } else {
             // Jalur fallback jika FBO/blit tidak tersedia
             RS_Painter wPainter(pd);
 

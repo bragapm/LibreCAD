@@ -106,6 +106,7 @@ private:
     double m_fboCachedFactorY = 0.0;
     int m_fboCachedMarginX = 0;
     int m_fboCachedMarginY = 0;
+    double m_fboCachedDpr = 1.0;
 };
 
 #endif // LC_WIDGETVIEWPORTRENDERER_H
